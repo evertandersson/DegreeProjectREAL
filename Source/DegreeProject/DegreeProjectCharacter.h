@@ -48,7 +48,8 @@ class ADegreeProjectCharacter : public ACharacter
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* RollAction;
 
-
+	UPROPERTY(EditAnywhere, BlueprintReadonly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction* AttackAction;
 
 public:
 	ADegreeProjectCharacter();
@@ -67,7 +68,17 @@ protected:
 
 	/** Called to stop rolling input */
 	void StopRolling(const FInputActionValue& Value);
+
+	int Damage;
 			
+	void StartAttack();
+
+
+	UPROPERTY(VisibleAnywhere)
+	class UStaticMeshComponent* SwordMesh;
+
+	UPROPERTY(EditAnywhere)
+	class UAnimSequence* AttackAnimation;
 
 protected:
 	virtual void NotifyControllerChanged() override;
@@ -79,6 +90,12 @@ public:
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
 	/** Returns FollowCamera subobject **/
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
+
+	UFUNCTION(BlueprintCallable)
+	void LineTrace();
+
+	UPROPERTY(BlueprintReadWrite)
+	bool bIsAttacking;
 
 
 	/** When true, player wants to roll */
