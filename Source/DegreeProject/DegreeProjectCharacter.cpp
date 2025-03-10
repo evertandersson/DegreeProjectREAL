@@ -85,6 +85,8 @@ void ADegreeProjectCharacter::SetupPlayerInputComponent(UInputComponent* PlayerI
 
 		// Looking
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &ADegreeProjectCharacter::Look);
+
+		EnhancedInputComponent->BindAction(RollAction, ETriggerEvent::Triggered, this, &ADegreeProjectCharacter::Roll);
 	}
 	else
 	{
@@ -126,4 +128,9 @@ void ADegreeProjectCharacter::Look(const FInputActionValue& Value)
 		AddControllerYawInput(LookAxisVector.X);
 		AddControllerPitchInput(LookAxisVector.Y);
 	}
+}
+
+void ADegreeProjectCharacter::Roll(const FInputActionValue& Value)
+{
+	bPressedRoll = true;
 }
