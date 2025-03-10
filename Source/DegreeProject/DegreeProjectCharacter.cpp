@@ -54,7 +54,6 @@ ADegreeProjectCharacter::ADegreeProjectCharacter()
 	// are set in the derived blueprint asset named ThirdPersonCharacter (to avoid direct content references in C++)
 }
 
-
 //////////////////////////////////////////////////////////////////////////
 // Input
 
