@@ -64,6 +64,9 @@ protected:
 
 	/** Called for rolling input */
 	void Roll(const FInputActionValue& Value);
+
+	/** Called to stop rolling input */
+	void StopRolling(const FInputActionValue& Value);
 			
 
 protected:
