@@ -155,6 +155,7 @@ void ADegreeProjectCharacter::StartAttack()
 	{
 		GetMesh()->PlayAnimation(AttackAnimation, false);
 		bIsAttacking = true;
+		 
 	}
 }
 
