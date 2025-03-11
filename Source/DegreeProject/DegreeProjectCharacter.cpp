@@ -58,7 +58,7 @@ ADegreeProjectCharacter::ADegreeProjectCharacter()
 	FollowCamera->bUsePawnControlRotation = false; // Camera does not rotate relative to arm
 
 	SwordMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Sword Mesh"));
-	SwordMesh->SetupAttachment(GetMesh(),FName("SwordStocket"));
+	SwordMesh->SetupAttachment(GetMesh(),FName("SwordSocket"));
 
 	// Initialize the Ability System Component and enable replication
 	AbilitySystemComponent = CreateDefaultSubobject<UAbilitySystemComponent>(TEXT("AbilitySystemComponent"));
