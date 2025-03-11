@@ -56,9 +56,11 @@ class ADegreeProjectCharacter : public ACharacter
 
 public:
 	ADegreeProjectCharacter();
-	
+
 
 protected:
+
+	virtual void BeginPlay() override;
 
 	/** Called for movement input */
 	void Move(const FInputActionValue& Value);
@@ -73,13 +75,12 @@ protected:
 	void StopRolling(const FInputActionValue& Value);
 
 	void Dash(const FInputActionValue& Value);
-	void StopDash(const FInputActionValue& Value);
+	void StopDash();
+	void ResetDashCoolDown();
 
 	int Damage;
 			
 	void StartAttack();
-
-
 
 	UPROPERTY(VisibleAnywhere)
 	class UStaticMeshComponent* SwordMesh;
@@ -113,12 +114,22 @@ public:
 	UPROPERTY(EditAnywhere, Category = Player)
 	float DashSpeed = 1500.f;
 
-	UPROPERTY(BlueprintReadOnly, Category = Player)
+	UPROPERTY(EditAnywhere, Category = Player)
+	float DashCoolDown;
+
+	UPROPERTY(EditAnywhere, Category = Player)
+	float DashDuration;
+
+	UPROPERTY(EditAnywhere, Category = Player)
+	bool bCanDash;
+	UPROPERTY(EditAnywhere, Category = Player)
 	bool bIsDashing = false;
 
 private:
 	float DefaultFriction;
 	float DefaultWalkSpeed;
 
+	FTimerHandle DashTimerHandle;
+	FTimerHandle CoolDownTimerHandle;
 };
 

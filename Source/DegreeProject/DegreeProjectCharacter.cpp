@@ -106,6 +106,13 @@ void ADegreeProjectCharacter::SetupPlayerInputComponent(UInputComponent* PlayerI
 	}
 }
 
+void ADegreeProjectCharacter::BeginPlay()
+{
+	Super::BeginPlay();
+
+	bCanDash = true;
+}
+
 void ADegreeProjectCharacter::Move(const FInputActionValue& Value)
 {
 	// input is a Vector2D
@@ -154,9 +161,10 @@ void ADegreeProjectCharacter::StopRolling(const FInputActionValue& Value)
 
 void ADegreeProjectCharacter::Dash(const FInputActionValue& Value)
 {
-	if (!bIsDashing && GetCharacterMovement()->Velocity.Size() > 300.f)// change value if needed
+	if (!bIsDashing && bCanDash && GetCharacterMovement()->Velocity.Size() > 300.f)// change value if needed
 	{
 		bIsDashing = true;
+		bCanDash = false;
 
 		DefaultFriction = GetCharacterMovement()->GroundFriction;
 		DefaultWalkSpeed = GetCharacterMovement()->MaxWalkSpeed;
@@ -166,15 +174,18 @@ void ADegreeProjectCharacter::Dash(const FInputActionValue& Value)
 		GetCharacterMovement()->MaxWalkSpeed = DashSpeed;
 
 		LaunchCharacter(GetActorForwardVector() * DashSpeed, true, false);
+
+		GetWorldTimerManager().SetTimer(DashTimerHandle, this, &ADegreeProjectCharacter::StopDash, DashDuration, false);
 	}
 	FString SpeedText = FString::Printf(TEXT("Current Speed: %.2f"), GetCharacterMovement()->Velocity.Size());
 	if (GEngine)
 	{
 		GEngine->AddOnScreenDebugMessage(-1, 0.5f, FColor::Green, SpeedText);
 	}
+	
 }
 
-void ADegreeProjectCharacter::StopDash(const FInputActionValue& Value)
+void ADegreeProjectCharacter::StopDash()
 {
 	if (bIsDashing) 
 	{
@@ -182,7 +193,15 @@ void ADegreeProjectCharacter::StopDash(const FInputActionValue& Value)
 
 		GetCharacterMovement()->GroundFriction = DefaultFriction;
 		GetCharacterMovement()->MaxWalkSpeed = DefaultWalkSpeed;
+
+		GetWorldTimerManager().SetTimer(CoolDownTimerHandle, this, &ADegreeProjectCharacter::ResetDashCoolDown, DashCoolDown, false);
+
 	}
+}
+
+void ADegreeProjectCharacter::ResetDashCoolDown()
+{
+	bCanDash = true;
 }
 
 void ADegreeProjectCharacter::StartAttack()
