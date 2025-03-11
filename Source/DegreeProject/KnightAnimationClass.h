@@ -9,6 +9,7 @@
 /**
  * 
  */
+
 UCLASS()
 class DEGREEPROJECT_API UKnightAnimationClass : public UAnimInstance
 {
