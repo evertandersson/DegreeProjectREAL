@@ -9,6 +9,7 @@
 #include "AbilitySystemComponent.h"
 #include "UStandardAttributeSet.h"
 #include "DegreeProjectCharacter.generated.h"
+#include "Perception/AIPerceptionStimuliSourceComponent.h"
 
 class USpringArmComponent;
 class UCameraComponent;
@@ -109,6 +110,10 @@ protected:
 	virtual void NotifyControllerChanged() override;
 
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+private:
+	class UAIPerceptionStimuliSourceComponent* StimulusSource;
+
+	void SetupStimulusSource(); 
 
 public:
 	/** Returns CameraBoom subobject **/
