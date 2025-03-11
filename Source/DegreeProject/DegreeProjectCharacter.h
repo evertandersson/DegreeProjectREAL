@@ -51,6 +51,9 @@ class ADegreeProjectCharacter : public ACharacter
 	UPROPERTY(EditAnywhere, BlueprintReadonly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* AttackAction;
 
+	UPROPERTY(EditAnywhere, BlueprintReadonly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction* DashAction;
+
 public:
 	ADegreeProjectCharacter();
 	
@@ -69,9 +72,13 @@ protected:
 	/** Called to stop rolling input */
 	void StopRolling(const FInputActionValue& Value);
 
+	void Dash(const FInputActionValue& Value);
+	void StopDash(const FInputActionValue& Value);
+
 	int Damage;
 			
 	void StartAttack();
+
 
 
 	UPROPERTY(VisibleAnywhere)
@@ -102,5 +109,16 @@ public:
 	/** When true, player wants to roll */
 	UPROPERTY(BlueprintReadOnly, Category = Character)
 	uint8 bPressedRoll : 1;
+
+	UPROPERTY(EditAnywhere, Category = Player)
+	float DashSpeed = 1500.f;
+
+	UPROPERTY(BlueprintReadOnly, Category = Player)
+	bool bIsDashing = false;
+
+private:
+	float DefaultFriction;
+	float DefaultWalkSpeed;
+
 };
 

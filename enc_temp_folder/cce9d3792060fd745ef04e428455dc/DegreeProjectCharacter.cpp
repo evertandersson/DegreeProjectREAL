@@ -97,7 +97,7 @@ void ADegreeProjectCharacter::SetupPlayerInputComponent(UInputComponent* PlayerI
 		// Attacking
 		EnhancedInputComponent->BindAction(AttackAction, ETriggerEvent::Triggered, this, &ADegreeProjectCharacter::StartAttack);
 
-		EnhancedInputComponent->BindAction(DashAction, ETriggerEvent::Started, this, &ADegreeProjectCharacter::Dash);
+		EnhancedInputComponent->BindAction(DashAction, ETriggerEvent::Triggered, this, &ADegreeProjectCharacter::Dash);
 		EnhancedInputComponent->BindAction(DashAction, ETriggerEvent::Completed, this, &ADegreeProjectCharacter::StopDash);
 	}
 	else
@@ -154,7 +154,7 @@ void ADegreeProjectCharacter::StopRolling(const FInputActionValue& Value)
 
 void ADegreeProjectCharacter::Dash(const FInputActionValue& Value)
 {
-	if (!bIsDashing && GetCharacterMovement()->Velocity.Size() > 300.f)// change value if needed
+	if (!bIsDashing && GetCharacterMovement()->Velocity.Size() > 300.f)// change value if needed or make varaible public
 	{
 		bIsDashing = true;
 
