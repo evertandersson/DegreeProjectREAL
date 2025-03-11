@@ -5,6 +5,9 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "Logging/LogMacros.h"
+#include "AbilitySystemInterface.h"
+#include "AbilitySystemComponent.h"
+#include "UStandardAttributeSet.h"
 #include "DegreeProjectCharacter.generated.h"
 
 class USpringArmComponent;
@@ -16,7 +19,7 @@ struct FInputActionValue;
 DECLARE_LOG_CATEGORY_EXTERN(LogTemplateCharacter, Log, All);
 
 UCLASS(config=Game)
-class ADegreeProjectCharacter : public ACharacter
+class ADegreeProjectCharacter : public ACharacter, public IAbilitySystemInterface
 {
 	GENERATED_BODY()
 
@@ -54,8 +57,26 @@ class ADegreeProjectCharacter : public ACharacter
 public:
 	ADegreeProjectCharacter();
 	
+	virtual void BeginPlay() override;
+
+	// Implement the interface method to return the Ability System
+	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
+
+	// Blueprint event to handle health changes and update the UI
+	UFUNCTION(BlueprintImplementableEvent, Category = "Health")
+	void OnHealthChanged(float DeltaValue, const FGameplayTagContainer& EventTags);
 
 protected:
+	// Ability System Component that manages attributes and effects.
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Abilities", Replicated, meta = (AllowPrivateAccess = "true"))
+	UAbilitySystemComponent* AbilitySystemComponent;
+
+	// Attribute Set that stores and manages health and other attributes for replication.
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Attributes", Replicated, meta = (AllowPrivateAccess = "true"))
+	UStandardAttributeSet* AttributeSet;
+
+	// Initializes the character's attributes when the game starts.
+	void InitializeAttributes();
 
 	/** Called for movement input */
 	void Move(const FInputActionValue& Value);
@@ -102,5 +123,14 @@ public:
 	/** When true, player wants to roll */
 	UPROPERTY(BlueprintReadOnly, Category = Character)
 	uint8 bPressedRoll : 1;
+
+private:
+	// Function to handle attribute changes
+
+	// Function to handle changes in health attributes
+	void HandleHealthChanged(const FOnAttributeChangeData& Data);
+
+	// Specifies which properties should be replicated over the network
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 };
 
