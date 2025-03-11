@@ -1,6 +1,12 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "DegreeProjectCharacter.h"
+
+#include "GameplayEffect.h"
+#include "GameplayEffectExtension.h"
+#include "UStandardAttributeSet.h"
+#include "Net/UnrealNetwork.h"
+
 #include "Engine/LocalPlayer.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
@@ -54,8 +60,67 @@ ADegreeProjectCharacter::ADegreeProjectCharacter()
 	SwordMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Sword Mesh"));
 	SwordMesh->SetupAttachment(GetMesh(),FName("SwordStocket"));
 
-	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
-	// are set in the derived blueprint asset named ThirdPersonCharacter (to avoid direct content references in C++)
+	// Initialize the Ability System Component and enable replication
+	AbilitySystemComponent = CreateDefaultSubobject<UAbilitySystemComponent>(TEXT("AbilitySystemComponent"));
+	AbilitySystemComponent->SetIsReplicated(true);
+	AbilitySystemComponent->SetReplicationMode(EGameplayEffectReplicationMode::Mixed);
+
+	// Initialize the Attribute Set component for managing health and other attributes
+	AttributeSet = CreateDefaultSubobject<UStandardAttributeSet>(TEXT("AttributeSet"));
+
+
+}
+
+
+// Returns the Ability System Component for this character
+UAbilitySystemComponent* ADegreeProjectCharacter::GetAbilitySystemComponent() const
+{
+	return AbilitySystemComponent;
+}
+
+
+void ADegreeProjectCharacter::BeginPlay()
+{
+	Super::BeginPlay();
+
+	// Initialize attributes like health when game starts
+	InitializeAttributes();
+
+	// Bind the function to handle health changes to the delegate in the Ability System Component
+	if (AbilitySystemComponent && AttributeSet)
+	{
+		AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(AttributeSet->GetCurrentHealthAttribute()).AddUObject(this, &ADegreeProjectCharacter::HandleHealthChanged);
+	}
+}
+
+void ADegreeProjectCharacter::InitializeAttributes() 
+{
+	if (AbilitySystemComponent && AttributeSet)
+	{
+
+	}
+}
+
+// Handles changes to health and triggers events to update the UI
+void ADegreeProjectCharacter::HandleHealthChanged(const FOnAttributeChangeData& Data)
+{
+	float NewHealth = Data.NewValue;
+	float OldHealth = Data.OldValue;
+
+	// Calculate the difference in health to find out the change amount
+	float DeltaValue = NewHealth - OldHealth;
+
+	// Trigger a Blueprint event to update the health display or UI
+	OnHealthChanged(DeltaValue, FGameplayTagContainer());
+}
+
+// Specifies which properties of the character should be replicated over the network.
+void ADegreeProjectCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const 
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(ADegreeProjectCharacter, AbilitySystemComponent);
+	DOREPLIFETIME(ADegreeProjectCharacter, AttributeSet);
 }
 
 //////////////////////////////////////////////////////////////////////////
