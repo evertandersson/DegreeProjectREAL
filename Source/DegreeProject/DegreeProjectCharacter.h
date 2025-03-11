@@ -94,6 +94,7 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void LineTrace();
 
+
 	UPROPERTY(BlueprintReadWrite)
 	bool bIsAttacking;
 
