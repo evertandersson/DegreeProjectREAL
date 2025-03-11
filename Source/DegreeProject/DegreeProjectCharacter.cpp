@@ -1,6 +1,12 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "DegreeProjectCharacter.h"
+
+#include "GameplayEffect.h"
+#include "GameplayEffectExtension.h"
+#include "UStandardAttributeSet.h"
+#include "Net/UnrealNetwork.h"
+
 #include "Engine/LocalPlayer.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
@@ -10,8 +16,9 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "InputActionValue.h"
-#include "Perception/AIPerceptionStimuliSourceComponent.h"
-#include "Perception/AISenseConfig_Sight.h"
+#include "Components/StaticMeshComponent.h"
+#include "TimerManager.h"
+#include "KnightAnimationClass.h"
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 
@@ -52,9 +59,70 @@ ADegreeProjectCharacter::ADegreeProjectCharacter()
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName); // Attach the camera to the end of the boom and let the boom adjust to match the controller orientation
 	FollowCamera->bUsePawnControlRotation = false; // Camera does not rotate relative to arm
 
-	SetupStimulusSource();
-	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
-	// are set in the derived blueprint asset named ThirdPersonCharacter (to avoid direct content references in C++)
+	SwordMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Sword Mesh"));
+	SwordMesh->SetupAttachment(GetMesh(),FName("SwordStocket"));
+
+	// Initialize the Ability System Component and enable replication
+	AbilitySystemComponent = CreateDefaultSubobject<UAbilitySystemComponent>(TEXT("AbilitySystemComponent"));
+	AbilitySystemComponent->SetIsReplicated(true);
+	AbilitySystemComponent->SetReplicationMode(EGameplayEffectReplicationMode::Mixed);
+
+	// Initialize the Attribute Set component for managing health and other attributes
+	AttributeSet = CreateDefaultSubobject<UStandardAttributeSet>(TEXT("AttributeSet"));
+
+
+}
+
+
+// Returns the Ability System Component for this character
+UAbilitySystemComponent* ADegreeProjectCharacter::GetAbilitySystemComponent() const
+{
+	return AbilitySystemComponent;
+}
+
+
+void ADegreeProjectCharacter::BeginPlay()
+{
+	Super::BeginPlay();
+
+	// Initialize attributes like health when game starts
+	InitializeAttributes();
+
+	// Bind the function to handle health changes to the delegate in the Ability System Component
+	if (AbilitySystemComponent && AttributeSet)
+	{
+		AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(AttributeSet->GetCurrentHealthAttribute()).AddUObject(this, &ADegreeProjectCharacter::HandleHealthChanged);
+	}
+}
+
+void ADegreeProjectCharacter::InitializeAttributes() 
+{
+	if (AbilitySystemComponent && AttributeSet)
+	{
+
+	}
+}
+
+// Handles changes to health and triggers events to update the UI
+void ADegreeProjectCharacter::HandleHealthChanged(const FOnAttributeChangeData& Data)
+{
+	float NewHealth = Data.NewValue;
+	float OldHealth = Data.OldValue;
+
+	// Calculate the difference in health to find out the change amount
+	float DeltaValue = NewHealth - OldHealth;
+
+	// Trigger a Blueprint event to update the health display or UI
+	OnHealthChanged(DeltaValue, FGameplayTagContainer());
+}
+
+// Specifies which properties of the character should be replicated over the network.
+void ADegreeProjectCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const 
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(ADegreeProjectCharacter, AbilitySystemComponent);
+	DOREPLIFETIME(ADegreeProjectCharacter, AttributeSet);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -88,20 +156,18 @@ void ADegreeProjectCharacter::SetupPlayerInputComponent(UInputComponent* PlayerI
 
 		// Looking
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &ADegreeProjectCharacter::Look);
+
+		// Rolling
+		EnhancedInputComponent->BindAction(RollAction, ETriggerEvent::Started, this, &ADegreeProjectCharacter::Roll);
+		EnhancedInputComponent->BindAction(RollAction, ETriggerEvent::Completed, this, &ADegreeProjectCharacter::StopRolling);
+
+		// Attacking
+		EnhancedInputComponent->BindAction(AttackAction, ETriggerEvent::Triggered, this, &ADegreeProjectCharacter::StartAttack);
+		EnhancedInputComponent->BindAction(AttackAction, ETriggerEvent::Completed, this, &ADegreeProjectCharacter::EndAttack);
 	}
 	else
 	{
 		UE_LOG(LogTemplateCharacter, Error, TEXT("'%s' Failed to find an Enhanced Input component! This template is built to use the Enhanced Input system. If you intend to use the legacy system, then you will need to update this C++ file."), *GetNameSafe(this));
-	}
-}
-
-void ADegreeProjectCharacter::SetupStimulusSource()
-{
-	StimulusSource = CreateDefaultSubobject<UAIPerceptionStimuliSourceComponent>(TEXT("Stimulus"));
-	if (StimulusSource)
-	{
-		StimulusSource->RegisterForSense(TSubclassOf<UAISense_Sight>());
-		StimulusSource->RegisterWithPerceptionSystem();
 	}
 }
 
@@ -138,5 +204,73 @@ void ADegreeProjectCharacter::Look(const FInputActionValue& Value)
 		// add yaw and pitch input to controller
 		AddControllerYawInput(LookAxisVector.X);
 		AddControllerPitchInput(LookAxisVector.Y);
+	}
+}
+
+void ADegreeProjectCharacter::Roll(const FInputActionValue& Value)
+{
+	bPressedRoll = true;
+}
+
+void ADegreeProjectCharacter::StopRolling(const FInputActionValue& Value)
+{
+	bPressedRoll = false;
+}
+
+void ADegreeProjectCharacter::StartAttack(const FInputActionValue& Value)
+{
+	bool bPressed = Value.Get<bool>();
+	if (bPressed)
+	{
+		GetMesh()->SetAnimationMode(EAnimationMode::AnimationBlueprint); // Ensure AnimBP controls animations
+		UpdateAnimationState(true);
+		UE_LOG(LogTemp, Warning, TEXT("Attack Started!"));
+	}
+}
+
+
+void ADegreeProjectCharacter::EndAttack(const FInputActionValue& Value)
+{
+	UpdateAnimationState(false);
+}
+
+void ADegreeProjectCharacter::LineTrace()
+{
+	FVector StartLocation = SwordMesh->GetSocketLocation(FName("Start"));
+	FVector EndLocation = SwordMesh->GetSocketLocation(FName("End"));
+
+	FHitResult HitResult;
+	FCollisionQueryParams TraceParams;
+	TraceParams.AddIgnoredActor(this);
+
+	GetWorld()->LineTraceSingleByChannel(HitResult, StartLocation, EndLocation, ECC_Visibility, TraceParams);
+
+	DrawDebugLine(GetWorld(), StartLocation, EndLocation, FColor::Red, false, 1, 0, 1);
+	if (HitResult.bBlockingHit)
+	{
+		AActor* ActorHit = HitResult.GetActor();
+		ActorHit->Destroy();
+	}
+}
+
+void ADegreeProjectCharacter::UpdateAnimationState(bool bIsAttackingAni)
+{
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance(); // Get active AnimBP
+	if (AnimInstance)
+	{
+		UKnightAnimationClass* AnimBP = Cast<UKnightAnimationClass>(AnimInstance);
+		if (AnimBP)
+		{
+			AnimBP->bIsAttacking = bIsAttackingAni; // Set animation state
+			UE_LOG(LogTemp, Warning, TEXT("Updated Animation State: %s"), bIsAttackingAni ? TEXT("Attacking") : TEXT("Idle"));
+		}
+		else
+		{
+			UE_LOG(LogTemp, Error, TEXT("Failed to cast to KnightAnimationBlueprint!"));
+		}
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("No Animation Instance found on the Skeletal Mesh!"));
 	}
 }
