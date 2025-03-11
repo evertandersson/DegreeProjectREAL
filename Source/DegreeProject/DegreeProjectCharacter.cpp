@@ -11,6 +11,8 @@
 #include "EnhancedInputSubsystems.h"
 #include "InputActionValue.h"
 #include "Components/StaticMeshComponent.h"
+#include "TimerManager.h"
+#include "KnightAnimationClass.h"
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 
@@ -96,6 +98,7 @@ void ADegreeProjectCharacter::SetupPlayerInputComponent(UInputComponent* PlayerI
 
 		// Attacking
 		EnhancedInputComponent->BindAction(AttackAction, ETriggerEvent::Triggered, this, &ADegreeProjectCharacter::StartAttack);
+		EnhancedInputComponent->BindAction(AttackAction, ETriggerEvent::Completed, this, &ADegreeProjectCharacter::EndAttack);
 	}
 	else
 	{
@@ -149,14 +152,21 @@ void ADegreeProjectCharacter::StopRolling(const FInputActionValue& Value)
 	bPressedRoll = false;
 }
 
-void ADegreeProjectCharacter::StartAttack()
+void ADegreeProjectCharacter::StartAttack(const FInputActionValue& Value)
 {
-	if (AttackAnimation && !bIsAttacking)
+	bool bPressed = Value.Get<bool>();
+	if (bPressed)
 	{
-		GetMesh()->PlayAnimation(AttackAnimation, false);
-		bIsAttacking = true;
-		 
+		GetMesh()->SetAnimationMode(EAnimationMode::AnimationBlueprint); // Ensure AnimBP controls animations
+		UpdateAnimationState(true);
+		UE_LOG(LogTemp, Warning, TEXT("Attack Started!"));
 	}
+}
+
+
+void ADegreeProjectCharacter::EndAttack(const FInputActionValue& Value)
+{
+	UpdateAnimationState(false);
 }
 
 void ADegreeProjectCharacter::LineTrace()
@@ -175,5 +185,27 @@ void ADegreeProjectCharacter::LineTrace()
 	{
 		AActor* ActorHit = HitResult.GetActor();
 		ActorHit->Destroy();
+	}
+}
+
+void ADegreeProjectCharacter::UpdateAnimationState(bool bIsAttackingAni)
+{
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance(); // Get active AnimBP
+	if (AnimInstance)
+	{
+		UKnightAnimationClass* AnimBP = Cast<UKnightAnimationClass>(AnimInstance);
+		if (AnimBP)
+		{
+			AnimBP->bIsAttacking = bIsAttackingAni; // Set animation state
+			UE_LOG(LogTemp, Warning, TEXT("Updated Animation State: %s"), bIsAttackingAni ? TEXT("Attacking") : TEXT("Idle"));
+		}
+		else
+		{
+			UE_LOG(LogTemp, Error, TEXT("Failed to cast to KnightAnimationBlueprint!"));
+		}
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("No Animation Instance found on the Skeletal Mesh!"));
 	}
 }

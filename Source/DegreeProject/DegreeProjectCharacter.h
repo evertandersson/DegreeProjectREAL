@@ -70,8 +70,12 @@ protected:
 	void StopRolling(const FInputActionValue& Value);
 
 	int Damage;
+
+	int Health;
 			
-	void StartAttack();
+	void StartAttack(const FInputActionValue& Value);
+
+	void EndAttack(const FInputActionValue& Value);
 
 
 	UPROPERTY(VisibleAnywhere)
@@ -94,13 +98,17 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void LineTrace();
 
-
-	UPROPERTY(BlueprintReadWrite)
+	UPROPERTY(BlueprintReadWrite, VisibleAnywhere)
 	bool bIsAttacking;
-
+	
+	UPROPERTY(BlueprintReadWrite, VisibleAnywhere)
+	bool bIsHoldingAttack;
 
 	/** When true, player wants to roll */
 	UPROPERTY(BlueprintReadOnly, Category = Character)
 	uint8 bPressedRoll : 1;
+
+private:
+	void UpdateAnimationState(bool bIsAttackingAni);
 };
 
