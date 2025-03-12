@@ -96,8 +96,6 @@ protected:
 			
 	void StartAttack(const FInputActionValue& Value);
 
-
-
 	UPROPERTY(VisibleAnywhere)
 	class UStaticMeshComponent* SwordMesh;
 
