@@ -8,7 +8,9 @@
 #include "Net/UnrealNetwork.h"
 
 #include "Engine/LocalPlayer.h"
+
 #include "Camera/CameraComponent.h"
+#include "KnightAnimationClass.h"
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
@@ -16,7 +18,8 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "InputActionValue.h"
-#include "Components/StaticMeshComponent.h"
+#include "Perception/AIPerceptionStimuliSourceComponent.h"
+#include "Perception/AISenseConfig_Sight.h"
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 
@@ -69,6 +72,7 @@ ADegreeProjectCharacter::ADegreeProjectCharacter()
 	AttributeSet = CreateDefaultSubobject<UStandardAttributeSet>(TEXT("AttributeSet"));
 
 
+	SetupStimulusSource();
 }
 
 
@@ -91,6 +95,8 @@ void ADegreeProjectCharacter::BeginPlay()
 	{
 		AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(AttributeSet->GetCurrentHealthAttribute()).AddUObject(this, &ADegreeProjectCharacter::HandleHealthChanged);
 	}
+
+	bCanDash = true;
 }
 
 void ADegreeProjectCharacter::InitializeAttributes() 
@@ -121,6 +127,8 @@ void ADegreeProjectCharacter::GetLifetimeReplicatedProps(TArray<FLifetimePropert
 
 	DOREPLIFETIME(ADegreeProjectCharacter, AbilitySystemComponent);
 	DOREPLIFETIME(ADegreeProjectCharacter, AttributeSet);
+	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
+	// are set in the derived blueprint asset named ThirdPersonCharacter (to avoid direct content references in C++)
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -165,6 +173,16 @@ void ADegreeProjectCharacter::SetupPlayerInputComponent(UInputComponent* PlayerI
 	else
 	{
 		UE_LOG(LogTemplateCharacter, Error, TEXT("'%s' Failed to find an Enhanced Input component! This template is built to use the Enhanced Input system. If you intend to use the legacy system, then you will need to update this C++ file."), *GetNameSafe(this));
+	}
+}
+
+void ADegreeProjectCharacter::SetupStimulusSource()
+{
+	StimulusSource = CreateDefaultSubobject<UAIPerceptionStimuliSourceComponent>(TEXT("Stimulus"));
+	if (StimulusSource)
+	{
+		StimulusSource->RegisterForSense(TSubclassOf<UAISense_Sight>());
+		StimulusSource->RegisterWithPerceptionSystem();
 	}
 }
 
@@ -214,7 +232,7 @@ void ADegreeProjectCharacter::StopRolling(const FInputActionValue& Value)
 	bPressedRoll = false;
 }
 
-void ADegreeProjectCharacter::StartAttack()
+void ADegreeProjectCharacter::StartAttack(const FInputActionValue& Value)
 {
 	if (AttackAnimation && !bIsAttacking)
 	{
@@ -240,5 +258,81 @@ void ADegreeProjectCharacter::LineTrace()
 	{
 		AActor* ActorHit = HitResult.GetActor();
 		ActorHit->Destroy();
+	}
+}
+
+
+
+void ADegreeProjectCharacter::Dash(const FInputActionValue& Value)
+{
+	if (!bIsDashing && bCanDash && GetCharacterMovement()->Velocity.Size() > 300.f)// change value if needed
+	{
+		bIsDashing = true;
+		bCanDash = false;
+		 
+		DefaultFriction = GetCharacterMovement()->GroundFriction;
+		DefaultWalkSpeed = GetCharacterMovement()->MaxWalkSpeed;
+
+
+		GetCharacterMovement()->GroundFriction = 0.1f;
+		GetCharacterMovement()->MaxWalkSpeed = DashSpeed;
+
+		LaunchCharacter(GetActorForwardVector() * DashSpeed, true, false);
+
+		GetWorldTimerManager().SetTimer(DashTimerHandle, this, &ADegreeProjectCharacter::StopDash, DashDuration, false);
+	}
+	FString SpeedText = FString::Printf(TEXT("Current Speed: %.2f"), GetCharacterMovement()->Velocity.Size());
+	if (GEngine)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 0.5f, FColor::Green, SpeedText);
+	}
+	
+}
+
+void ADegreeProjectCharacter::StopDash()
+{
+	if (bIsDashing)
+	{
+		bIsDashing = false;
+
+		GetCharacterMovement()->GroundFriction = DefaultFriction;
+		GetCharacterMovement()->MaxWalkSpeed = DefaultWalkSpeed;
+
+		GetWorldTimerManager().SetTimer(CoolDownTimerHandle, this, &ADegreeProjectCharacter::ResetDashCoolDown, DashCoolDown, false);
+
+	}
+	
+}
+
+void ADegreeProjectCharacter::ResetDashCoolDown()
+{
+	bCanDash = true;
+}
+
+void ADegreeProjectCharacter::EndAttack(const FInputActionValue& Value)
+{
+	bIsAttacking = false;
+	UpdateAnimationState(false);
+}
+
+void ADegreeProjectCharacter::UpdateAnimationState(bool bIsAttackingAni)
+{
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance(); // Get active AnimBP
+	if (AnimInstance)
+	{
+		UKnightAnimationClass* AnimBP = Cast<UKnightAnimationClass>(AnimInstance);
+		if (AnimBP)
+		{
+			AnimBP->bIsAttacking = bIsAttackingAni; // Set animation state
+			UE_LOG(LogTemp, Warning, TEXT("Updated Animation State: %s"), bIsAttackingAni ? TEXT("Attacking") : TEXT("Idle"));
+		}
+		else
+		{
+			UE_LOG(LogTemp, Error, TEXT("Failed to cast to KnightAnimationBlueprint!"));
+		}
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("No Animation Instance found on the Skeletal Mesh!"));
 	}
 }
