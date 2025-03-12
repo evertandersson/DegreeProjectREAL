@@ -165,7 +165,7 @@ void ADegreeProjectCharacter::Dash(const FInputActionValue& Value)
 	{
 		bIsDashing = true;
 		bCanDash = false;
-
+		 
 		DefaultFriction = GetCharacterMovement()->GroundFriction;
 		DefaultWalkSpeed = GetCharacterMovement()->MaxWalkSpeed;
 
