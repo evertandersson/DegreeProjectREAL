@@ -230,7 +230,7 @@ void ADegreeProjectCharacter::StopRolling(const FInputActionValue& Value)
 	bPressedRoll = false;
 }
 
-void ADegreeProjectCharacter::StartAttack()
+void ADegreeProjectCharacter::StartAttack(const FInputActionValue& Value)
 {
 	if (AttackAnimation && !bIsAttacking)
 	{
