@@ -263,6 +263,13 @@ void ADegreeProjectCharacter::LineTrace()
 
 
 
+void ADegreeProjectCharacter::Jump()
+{
+	if (!bCanJump) return;
+
+	Super::Jump();
+}
+
 void ADegreeProjectCharacter::Dash(const FInputActionValue& Value)
 {
 	if (!bIsDashing && bCanDash && GetCharacterMovement()->Velocity.Size() > 300.f)// change value if needed
