@@ -229,15 +229,77 @@ void ADegreeProjectCharacter::StopRolling(const FInputActionValue& Value)
 {
 	bPressedRoll = false;
 }
-void ADegreeProjectCharacter::StartAttack(const FInputActionValue& Value)
+
+void ADegreeProjectCharacter::StartAttack()
 {
-	if (!bIsAttacking) // Check if not already attacking
+	if (AttackAnimation && !bIsAttacking)
 	{
+		GetMesh()->PlayAnimation(AttackAnimation, false);
 		bIsAttacking = true;
-		GetMesh()->SetAnimationMode(EAnimationMode::AnimationBlueprint);
-		UpdateAnimationState(true);
-		UE_LOG(LogTemp, Warning, TEXT("Attack Started!"));
+		 
 	}
+}
+
+void ADegreeProjectCharacter::LineTrace()
+{
+	FVector StartLocation = SwordMesh->GetSocketLocation(FName("Start"));
+	FVector EndLocation = SwordMesh->GetSocketLocation(FName("End"));
+
+	FHitResult HitResult;
+	FCollisionQueryParams TraceParams;
+	TraceParams.AddIgnoredActor(this);
+
+	GetWorld()->LineTraceSingleByChannel(HitResult, StartLocation, EndLocation, ECC_Visibility, TraceParams);
+
+	DrawDebugLine(GetWorld(), StartLocation, EndLocation, FColor::Red, false, 1, 0, 1);
+	if (HitResult.bBlockingHit)
+	{
+		AActor* ActorHit = HitResult.GetActor();
+		ActorHit->Destroy();
+	}
+}
+
+
+
+void ADegreeProjectCharacter::Dash(const FInputActionValue& Value)
+{
+	if (!bIsDashing && bCanDash && GetCharacterMovement()->Velocity.Size() > 300.f)// change value if needed
+	{
+		bIsDashing = true;
+		bCanDash = false;
+		 
+		DefaultFriction = GetCharacterMovement()->GroundFriction;
+		DefaultWalkSpeed = GetCharacterMovement()->MaxWalkSpeed;
+
+
+		GetCharacterMovement()->GroundFriction = 0.1f;
+		GetCharacterMovement()->MaxWalkSpeed = DashSpeed;
+
+		LaunchCharacter(GetActorForwardVector() * DashSpeed, true, false);
+
+		GetWorldTimerManager().SetTimer(DashTimerHandle, this, &ADegreeProjectCharacter::StopDash, DashDuration, false);
+	}
+	FString SpeedText = FString::Printf(TEXT("Current Speed: %.2f"), GetCharacterMovement()->Velocity.Size());
+	if (GEngine)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 0.5f, FColor::Green, SpeedText);
+	}
+	
+}
+
+void ADegreeProjectCharacter::StopDash()
+{
+	if (bIsDashing)
+	{
+		bIsDashing = false;
+
+		GetCharacterMovement()->GroundFriction = DefaultFriction;
+		GetCharacterMovement()->MaxWalkSpeed = DefaultWalkSpeed;
+
+		GetWorldTimerManager().SetTimer(CoolDownTimerHandle, this, &ADegreeProjectCharacter::ResetDashCoolDown, DashCoolDown, false);
+
+	}
+	
 }
 
 void ADegreeProjectCharacter::EndAttack(const FInputActionValue& Value)
