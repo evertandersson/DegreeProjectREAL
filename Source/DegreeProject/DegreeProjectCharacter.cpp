@@ -234,13 +234,15 @@ void ADegreeProjectCharacter::StopRolling(const FInputActionValue& Value)
 
 void ADegreeProjectCharacter::StartAttack(const FInputActionValue& Value)
 {
-	if (AttackAnimation && !bIsAttacking)
+	if (!bIsAttacking) // Check if not already attacking
 	{
-		GetMesh()->PlayAnimation(AttackAnimation, false);
 		bIsAttacking = true;
-		 
+		GetMesh()->SetAnimationMode(EAnimationMode::AnimationBlueprint);
+		UpdateAnimationState(true);
+		UE_LOG(LogTemp, Warning, TEXT("Attack Started!"));
 	}
 }
+
 
 void ADegreeProjectCharacter::LineTrace()
 {
