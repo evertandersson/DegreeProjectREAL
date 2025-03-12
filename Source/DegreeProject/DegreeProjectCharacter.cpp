@@ -113,6 +113,7 @@ void ADegreeProjectCharacter::BeginPlay()
 	}
 
 	bCanDash = true;
+	bCanJump = true;
 }
 
 void ADegreeProjectCharacter::InitializeAttributes() 
