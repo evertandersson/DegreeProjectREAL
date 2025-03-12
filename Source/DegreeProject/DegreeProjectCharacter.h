@@ -54,6 +54,10 @@ class ADegreeProjectCharacter : public ACharacter, public IAbilitySystemInterfac
 	UPROPERTY(EditAnywhere, BlueprintReadonly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* AttackAction;
 
+	UPROPERTY(EditAnywhere, BlueprintReadonly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction* DashAction;
+
+
 public:
 	ADegreeProjectCharacter();
 	
@@ -89,6 +93,10 @@ protected:
 
 	/** Called to stop rolling input */
 	void StopRolling(const FInputActionValue& Value);
+
+	void Dash(const FInputActionValue& Value);
+	void StopDash();
+	void ResetDashCoolDown();
 
 	int Damage;
 
@@ -139,10 +147,29 @@ private:
 	// Function to handle changes in health attributes
 	void HandleHealthChanged(const FOnAttributeChangeData& Data);
 
+	UPROPERTY(EditAnywhere, Category = Player)
+	float DashSpeed = 1500.f;
+
+	UPROPERTY(EditAnywhere, Category = Player)
+	float DashCoolDown;
+
+	UPROPERTY(EditAnywhere, Category = Player)
+	float DashDuration;
+
+	UPROPERTY(EditAnywhere, Category = Player)
+	bool bCanDash;
+	UPROPERTY(EditAnywhere, Category = Player)
+	bool bIsDashing = false;
 	// Specifies which properties should be replicated over the network
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 private:
+	float DefaultFriction;
+	float DefaultWalkSpeed;
+
+	FTimerHandle DashTimerHandle;
+	FTimerHandle CoolDownTimerHandle;
+
 	void UpdateAnimationState(bool bIsAttackingAni);
 };
 
