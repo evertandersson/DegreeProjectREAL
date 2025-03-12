@@ -114,10 +114,6 @@ protected:
 	/** Handle Jump */
 	virtual void Jump() override;
 
-	void Dash(const FInputActionValue& Value);
-	void StopDash();
-	void ResetDashCoolDown();
-
 	int Damage;
 
 	int Health;
