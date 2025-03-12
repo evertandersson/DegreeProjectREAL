@@ -2,7 +2,9 @@
 
 #include "DegreeProjectCharacter.h"
 #include "Engine/LocalPlayer.h"
+
 #include "Camera/CameraComponent.h"
+#include "KnightAnimationClass.h"
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
@@ -10,9 +12,8 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "InputActionValue.h"
-#include "Components/StaticMeshComponent.h"
-#include "TimerManager.h"
-#include "KnightAnimationClass.h"
+#include "Perception/AIPerceptionStimuliSourceComponent.h"
+#include "Perception/AISenseConfig_Sight.h"
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 
@@ -53,9 +54,7 @@ ADegreeProjectCharacter::ADegreeProjectCharacter()
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName); // Attach the camera to the end of the boom and let the boom adjust to match the controller orientation
 	FollowCamera->bUsePawnControlRotation = false; // Camera does not rotate relative to arm
 
-	SwordMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Sword Mesh"));
-	SwordMesh->SetupAttachment(GetMesh(),FName("SwordStocket"));
-
+	SetupStimulusSource();
 	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
 	// are set in the derived blueprint asset named ThirdPersonCharacter (to avoid direct content references in C++)
 }
@@ -91,18 +90,20 @@ void ADegreeProjectCharacter::SetupPlayerInputComponent(UInputComponent* PlayerI
 
 		// Looking
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &ADegreeProjectCharacter::Look);
-
-		// Rolling
-		EnhancedInputComponent->BindAction(RollAction, ETriggerEvent::Started, this, &ADegreeProjectCharacter::Roll);
-		EnhancedInputComponent->BindAction(RollAction, ETriggerEvent::Completed, this, &ADegreeProjectCharacter::StopRolling);
-
-		// Attacking
-		EnhancedInputComponent->BindAction(AttackAction, ETriggerEvent::Triggered, this, &ADegreeProjectCharacter::StartAttack);
-		EnhancedInputComponent->BindAction(AttackAction, ETriggerEvent::Completed, this, &ADegreeProjectCharacter::EndAttack);
 	}
 	else
 	{
 		UE_LOG(LogTemplateCharacter, Error, TEXT("'%s' Failed to find an Enhanced Input component! This template is built to use the Enhanced Input system. If you intend to use the legacy system, then you will need to update this C++ file."), *GetNameSafe(this));
+	}
+}
+
+void ADegreeProjectCharacter::SetupStimulusSource()
+{
+	StimulusSource = CreateDefaultSubobject<UAIPerceptionStimuliSourceComponent>(TEXT("Stimulus"));
+	if (StimulusSource)
+	{
+		StimulusSource->RegisterForSense(TSubclassOf<UAISense_Sight>());
+		StimulusSource->RegisterWithPerceptionSystem();
 	}
 }
 
@@ -141,23 +142,11 @@ void ADegreeProjectCharacter::Look(const FInputActionValue& Value)
 		AddControllerPitchInput(LookAxisVector.Y);
 	}
 }
-
-void ADegreeProjectCharacter::Roll(const FInputActionValue& Value)
-{
-	bPressedRoll = true;
-}
-
-void ADegreeProjectCharacter::StopRolling(const FInputActionValue& Value)
-{
-	bPressedRoll = false;
-}
-
 void ADegreeProjectCharacter::StartAttack(const FInputActionValue& Value)
 {
 	bool bPressed = Value.Get<bool>();
 	if (bPressed)
 	{
-		GetMesh()->SetAnimationMode(EAnimationMode::AnimationBlueprint); // Ensure AnimBP controls animations
 		UpdateAnimationState(true);
 		UE_LOG(LogTemp, Warning, TEXT("Attack Started!"));
 	}
