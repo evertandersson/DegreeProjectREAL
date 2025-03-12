@@ -219,6 +219,16 @@ void ADegreeProjectCharacter::Look(const FInputActionValue& Value)
 		AddControllerPitchInput(LookAxisVector.Y);
 	}
 }
+
+void ADegreeProjectCharacter::Roll(const FInputActionValue& Value)
+{
+	bPressedRoll = true;
+}
+
+void ADegreeProjectCharacter::StopRolling(const FInputActionValue& Value)
+{
+	bPressedRoll = false;
+}
 void ADegreeProjectCharacter::StartAttack(const FInputActionValue& Value)
 {
 	if (!bIsAttacking) // Check if not already attacking
