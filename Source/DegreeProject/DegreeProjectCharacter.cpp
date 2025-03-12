@@ -9,6 +9,9 @@
 
 #include "Engine/LocalPlayer.h"
 
+#include "MyAbilitySystemComponent.h"
+#include "MyDashAbility.h"
+
 #include "Camera/CameraComponent.h"
 #include "KnightAnimationClass.h"
 #include "Components/CapsuleComponent.h"
@@ -96,6 +99,19 @@ void ADegreeProjectCharacter::BeginPlay()
 		AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(AttributeSet->GetCurrentHealthAttribute()).AddUObject(this, &ADegreeProjectCharacter::HandleHealthChanged);
 	}
 
+	if (AbilitySystemComponent)
+	{
+		for (TSubclassOf<UGameplayAbility>& Ability : DefaultAbilities)
+		{
+			if (Ability)
+			{
+				AbilitySystemComponent->GiveAbility(FGameplayAbilitySpec(Ability, 1, static_cast<int32>(EGASAbilityInputID::Confirm), this));
+				AbilitySystemComponent->GiveAbility(FGameplayAbilitySpec(Ability, 0, static_cast<int32>(EGASAbilityInputID::Cancel), this));
+			}
+			
+		}
+	}
+
 	bCanDash = true;
 }
 
@@ -169,6 +185,18 @@ void ADegreeProjectCharacter::SetupPlayerInputComponent(UInputComponent* PlayerI
 
 		// Attacking
 		EnhancedInputComponent->BindAction(AttackAction, ETriggerEvent::Triggered, this, &ADegreeProjectCharacter::StartAttack);
+
+		//Dashing Ensure the abilitySystemComponent is valid
+		if (AbilitySystemComponent && PlayerInputComponent)
+		{
+			AbilitySystemComponent->BindAbilityActivationToInputComponent(PlayerInputComponent, FGameplayAbilityInputBinds(
+				"Confirm",
+				"Cancel",
+				"EGASAbilityInputID",
+				static_cast<int32>(EGASAbilityInputID::Confirm),
+				static_cast<int32>(EGASAbilityInputID::Cancel)));
+		}
+
 	}
 	else
 	{
@@ -234,13 +262,15 @@ void ADegreeProjectCharacter::StopRolling(const FInputActionValue& Value)
 
 void ADegreeProjectCharacter::StartAttack(const FInputActionValue& Value)
 {
-	if (AttackAnimation && !bIsAttacking)
+	if (!bIsAttacking) // Check if not already attacking
 	{
-		GetMesh()->PlayAnimation(AttackAnimation, false);
 		bIsAttacking = true;
-		 
+		GetMesh()->SetAnimationMode(EAnimationMode::AnimationBlueprint);
+		UpdateAnimationState(true);
+		UE_LOG(LogTemp, Warning, TEXT("Attack Started!"));
 	}
 }
+
 
 void ADegreeProjectCharacter::LineTrace()
 {
@@ -270,7 +300,7 @@ void ADegreeProjectCharacter::Jump()
 	Super::Jump();
 }
 
-void ADegreeProjectCharacter::Dash(const FInputActionValue& Value)
+void ADegreeProjectCharacter::Dash()
 {
 	if (!bIsDashing && bCanDash && GetCharacterMovement()->Velocity.Size() > 300.f)// change value if needed
 	{
@@ -304,6 +334,9 @@ void ADegreeProjectCharacter::StopDash()
 
 		GetCharacterMovement()->GroundFriction = DefaultFriction;
 		GetCharacterMovement()->MaxWalkSpeed = DefaultWalkSpeed;
+
+		GetCharacterMovement()->Velocity = FVector::ZeroVector;
+		GetCharacterMovement()->StopMovementImmediately();
 
 		GetWorldTimerManager().SetTimer(CoolDownTimerHandle, this, &ADegreeProjectCharacter::ResetDashCoolDown, DashCoolDown, false);
 

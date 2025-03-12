@@ -14,9 +14,18 @@ class USpringArmComponent;
 class UCameraComponent;
 class UInputMappingContext;
 class UInputAction;
+class UMyAbilitySystemComponent;
 struct FInputActionValue;
 
 DECLARE_LOG_CATEGORY_EXTERN(LogTemplateCharacter, Log, All);
+
+UENUM(BlueprintType)
+enum class EGASAbilityInputID : uint8
+{
+	None UMETA(DisplayName = "None"),
+	Confirm UMETA(DisplayName = "Confirm"),
+	Cancel UMETA(DisplayName = "Cancel")
+};
 
 UCLASS(config=Game)
 class ADegreeProjectCharacter : public ACharacter, public IAbilitySystemInterface
@@ -69,6 +78,14 @@ public:
 	// Blueprint event to handle health changes and update the UI
 	UFUNCTION(BlueprintImplementableEvent, Category = "Health")
 	void OnHealthChanged(float DeltaValue, const FGameplayTagContainer& EventTags);
+
+	//Dash mechanic
+	void Dash();
+	void StopDash();
+	void ResetDashCoolDown();
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Abilities")
+	TArray<TSubclassOf<class UGameplayAbility>> DefaultAbilities;
 
 protected:
 	// Ability System Component that manages attributes and effects.
@@ -147,12 +164,6 @@ public:
 	UPROPERTY(BlueprintReadOnly, Category = Character)
 	uint8 bPressedRoll : 1;
 
-private:
-	// Function to handle attribute changes
-
-	// Function to handle changes in health attributes
-	void HandleHealthChanged(const FOnAttributeChangeData& Data);
-
 	UPROPERTY(EditAnywhere, Category = Player)
 	float DashSpeed = 1500.f;
 
@@ -161,6 +172,12 @@ private:
 
 	UPROPERTY(EditAnywhere, Category = Player)
 	float DashDuration;
+
+private:
+	// Function to handle attribute changes
+
+	// Function to handle changes in health attributes
+	void HandleHealthChanged(const FOnAttributeChangeData& Data);
 
 	UPROPERTY(EditAnywhere, Category = Player)
 	bool bCanDash;
