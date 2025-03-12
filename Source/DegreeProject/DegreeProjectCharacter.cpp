@@ -163,7 +163,6 @@ void ADegreeProjectCharacter::SetupPlayerInputComponent(UInputComponent* PlayerI
 
 		// Attacking
 		EnhancedInputComponent->BindAction(AttackAction, ETriggerEvent::Triggered, this, &ADegreeProjectCharacter::StartAttack);
-		EnhancedInputComponent->BindAction(AttackAction, ETriggerEvent::Completed, this, &ADegreeProjectCharacter::EndAttack);
 	}
 	else
 	{
@@ -219,18 +218,18 @@ void ADegreeProjectCharacter::StopRolling(const FInputActionValue& Value)
 
 void ADegreeProjectCharacter::StartAttack(const FInputActionValue& Value)
 {
-	bool bPressed = Value.Get<bool>();
-	if (bPressed)
+	if (!bIsAttacking) // Check if not already attacking
 	{
-		GetMesh()->SetAnimationMode(EAnimationMode::AnimationBlueprint); // Ensure AnimBP controls animations
+		bIsAttacking = true;
+		GetMesh()->SetAnimationMode(EAnimationMode::AnimationBlueprint);
 		UpdateAnimationState(true);
 		UE_LOG(LogTemp, Warning, TEXT("Attack Started!"));
 	}
 }
 
-
 void ADegreeProjectCharacter::EndAttack(const FInputActionValue& Value)
 {
+	bIsAttacking = false;
 	UpdateAnimationState(false);
 }
 

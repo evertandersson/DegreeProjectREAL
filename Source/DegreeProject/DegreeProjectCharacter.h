@@ -96,7 +96,6 @@ protected:
 			
 	void StartAttack(const FInputActionValue& Value);
 
-	void EndAttack(const FInputActionValue& Value);
 
 
 	UPROPERTY(VisibleAnywhere)
@@ -115,6 +114,9 @@ public:
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
 	/** Returns FollowCamera subobject **/
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
+
+	UFUNCTION(BlueprintCallable)
+	void EndAttack(const FInputActionValue& Value);
 
 	UFUNCTION(BlueprintCallable)
 	void LineTrace();
