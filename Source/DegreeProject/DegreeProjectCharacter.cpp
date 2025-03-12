@@ -8,7 +8,9 @@
 #include "Net/UnrealNetwork.h"
 
 #include "Engine/LocalPlayer.h"
+
 #include "Camera/CameraComponent.h"
+#include "KnightAnimationClass.h"
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
@@ -16,9 +18,8 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "InputActionValue.h"
-#include "Components/StaticMeshComponent.h"
-#include "TimerManager.h"
-#include "KnightAnimationClass.h"
+#include "Perception/AIPerceptionStimuliSourceComponent.h"
+#include "Perception/AISenseConfig_Sight.h"
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 
@@ -123,6 +124,9 @@ void ADegreeProjectCharacter::GetLifetimeReplicatedProps(TArray<FLifetimePropert
 
 	DOREPLIFETIME(ADegreeProjectCharacter, AbilitySystemComponent);
 	DOREPLIFETIME(ADegreeProjectCharacter, AttributeSet);
+	SetupStimulusSource();
+	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
+	// are set in the derived blueprint asset named ThirdPersonCharacter (to avoid direct content references in C++)
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -170,6 +174,16 @@ void ADegreeProjectCharacter::SetupPlayerInputComponent(UInputComponent* PlayerI
 	}
 }
 
+void ADegreeProjectCharacter::SetupStimulusSource()
+{
+	StimulusSource = CreateDefaultSubobject<UAIPerceptionStimuliSourceComponent>(TEXT("Stimulus"));
+	if (StimulusSource)
+	{
+		StimulusSource->RegisterForSense(TSubclassOf<UAISense_Sight>());
+		StimulusSource->RegisterWithPerceptionSystem();
+	}
+}
+
 void ADegreeProjectCharacter::Move(const FInputActionValue& Value)
 {
 	// input is a Vector2D
@@ -205,17 +219,6 @@ void ADegreeProjectCharacter::Look(const FInputActionValue& Value)
 		AddControllerPitchInput(LookAxisVector.Y);
 	}
 }
-
-void ADegreeProjectCharacter::Roll(const FInputActionValue& Value)
-{
-	bPressedRoll = true;
-}
-
-void ADegreeProjectCharacter::StopRolling(const FInputActionValue& Value)
-{
-	bPressedRoll = false;
-}
-
 void ADegreeProjectCharacter::StartAttack(const FInputActionValue& Value)
 {
 	if (!bIsAttacking) // Check if not already attacking
