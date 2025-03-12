@@ -111,7 +111,12 @@ protected:
 	/** Called to stop rolling input */
 	void StopRolling(const FInputActionValue& Value);
 
-	
+	/** Handle Jump */
+	virtual void Jump() override;
+
+	void Dash(const FInputActionValue& Value);
+	void StopDash();
+	void ResetDashCoolDown();
 
 	int Damage;
 
@@ -151,6 +156,9 @@ public:
 	
 	UPROPERTY(BlueprintReadWrite, VisibleAnywhere)
 	bool bIsHoldingAttack;
+
+	UPROPERTY(BlueprintReadWrite, VisibleAnywhere)
+	bool bCanJump;
 
 	/** When true, player wants to roll */
 	UPROPERTY(BlueprintReadOnly, Category = Character)
