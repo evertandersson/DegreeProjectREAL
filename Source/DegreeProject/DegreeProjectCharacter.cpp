@@ -159,6 +159,37 @@ void ADegreeProjectCharacter::StopRolling(const FInputActionValue& Value)
 	bPressedRoll = false;
 }
 
+void ADegreeProjectCharacter::StartAttack()
+{
+	if (AttackAnimation && !bIsAttacking)
+	{
+		GetMesh()->PlayAnimation(AttackAnimation, false);
+		bIsAttacking = true;
+		 
+	}
+}
+
+void ADegreeProjectCharacter::LineTrace()
+{
+	FVector StartLocation = SwordMesh->GetSocketLocation(FName("Start"));
+	FVector EndLocation = SwordMesh->GetSocketLocation(FName("End"));
+
+	FHitResult HitResult;
+	FCollisionQueryParams TraceParams;
+	TraceParams.AddIgnoredActor(this);
+
+	GetWorld()->LineTraceSingleByChannel(HitResult, StartLocation, EndLocation, ECC_Visibility, TraceParams);
+
+	DrawDebugLine(GetWorld(), StartLocation, EndLocation, FColor::Red, false, 1, 0, 1);
+	if (HitResult.bBlockingHit)
+	{
+		AActor* ActorHit = HitResult.GetActor();
+		ActorHit->Destroy();
+	}
+}
+
+
+
 void ADegreeProjectCharacter::Dash(const FInputActionValue& Value)
 {
 	if (!bIsDashing && bCanDash && GetCharacterMovement()->Velocity.Size() > 300.f)// change value if needed
@@ -204,31 +235,3 @@ void ADegreeProjectCharacter::ResetDashCoolDown()
 	bCanDash = true;
 }
 
-void ADegreeProjectCharacter::StartAttack()
-{
-	if (AttackAnimation && !bIsAttacking)
-	{
-		GetMesh()->PlayAnimation(AttackAnimation, false);
-		bIsAttacking = true;
-		 
-	}
-}
-
-void ADegreeProjectCharacter::LineTrace()
-{
-	FVector StartLocation = SwordMesh->GetSocketLocation(FName("Start"));
-	FVector EndLocation = SwordMesh->GetSocketLocation(FName("End"));
-
-	FHitResult HitResult;
-	FCollisionQueryParams TraceParams;
-	TraceParams.AddIgnoredActor(this);
-
-	GetWorld()->LineTraceSingleByChannel(HitResult, StartLocation, EndLocation, ECC_Visibility, TraceParams);
-
-	DrawDebugLine(GetWorld(), StartLocation, EndLocation, FColor::Red, false, 1, 0, 1);
-	if (HitResult.bBlockingHit)
-	{
-		AActor* ActorHit = HitResult.GetActor();
-		ActorHit->Destroy();
-	}
-}
