@@ -95,6 +95,8 @@ void ADegreeProjectCharacter::BeginPlay()
 	{
 		AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(AttributeSet->GetCurrentHealthAttribute()).AddUObject(this, &ADegreeProjectCharacter::HandleHealthChanged);
 	}
+
+	bCanDash = true;
 }
 
 void ADegreeProjectCharacter::InitializeAttributes() 
