@@ -113,6 +113,7 @@ void ADegreeProjectCharacter::BeginPlay()
 	}
 
 	bCanDash = true;
+	bCanJump = true;
 }
 
 void ADegreeProjectCharacter::InitializeAttributes() 
@@ -293,13 +294,20 @@ void ADegreeProjectCharacter::LineTrace()
 
 
 
+void ADegreeProjectCharacter::Jump()
+{
+	if (!bCanJump) return;
+
+	Super::Jump();
+}
+
 void ADegreeProjectCharacter::Dash()
 {
 	if (!bIsDashing && bCanDash && GetCharacterMovement()->Velocity.Size() > 300.f)// change value if needed
 	{
 		bIsDashing = true;
 		bCanDash = false;
-		 
+
 		DefaultFriction = GetCharacterMovement()->GroundFriction;
 		DefaultWalkSpeed = GetCharacterMovement()->MaxWalkSpeed;
 
@@ -316,7 +324,7 @@ void ADegreeProjectCharacter::Dash()
 	{
 		GEngine->AddOnScreenDebugMessage(-1, 0.5f, FColor::Green, SpeedText);
 	}
-	
+
 }
 
 void ADegreeProjectCharacter::StopDash()
@@ -334,7 +342,7 @@ void ADegreeProjectCharacter::StopDash()
 		GetWorldTimerManager().SetTimer(CoolDownTimerHandle, this, &ADegreeProjectCharacter::ResetDashCoolDown, DashCoolDown, false);
 
 	}
-	
+
 }
 
 void ADegreeProjectCharacter::ResetDashCoolDown()
