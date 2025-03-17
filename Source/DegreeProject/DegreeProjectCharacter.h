@@ -13,6 +13,7 @@
 class USpringArmComponent;
 class UCameraComponent;
 class UInputMappingContext;
+class UPauseMenuWidget;
 class UInputAction;
 class UMyAbilitySystemComponent;
 struct FInputActionValue;
@@ -168,6 +169,21 @@ public:
 
 	UPROPERTY(EditAnywhere, Category = Player)
 	float DashDuration;
+
+
+
+
+	UPROPERTY(EditAnywhere, Category = "UI")
+	TSubclassOf<UPauseMenuWidget> PauseMenuClass;
+
+	UPROPERTY()
+	UPauseMenuWidget* PauseMenuInstance;
+
+	UPROPERTY(EditAnywhere, Category = Input)
+	UInputAction* PauseAction;
+
+	UFUNCTION()
+	void TogglePauseMenu();
 
 private:
 	// Function to handle attribute changes

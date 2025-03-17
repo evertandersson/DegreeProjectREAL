@@ -12,6 +12,9 @@
 #include "MyAbilitySystemComponent.h"
 #include "MyDashAbility.h"
 
+#include "DegreeProject/UI/PauseMenuWidget.h"
+#include "Blueprint/UserWidget.h"
+
 #include "Camera/CameraComponent.h"
 #include "KnightAnimationClass.h"
 #include "Components/CapsuleComponent.h"
@@ -124,6 +127,40 @@ void ADegreeProjectCharacter::InitializeAttributes()
 	}
 }
 
+void ADegreeProjectCharacter::TogglePauseMenu()
+{
+	APlayerController* PlayerController = Cast<APlayerController>(GetController());
+	if (!PlayerController) return;
+
+	if (PlayerController->IsPaused())
+	{
+		if (PauseMenuInstance)
+		{
+			PauseMenuInstance->RemoveFromParent();
+		}
+		PlayerController->SetPause(false);
+		PlayerController->SetShowMouseCursor(false);
+		PlayerController->SetInputMode(FInputModeGameOnly());
+	}
+	else
+	{
+		// Pause game and show menu
+		if (!PauseMenuInstance && PauseMenuClass)
+		{
+			PauseMenuInstance = CreateWidget<UPauseMenuWidget>(PlayerController, PauseMenuClass);
+		}
+
+		if (PauseMenuInstance)
+		{
+			PauseMenuInstance->AddToViewport();
+			PlayerController->SetPause(true);
+			PlayerController->SetShowMouseCursor(true);
+			PlayerController->SetInputMode(FInputModeUIOnly());
+		}
+	}
+}
+
+
 // Handles changes to health and triggers events to update the UI
 void ADegreeProjectCharacter::HandleHealthChanged(const FOnAttributeChangeData& Data)
 {
@@ -186,6 +223,8 @@ void ADegreeProjectCharacter::SetupPlayerInputComponent(UInputComponent* PlayerI
 
 		// Attacking
 		EnhancedInputComponent->BindAction(AttackAction, ETriggerEvent::Triggered, this, &ADegreeProjectCharacter::StartAttack);
+
+		EnhancedInputComponent->BindAction(PauseAction, ETriggerEvent::Triggered, this, &ADegreeProjectCharacter::TogglePauseMenu);
 
 		//Dashing Ensure the abilitySystemComponent is valid
 		if (AbilitySystemComponent && PlayerInputComponent)
