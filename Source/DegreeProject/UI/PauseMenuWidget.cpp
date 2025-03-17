@@ -27,6 +27,14 @@ bool UPauseMenuWidget::Initialize()
     {
         UE_LOG(LogTemp, Warning, TEXT("ResumeButton not found!"));
     }
+    if (QuitButton)
+    {
+        MainMenuButton->OnClicked.AddDynamic(this, &UPauseMenuWidget::OnQuitButtonClicked);
+    }
+    else
+    {
+        UE_LOG(LogTemp, Warning, TEXT("QuitButton not found!"));
+    }
 
     return true;
 }
@@ -50,5 +58,8 @@ void UPauseMenuWidget::OnMainMenuButtonClicked()
 
 void UPauseMenuWidget::OnQuitButtonClicked()
 {
-    FGenericPlatformMisc::RequestExit(false);
+    UE_LOG(LogTemp, Error, TEXT("ITS GETTING CALLED"))
+
+    UKismetSystemLibrary::QuitGame(this, nullptr, EQuitPreference::Quit, false);
+    
 }
