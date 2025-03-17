@@ -12,7 +12,7 @@ bool UPauseMenuWidget::Initialize()
 
     if (ResumeButton)
     {
-        ResumeButton->OnClicked.AddDynamic(this, &UPauseMenuWidget::OnResumeButtonClicked);
+        ResumeButton->OnPressed.AddDynamic(this, &UPauseMenuWidget::OnResumeButtonClicked);
     }
     else
     {
@@ -21,7 +21,7 @@ bool UPauseMenuWidget::Initialize()
 
     if (MainMenuButton)
     {
-        MainMenuButton->OnClicked.AddDynamic(this, &UPauseMenuWidget::OnMainMenuButtonClicked);
+        MainMenuButton->OnPressed.AddDynamic(this, &UPauseMenuWidget::OnMainMenuButtonClicked);
     }
     else
     {
@@ -29,7 +29,7 @@ bool UPauseMenuWidget::Initialize()
     }
     if (QuitButton)
     {
-        MainMenuButton->OnClicked.AddDynamic(this, &UPauseMenuWidget::OnQuitButtonClicked);
+        MainMenuButton->OnPressed.AddDynamic(this, &UPauseMenuWidget::OnQuitButtonClicked);
     }
     else
     {
@@ -58,8 +58,5 @@ void UPauseMenuWidget::OnMainMenuButtonClicked()
 
 void UPauseMenuWidget::OnQuitButtonClicked()
 {
-    UE_LOG(LogTemp, Error, TEXT("ITS GETTING CALLED"))
-
     UKismetSystemLibrary::QuitGame(this, nullptr, EQuitPreference::Quit, false);
-    
 }
