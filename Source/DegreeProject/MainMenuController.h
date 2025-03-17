@@ -13,5 +13,25 @@ UCLASS()
 class DEGREEPROJECT_API AMainMenuController : public APlayerController
 {
 	GENERATED_BODY()
-	
+
+public:
+	AMainMenuController();
+
+protected:
+
+	virtual void BeginPlay() override;
+
+private:
+
+	void ShowMainMenu();
+
+	UFUNCTION()
+	void StartGame();
+
+	UFUNCTION()
+	void QuitGame();
+
+public:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI")
+	TSubclassOf<UUserWidget> MainMenuWidgetClass;
 };
