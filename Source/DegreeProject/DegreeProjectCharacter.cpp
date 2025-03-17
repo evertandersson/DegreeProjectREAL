@@ -69,6 +69,14 @@ ADegreeProjectCharacter::ADegreeProjectCharacter()
 	SwordMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Sword Mesh"));
 	SwordMesh->SetupAttachment(GetMesh(),FName("FirstHandSocket"));
 
+	SwordHitbox = CreateDefaultSubobject<UCapsuleComponent>(TEXT("SwordHitbox"));
+	SwordHitbox->SetupAttachment(SwordMesh);
+	SwordHitbox->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	SwordHitbox->SetCollisionObjectType(ECC_WorldDynamic);
+	SwordHitbox->SetCollisionResponseToAllChannels(ECR_Ignore);
+	SwordHitbox->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
+	SwordHitbox->OnComponentBeginOverlap.AddDynamic(this, &ADegreeProjectCharacter::OnSwordHit);
+
 	// Initialize the Ability System Component and enable replication
 	AbilitySystemComponent = CreateDefaultSubobject<UAbilitySystemComponent>(TEXT("AbilitySystemComponent"));
 	AbilitySystemComponent->SetIsReplicated(true);
@@ -187,6 +195,18 @@ void ADegreeProjectCharacter::GetLifetimeReplicatedProps(TArray<FLifetimePropert
 
 //////////////////////////////////////////////////////////////////////////
 // Input
+
+void ADegreeProjectCharacter::OnSwordHit(UPrimitiveComponent* OverlappedComponent, 
+	AActor* OtherActor, UPrimitiveComponent* OtherComp, 
+	int32 OtherBodyIndex, bool bFromSweep, 
+	const FHitResult& SweepResult)
+{
+	if (OtherActor && OtherActor != this)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Hit: %s"), *OtherActor->GetName());
+		OtherActor->Destroy(); // For testing, destroy the hit actor
+	}
+}
 
 void ADegreeProjectCharacter::NotifyControllerChanged()
 {
@@ -308,27 +328,41 @@ void ADegreeProjectCharacter::StartAttack(const FInputActionValue& Value)
 		GetMesh()->SetAnimationMode(EAnimationMode::AnimationBlueprint);
 		UpdateAnimationState(true);
 		UE_LOG(LogTemp, Warning, TEXT("Attack Started!"));
+
+		EnableHitbox(); // Enable the hitbox when the attack starts
 	}
 }
 
 
 void ADegreeProjectCharacter::LineTrace()
 {
-	FVector StartLocation = SwordMesh->GetSocketLocation(FName("Start"));
-	FVector EndLocation = SwordMesh->GetSocketLocation(FName("End"));
+	//FVector StartLocation = SwordMesh->GetSocketLocation(FName("Start"));
+	//FVector EndLocation = SwordMesh->GetSocketLocation(FName("End"));
+	//
+	//FHitResult HitResult;
+	//FCollisionQueryParams TraceParams;
+	//TraceParams.AddIgnoredActor(this);
+	//
+	//GetWorld()->LineTraceSingleByChannel(HitResult, StartLocation, EndLocation, ECC_Visibility, TraceParams);
+	//
+	//DrawDebugLine(GetWorld(), StartLocation, EndLocation, FColor::Red, false, 1, 0, 1);
+	//if (HitResult.bBlockingHit)
+	//{
+	//	AActor* ActorHit = HitResult.GetActor();
+	//	ActorHit->Destroy();
+	//}
+}
 
-	FHitResult HitResult;
-	FCollisionQueryParams TraceParams;
-	TraceParams.AddIgnoredActor(this);
+void ADegreeProjectCharacter::EnableHitbox()
+{
+	SwordHitbox->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+	UE_LOG(LogTemp, Warning, TEXT("Hitbox Enabled!"));
+}
 
-	GetWorld()->LineTraceSingleByChannel(HitResult, StartLocation, EndLocation, ECC_Visibility, TraceParams);
-
-	DrawDebugLine(GetWorld(), StartLocation, EndLocation, FColor::Red, false, 1, 0, 1);
-	if (HitResult.bBlockingHit)
-	{
-		AActor* ActorHit = HitResult.GetActor();
-		ActorHit->Destroy();
-	}
+void ADegreeProjectCharacter::DisableHitbox()
+{
+	SwordHitbox->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	UE_LOG(LogTemp, Warning, TEXT("Hitbox Disabled!"));
 }
 
 
@@ -376,6 +410,7 @@ void ADegreeProjectCharacter::StopDash()
 		GetCharacterMovement()->MaxWalkSpeed = DefaultWalkSpeed;
 
 		//GetCharacterMovement()->Velocity = FVector::ZeroVector;
+		
 
 		GetWorldTimerManager().SetTimer(CoolDownTimerHandle, this, &ADegreeProjectCharacter::ResetDashCoolDown, DashCoolDown, false);
 
@@ -392,6 +427,8 @@ void ADegreeProjectCharacter::EndAttack(const FInputActionValue& Value)
 {
 	bIsAttacking = false;
 	UpdateAnimationState(false);
+	DisableHitbox(); // Disable the hitbox when the attack ends
+	UE_LOG(LogTemp, Warning, TEXT("Attack Ended!"));
 }
 
 void ADegreeProjectCharacter::UpdateAnimationState(bool bIsAttackingAni)

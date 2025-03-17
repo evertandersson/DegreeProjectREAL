@@ -13,7 +13,6 @@
 class USpringArmComponent;
 class UCameraComponent;
 class UInputMappingContext;
-class UPauseMenuWidget;
 class UInputAction;
 class UMyAbilitySystemComponent;
 struct FInputActionValue;
@@ -121,13 +120,20 @@ protected:
 			
 	void StartAttack(const FInputActionValue& Value);
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Combat")
+	UCapsuleComponent* SwordHitbox;
+
 	UPROPERTY(VisibleAnywhere)
 	class UStaticMeshComponent* SwordMesh;
 
 	UPROPERTY(EditAnywhere)
 	class UAnimSequence* AttackAnimation;
 
-protected:
+	UFUNCTION()
+	void OnSwordHit(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
+		UPrimitiveComponent* OtherComp, int32 OtherBodyIndex,
+		bool bFromSweep, const FHitResult& SweepResult);
+
 	virtual void NotifyControllerChanged() override;
 
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
@@ -147,6 +153,10 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void LineTrace();
+
+	void EnableHitbox();
+
+	void DisableHitbox();
 
 	UPROPERTY(BlueprintReadWrite, VisibleAnywhere)
 	bool bIsAttacking;
@@ -170,20 +180,8 @@ public:
 	UPROPERTY(EditAnywhere, Category = Player)
 	float DashDuration;
 
-
-
-
-	UPROPERTY(EditAnywhere, Category = "UI")
-	TSubclassOf<UPauseMenuWidget> PauseMenuClass;
-
-	UPROPERTY()
-	UPauseMenuWidget* PauseMenuInstance;
-
-	UPROPERTY(EditAnywhere, Category = Input)
-	UInputAction* PauseAction;
-
-	UFUNCTION()
-	void TogglePauseMenu();
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Player)
+	bool bIsDashing = false;
 
 private:
 	// Function to handle attribute changes
@@ -193,8 +191,7 @@ private:
 
 	UPROPERTY(EditAnywhere, Category = Player)
 	bool bCanDash;
-	UPROPERTY(EditAnywhere, Category = Player)
-	bool bIsDashing = false;
+
 	// Specifies which properties should be replicated over the network
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
