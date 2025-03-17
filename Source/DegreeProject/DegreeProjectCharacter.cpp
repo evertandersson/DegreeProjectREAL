@@ -64,7 +64,7 @@ ADegreeProjectCharacter::ADegreeProjectCharacter()
 	FollowCamera->bUsePawnControlRotation = false; // Camera does not rotate relative to arm
 
 	SwordMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Sword Mesh"));
-	SwordMesh->SetupAttachment(GetMesh(),FName("SwordStocket"));
+	SwordMesh->SetupAttachment(GetMesh(),FName("FirstHandSocket"));
 
 	// Initialize the Ability System Component and enable replication
 	AbilitySystemComponent = CreateDefaultSubobject<UAbilitySystemComponent>(TEXT("AbilitySystemComponent"));
@@ -336,8 +336,7 @@ void ADegreeProjectCharacter::StopDash()
 		GetCharacterMovement()->GroundFriction = DefaultFriction;
 		GetCharacterMovement()->MaxWalkSpeed = DefaultWalkSpeed;
 
-		GetCharacterMovement()->Velocity = FVector::ZeroVector;
-		GetCharacterMovement()->StopMovementImmediately();
+		//GetCharacterMovement()->Velocity = FVector::ZeroVector;
 
 		GetWorldTimerManager().SetTimer(CoolDownTimerHandle, this, &ADegreeProjectCharacter::ResetDashCoolDown, DashCoolDown, false);
 
