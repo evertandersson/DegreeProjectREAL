@@ -16,3 +16,8 @@ void UMainMenuWidget::QuitGame()
 {
 	UKismetSystemLibrary::QuitGame(this, nullptr, EQuitPreference::Quit, false);
 }
+
+void UMainMenuWidget::Options()
+{
+
+}
