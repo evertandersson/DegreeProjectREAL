@@ -9,7 +9,8 @@
 
 UMyBTTask_FindPlayerLocation::UMyBTTask_FindPlayerLocation(FObjectInitializer const& ObjectInitializer)
 {
-	NodeName = TEXT("Find Player Location");
+	NodeName = TEXT("FindPlayerLocation");
+	//SearchRandom = true;
 }
 
 EBTNodeResult::Type UMyBTTask_FindPlayerLocation::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
@@ -21,6 +22,7 @@ EBTNodeResult::Type UMyBTTask_FindPlayerLocation::ExecuteTask(UBehaviorTreeCompo
 		{
 			FNavLocation Loc;
 
+			UE_LOG(LogTemp, Warning, TEXT("GetWorld(): %s"), GetWorld() ? TEXT("Valid") : TEXT("NULL"));
 			if(auto* const NavSys = UNavigationSystemV1::GetCurrent(GetWorld()))
 			{
 			  if(NavSys->GetRandomPointInNavigableRadius(PlayerLocation, SearchRadius, Loc))
