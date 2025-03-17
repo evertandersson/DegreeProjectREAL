@@ -180,6 +180,9 @@ public:
 	UPROPERTY(EditAnywhere, Category = Player)
 	float DashDuration;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Player)
+	bool bIsDashing = false;
+
 private:
 	// Function to handle attribute changes
 
@@ -188,8 +191,7 @@ private:
 
 	UPROPERTY(EditAnywhere, Category = Player)
 	bool bCanDash;
-	UPROPERTY(EditAnywhere, Category = Player)
-	bool bIsDashing = false;
+
 	// Specifies which properties should be replicated over the network
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 

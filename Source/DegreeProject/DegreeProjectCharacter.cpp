@@ -371,6 +371,7 @@ void ADegreeProjectCharacter::StopDash()
 		GetCharacterMovement()->MaxWalkSpeed = DefaultWalkSpeed;
 
 		//GetCharacterMovement()->Velocity = FVector::ZeroVector;
+		
 
 		GetWorldTimerManager().SetTimer(CoolDownTimerHandle, this, &ADegreeProjectCharacter::ResetDashCoolDown, DashCoolDown, false);
 
