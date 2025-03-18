@@ -388,9 +388,11 @@ void ADegreeProjectCharacter::Dash()
 
 		DefaultFriction = GetCharacterMovement()->GroundFriction;
 		DefaultWalkSpeed = GetCharacterMovement()->MaxWalkSpeed;
+		DefualtBreakFriction = GetCharacterMovement()->GroundFriction;
 
 
-		GetCharacterMovement()->GroundFriction = 0.1f;
+		GetCharacterMovement()->GroundFriction = DashFriction;
+		GetCharacterMovement()->BrakingFriction = DashBreakFriction;
 		GetCharacterMovement()->MaxWalkSpeed = DashSpeed;
 
 		LaunchCharacter(GetActorForwardVector() * DashSpeed, true, false);
@@ -413,9 +415,9 @@ void ADegreeProjectCharacter::StopDash()
 
 		GetCharacterMovement()->GroundFriction = DefaultFriction;
 		GetCharacterMovement()->MaxWalkSpeed = DefaultWalkSpeed;
-
-		//GetCharacterMovement()->Velocity = FVector::ZeroVector;
 		
+		GetCharacterMovement()->Velocity = FVector::ZeroVector;
+		GetCharacterMovement()->BrakingFriction = 0;
 
 		GetWorldTimerManager().SetTimer(CoolDownTimerHandle, this, &ADegreeProjectCharacter::ResetDashCoolDown, DashCoolDown, false);
 
