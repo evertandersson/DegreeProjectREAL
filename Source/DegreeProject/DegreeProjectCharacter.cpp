@@ -26,6 +26,7 @@
 #include "InputActionValue.h"
 #include "Perception/AIPerceptionStimuliSourceComponent.h"
 #include "Perception/AISenseConfig_Sight.h"
+#include "Kismet/KismetMathLibrary.h"
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 
@@ -377,8 +378,11 @@ void ADegreeProjectCharacter::Jump()
 
 void ADegreeProjectCharacter::Dash()
 {
-	if (!bIsDashing && bCanDash && GetCharacterMovement()->Velocity.Size() > 300.f)// change value if needed
+	if (!bIsDashing && bCanDash && GetCharacterMovement()->GetLastInputVector() != FVector::ZeroVector) // change value if needed
 	{
+		FRotator TargetRotation = UKismetMathLibrary::MakeRotFromX(GetCharacterMovement()->GetLastInputVector());
+		SetActorRotation(TargetRotation);
+
 		bIsDashing = true;
 		bCanDash = false;
 
