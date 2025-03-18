@@ -415,20 +415,11 @@ void ADegreeProjectCharacter::StopDash()
 
 		GetCharacterMovement()->GroundFriction = DefaultFriction;
 		GetCharacterMovement()->MaxWalkSpeed = DefaultWalkSpeed;
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
 		
 		GetCharacterMovement()->Velocity = FVector::ZeroVector;
 		GetCharacterMovement()->BrakingFriction = 0;
-=======
-
 		//GetCharacterMovement()->Velocity = FVector::ZeroVector;
->>>>>>> Stashed changes
-=======
-
 		//GetCharacterMovement()->Velocity = FVector::ZeroVector;
->>>>>>> Stashed changes
-
 		GetWorldTimerManager().SetTimer(CoolDownTimerHandle, this, &ADegreeProjectCharacter::ResetDashCoolDown, DashCoolDown, false);
 
 	}
