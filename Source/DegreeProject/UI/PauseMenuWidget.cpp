@@ -27,9 +27,10 @@ bool UPauseMenuWidget::Initialize()
     {
         UE_LOG(LogTemp, Warning, TEXT("ResumeButton not found!"));
     }
+
     if (QuitButton)
     {
-        MainMenuButton->OnPressed.AddDynamic(this, &UPauseMenuWidget::OnQuitButtonClicked);
+        QuitButton->OnPressed.AddDynamic(this, &UPauseMenuWidget::OnQuitButtonClicked);
     }
     else
     {
@@ -53,6 +54,8 @@ void UPauseMenuWidget::OnResumeButtonClicked()
 
 void UPauseMenuWidget::OnMainMenuButtonClicked()
 {
+    RemoveFromParent();
+
     UGameplayStatics::OpenLevel(this, FName("MainMenu"));
 }
 

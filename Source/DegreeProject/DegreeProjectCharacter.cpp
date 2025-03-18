@@ -145,6 +145,7 @@ void ADegreeProjectCharacter::TogglePauseMenu()
 		if (PauseMenuInstance)
 		{
 			PauseMenuInstance->RemoveFromParent();
+			PauseMenuInstance = nullptr;
 		}
 		PlayerController->SetPause(false);
 		PlayerController->SetShowMouseCursor(false);
