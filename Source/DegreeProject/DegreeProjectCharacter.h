@@ -204,12 +204,19 @@ private:
 	UPROPERTY(EditAnywhere, Category = Player)
 	bool bCanDash;
 
+	UPROPERTY(EditAnywhere, Category = Player)
+	float DashBreakFriction;
+
+	UPROPERTY(EditAnywhere, Category = Player)
+	float DashFriction;
+
 	// Specifies which properties should be replicated over the network
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 private:
 	float DefaultFriction;
 	float DefaultWalkSpeed;
+	float DefualtBreakFriction;
 
 	FTimerHandle DashTimerHandle;
 	FTimerHandle CoolDownTimerHandle;

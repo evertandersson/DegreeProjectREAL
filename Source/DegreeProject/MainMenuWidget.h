@@ -22,6 +22,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void QuitGame();
 
+	UFUNCTION(BlueprintCallable)
+	void Options();
+
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI")
 	TSubclassOf<UMainMenuWidget> MainMenuWidgetClass;
