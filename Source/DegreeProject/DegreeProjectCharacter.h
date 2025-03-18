@@ -14,6 +14,7 @@ class USpringArmComponent;
 class UCameraComponent;
 class UInputMappingContext;
 class UInputAction;
+class UPauseMenuWidget;
 class UMyAbilitySystemComponent;
 struct FInputActionValue;
 
@@ -65,6 +66,9 @@ class ADegreeProjectCharacter : public ACharacter, public IAbilitySystemInterfac
 
 	UPROPERTY(EditAnywhere, BlueprintReadonly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* DashAction;
+
+	UPROPERTY(EditAnywhere, BlueprintReadonly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction* PauseAction;
 
 
 public:
@@ -157,6 +161,14 @@ public:
 	void EnableHitbox();
 
 	void DisableHitbox();
+
+	void TogglePauseMenu();
+
+	UPROPERTY(EditAnywhere, Category = "UI")
+	TSubclassOf<UPauseMenuWidget> PauseMenuClass;
+
+	UPROPERTY()
+	UPauseMenuWidget* PauseMenuInstance;
 
 	UPROPERTY(BlueprintReadWrite, VisibleAnywhere)
 	bool bIsAttacking;
