@@ -454,6 +454,10 @@ void ADegreeProjectCharacter::StopDash()
 		GetCharacterMovement()->Velocity = FVector::ZeroVector;
 		GetCharacterMovement()->BrakingFriction = 0;
 
+		//GetCharacterMovement()->Velocity = FVector::ZeroVector;
+
+		//GetCharacterMovement()->Velocity = FVector::ZeroVector;
+
 		GetWorldTimerManager().SetTimer(CoolDownTimerHandle, this, &ADegreeProjectCharacter::ResetDashCoolDown, DashCoolDown, false);
 
 	}
