@@ -17,6 +17,9 @@ protected:
 	virtual bool Initialize() override;
 
 public:
+	UPROPERTY()
+	UPauseMenuWidget* PauseMenuInstance;
+
 	UFUNCTION()
 	void OnResumeButtonClicked();
 
