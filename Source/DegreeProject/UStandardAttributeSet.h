@@ -37,15 +37,56 @@ public:
 	// Macro that creates helper functions to get, set, and initialize MaxHealth.
 	ATTRIBUTE_ACCESSORS(UStandardAttributeSet, MaxHealth);
 
+	UPROPERTY(BlueprintReadOnly, Category = "Attributes")
+	FGameplayAttributeData Mana;
+	ATTRIBUTE_ACCESSORS(UStandardAttributeSet, Mana);
+
+	UPROPERTY(BlueprintReadOnly, Category = "Attributes")
+	FGameplayAttributeData Stamina;
+	ATTRIBUTE_ACCESSORS(UStandardAttributeSet, Stamina);
+
+	UPROPERTY(BlueprintReadOnly, Category = "Attributes")
+	FGameplayAttributeData Crit_Chance;
+	ATTRIBUTE_ACCESSORS(UStandardAttributeSet, Crit_Chance);
+
+	UPROPERTY(BlueprintReadOnly, Category = "Attributes")
+	FGameplayAttributeData Crit_Damage;
+	ATTRIBUTE_ACCESSORS(UStandardAttributeSet, Crit_Damage);
+
+	UPROPERTY(BlueprintReadOnly, Category = "Attributes")
+	FGameplayAttributeData Damage;
+	ATTRIBUTE_ACCESSORS(UStandardAttributeSet, Damage);
+
+	UPROPERTY(BlueprintReadOnly, Category = "Attributes")
+	FGameplayAttributeData Defence;
+	ATTRIBUTE_ACCESSORS(UStandardAttributeSet, Defence);
+
+	UPROPERTY(BlueprintReadOnly, Category = "Attributes")
+	FGameplayAttributeData Attack_Speed;
+	ATTRIBUTE_ACCESSORS(UStandardAttributeSet, Attack_Speed);
+
 protected:
 	// Replication notifies
 	// Function called on clients when CurrentHealth changes to update the UI or perform logic.
 	UFUNCTION()
 	void OnRep_CurrentHealth(const FGameplayAttributeData& OldCurrentHealth);
-
 	// Function called on clients when MaxHealth hcanges to update the UI or perform logic.
 	UFUNCTION()
 	void OnRep_MaxHealth(const FGameplayAttributeData& OldMaxHealth);
+	UFUNCTION()
+	virtual void OnRep_Mana(const FGameplayAttributeData& OldMana);
+	UFUNCTION()
+	virtual void OnRep_Stamina(const FGameplayAttributeData& OldStamina);
+	UFUNCTION()
+	virtual void OnRep_Crit_Chance(const FGameplayAttributeData& OldCritChance);
+	UFUNCTION()
+	virtual void OnRep_Crit_Damage(const FGameplayAttributeData& OldCritDamage);
+	UFUNCTION()
+	virtual void OnRep_Damage(const FGameplayAttributeData& OldDamage);
+	UFUNCTION()
+	virtual void OnRep_Defence(const FGameplayAttributeData& OldDefence);
+	UFUNCTION()
+	virtual void OnRep_Attack_Speed(const FGameplayAttributeData& OldAttackSpeed);
 
 	// Attribute change handling
 	// Function that runs before any attribute value changes, allowing clamping or validation.
