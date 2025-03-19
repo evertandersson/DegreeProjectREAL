@@ -17,9 +17,8 @@ APickup::APickup()
 	PickUpMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("PickUpMesh"));
 	PickUpMesh->SetupAttachment(PickUpRoot);
 
-	PickUpBox = CreateDefaultSubobject<UBoxComponent>(TEXT("PickUpBox"));
+	// PickUpBox = CreateDefaultSubobject<UBoxComponent>(TEXT("PickUpBox"));
 	
-
 }
 
 // Called when the game starts or when spawned

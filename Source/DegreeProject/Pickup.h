@@ -28,8 +28,8 @@ public:
 	UPROPERTY(Editanywhere)
 	USceneComponent* PickUpRoot;
 
-	UPROPERTY(Editanywhere)
-	class UBoxComponent* PickUpBox;
+	/*UPROPERTY(Editanywhere)
+	class UBoxComponent* PickUpBox;*/
 
 	UPROPERTY(Editanywhere)
 	UStaticMeshComponent* PickUpMesh;
