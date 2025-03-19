@@ -2,6 +2,7 @@
 
 
 #include "Pickup.h"
+#include "Components/BoxComponent.h"
 
 // Sets default values
 APickup::APickup()
@@ -17,7 +18,10 @@ APickup::APickup()
 	PickUpMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("PickUpMesh"));
 	PickUpMesh->SetupAttachment(PickUpRoot);
 
-	// PickUpBox = CreateDefaultSubobject<UBoxComponent>(TEXT("PickUpBox"));
+	PickUpBox = CreateDefaultSubobject<UBoxComponent>(TEXT("PickUpBox"));
+	PickUpBox->SetupAttachment(RootComponent);
+	PickUpBox->SetWorldScale3D(FVector(1.0f, 1.0f, 1.0f));
+	PickUpBox->OnComponentBeginOverlap.AddDynamic(this, &APickup::OnPlayerInteraction);
 	
 }
 
