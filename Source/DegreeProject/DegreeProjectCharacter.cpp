@@ -365,11 +365,11 @@ void ADegreeProjectCharacter::StartAttack(const FInputActionValue& Value)
 	if (!bIsAttacking) // Check if not already attacking
 	{
 		bIsAttacking = true;
-		GetMesh()->SetAnimationMode(EAnimationMode::AnimationBlueprint);
-		UpdateAnimationState(true);
+		//GetMesh()->SetAnimationMode(EAnimationMode::AnimationBlueprint);
+		//UpdateAnimationState(true);
 		UE_LOG(LogTemp, Warning, TEXT("Attack Started!"));
 
-		EnableHitbox(); // Enable the hitbox when the attack starts
+		//EnableHitbox(); // Enable the hitbox when the attack starts
 	}
 }
 
@@ -472,7 +472,7 @@ void ADegreeProjectCharacter::ResetDashCoolDown()
 void ADegreeProjectCharacter::EndAttack(const FInputActionValue& Value)
 {
 	bIsAttacking = false;
-	UpdateAnimationState(false);
+	//UpdateAnimationState(false);
 	DisableHitbox(); // Disable the hitbox when the attack ends
 	UE_LOG(LogTemp, Warning, TEXT("Attack Ended!"));
 }
