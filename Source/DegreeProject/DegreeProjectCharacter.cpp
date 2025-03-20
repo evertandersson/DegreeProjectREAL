@@ -10,6 +10,8 @@
 #include "Engine/LocalPlayer.h"
 
 #include "MyAbilitySystemComponent.h"
+#include "AbilitySystemComponent.h"
+#include "UStandardAttributeSet.h"
 #include "MyDashAbility.h"
 
 #include "DegreeProject/UI/PauseMenuWidget.h"
@@ -21,8 +23,10 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "GameFramework/Controller.h"
+
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
+
 #include "InputActionValue.h"
 #include "Perception/AIPerceptionStimuliSourceComponent.h"
 #include "Perception/AISenseConfig_Sight.h"
@@ -85,6 +89,7 @@ ADegreeProjectCharacter::ADegreeProjectCharacter()
 
 	// Initialize the Attribute Set component for managing health and other attributes
 	AttributeSet = CreateDefaultSubobject<UStandardAttributeSet>(TEXT("AttributeSet"));
+	
 
 
 	SetupStimulusSource();
@@ -128,12 +133,45 @@ void ADegreeProjectCharacter::BeginPlay()
 	bCanJump = true;
 }
 
-void ADegreeProjectCharacter::InitializeAttributes() 
+void ADegreeProjectCharacter::PossessedBy(AController* NewController)
 {
-	if (AbilitySystemComponent && AttributeSet)
-	{
+	Super::PossessedBy(NewController);
 
+	if (AbilitySystemComponent)
+		AbilitySystemComponent->InitAbilityActorInfo(this, this);
+
+	InitializeAttributes();
+	GiveDefualtAbilities();
+}
+
+void ADegreeProjectCharacter::OnRep_PlayerState()
+{
+	Super::OnRep_PlayerState();
+
+	if (AbilitySystemComponent)
+		AbilitySystemComponent->InitAbilityActorInfo(this, this);
+
+	InitializeAttributes();
+}
+
+void ADegreeProjectCharacter::InitializeAttributes()
+{
+	if (AbilitySystemComponent && DefaultEffect)
+	{
+		FGameplayEffectContextHandle EffectContext = AbilitySystemComponent->MakeEffectContext();
+		EffectContext.AddSourceObject(this);
+		FGameplayEffectSpecHandle SpecHandle = AbilitySystemComponent->MakeOutgoingSpec(DefaultEffect, 1, EffectContext);
+
+		if (SpecHandle.IsValid())
+			FActiveGameplayEffectHandle GEHandle = AbilitySystemComponent->ApplyGameplayEffectSpecToSelf(*SpecHandle.Data.Get());
 	}
+}
+
+void ADegreeProjectCharacter::GiveDefualtAbilities()
+{
+	if (AbilitySystemComponent)
+		for (TSubclassOf<UGameplayAbility>& StartupAbility : DefaultAbilities)
+			AbilitySystemComponent->GiveAbility(FGameplayAbilitySpec(StartupAbility.GetDefaultObject(), 1, 0));
 }
 
 void ADegreeProjectCharacter::TogglePauseMenu()
@@ -327,14 +365,13 @@ void ADegreeProjectCharacter::StartAttack(const FInputActionValue& Value)
 	if (!bIsAttacking) // Check if not already attacking
 	{
 		bIsAttacking = true;
-		GetMesh()->SetAnimationMode(EAnimationMode::AnimationBlueprint);
-		UpdateAnimationState(true);
+		//GetMesh()->SetAnimationMode(EAnimationMode::AnimationBlueprint);
+		//UpdateAnimationState(true);
 		UE_LOG(LogTemp, Warning, TEXT("Attack Started!"));
 
-		EnableHitbox(); // Enable the hitbox when the attack starts
+		//EnableHitbox(); // Enable the hitbox when the attack starts
 	}
 }
-
 
 void ADegreeProjectCharacter::LineTrace()
 {
@@ -366,8 +403,6 @@ void ADegreeProjectCharacter::DisableHitbox()
 	SwordHitbox->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	UE_LOG(LogTemp, Warning, TEXT("Hitbox Disabled!"));
 }
-
-
 
 void ADegreeProjectCharacter::Jump()
 {
@@ -416,10 +451,13 @@ void ADegreeProjectCharacter::StopDash()
 		GetCharacterMovement()->GroundFriction = DefaultFriction;
 		GetCharacterMovement()->MaxWalkSpeed = DefaultWalkSpeed;
 		
-		GetCharacterMovement()->Velocity = FVector::ZeroVector;
+		GetCharacterMovement()->Velocity = FVector(0, 0, GetCharacterMovement()->Velocity.Z);
 		GetCharacterMovement()->BrakingFriction = 0;
+
 		//GetCharacterMovement()->Velocity = FVector::ZeroVector;
+
 		//GetCharacterMovement()->Velocity = FVector::ZeroVector;
+
 		GetWorldTimerManager().SetTimer(CoolDownTimerHandle, this, &ADegreeProjectCharacter::ResetDashCoolDown, DashCoolDown, false);
 
 	}
@@ -434,7 +472,7 @@ void ADegreeProjectCharacter::ResetDashCoolDown()
 void ADegreeProjectCharacter::EndAttack(const FInputActionValue& Value)
 {
 	bIsAttacking = false;
-	UpdateAnimationState(false);
+	//UpdateAnimationState(false);
 	DisableHitbox(); // Disable the hitbox when the attack ends
 	UE_LOG(LogTemp, Warning, TEXT("Attack Ended!"));
 }

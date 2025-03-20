@@ -5,8 +5,12 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "Logging/LogMacros.h"
+
 #include "AbilitySystemInterface.h"
 #include "AbilitySystemComponent.h"
+#include "GameplayTagContainer.h"
+#include <GameplayEffectTypes.h>
+
 #include "UStandardAttributeSet.h"
 #include "DegreeProjectCharacter.generated.h"
 
@@ -16,6 +20,7 @@ class UInputMappingContext;
 class UInputAction;
 class UPauseMenuWidget;
 class UMyAbilitySystemComponent;
+class UAbilitySystemComponent;
 struct FInputActionValue;
 
 DECLARE_LOG_CATEGORY_EXTERN(LogTemplateCharacter, Log, All);
@@ -83,12 +88,25 @@ public:
 	UFUNCTION(BlueprintImplementableEvent, Category = "Health")
 	void OnHealthChanged(float DeltaValue, const FGameplayTagContainer& EventTags);
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attributes")
+	int MaxMana = 100;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attributes")
+	int MaxStamina = 100;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attributes")
+	int MaxStat = 99; //Change later if needed
+
 	//Dash mechanic
 	void Dash();
 	void StopDash();
 	void ResetDashCoolDown();
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Abilities")
+	virtual void PossessedBy(AController* NewController) override;
+	virtual void OnRep_PlayerState() override;
+	virtual void GiveDefualtAbilities();
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Abilities")
+	TSubclassOf<class UGameplayEffect> DefaultEffect;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Abilities")
 	TArray<TSubclassOf<class UGameplayAbility>> DefaultAbilities;
 
 protected:
@@ -158,8 +176,10 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void LineTrace();
 
+	UFUNCTION(BlueprintCallable)
 	void EnableHitbox();
 
+	UFUNCTION(BlueprintCallable)
 	void DisableHitbox();
 
 	void TogglePauseMenu();
