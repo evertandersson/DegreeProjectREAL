@@ -9,13 +9,13 @@
 
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
-class DEGREEPROJECT_API UObjectPooling : public UActorComponent
+class DEGREEPROJECT_API AObjectPooling : public AActor
 {
 	GENERATED_BODY()
 
 public:	
 	// Sets default values for this component's properties
-	UObjectPooling();
+	AObjectPooling();
 
 	UFUNCTION(BlueprintCallable, Category = "Object Pool")
 	APooledObject* SpawnPooledObject(FVector Location, FRotator Rotation);
@@ -38,5 +38,6 @@ protected:
 
 	UPROPERTY()
 	TArray<APooledObject*> ObjectPool;
+	UPROPERTY()
 	TArray<int> SpawnedPoolIndexes;
 };

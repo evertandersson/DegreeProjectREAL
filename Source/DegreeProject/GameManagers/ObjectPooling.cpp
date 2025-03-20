@@ -4,13 +4,13 @@
 #include "GameManagers/ObjectPooling.h"
 
 // Sets default values for this component's properties
-UObjectPooling::UObjectPooling()
+AObjectPooling::AObjectPooling()
 {
 
 }
 
 // Called when the game starts
-void UObjectPooling::BeginPlay()
+void AObjectPooling::BeginPlay()
 {
 	Super::BeginPlay();
 
@@ -28,7 +28,7 @@ void UObjectPooling::BeginPlay()
 				{
 					PoolableActor->SetActive(false);
 					PoolableActor->SetPoolIndex(i);
-					PoolableActor->OnPooledObjectDespawn.AddDynamic(this, &UObjectPooling::OnPooledObjectDespawn);
+					PoolableActor->OnPooledObjectDespawn.AddDynamic(this, &AObjectPooling::OnPooledObjectDespawn);
 					ObjectPool.Add(PoolableActor);
 				}
 			}
@@ -36,7 +36,7 @@ void UObjectPooling::BeginPlay()
 	}
 }
 
-APooledObject* UObjectPooling::SpawnPooledObject(FVector Location, FRotator Rotation)
+APooledObject* AObjectPooling::SpawnPooledObject(FVector Location, FRotator Rotation)
 {
 	for (APooledObject* PoolableActor : ObjectPool)
 	{
@@ -74,7 +74,7 @@ APooledObject* UObjectPooling::SpawnPooledObject(FVector Location, FRotator Rota
 }
 
 
-void UObjectPooling::OnPooledObjectDespawn(APooledObject* PoolActor)
+void AObjectPooling::OnPooledObjectDespawn(APooledObject* PoolActor)
 {
 	SpawnedPoolIndexes.Remove(PoolActor->GetPoolIndex());
 }
