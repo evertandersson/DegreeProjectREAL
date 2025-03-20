@@ -451,7 +451,7 @@ void ADegreeProjectCharacter::StopDash()
 		GetCharacterMovement()->GroundFriction = DefaultFriction;
 		GetCharacterMovement()->MaxWalkSpeed = DefaultWalkSpeed;
 		
-		GetCharacterMovement()->Velocity = FVector::ZeroVector;
+		GetCharacterMovement()->Velocity = FVector(0, 0, GetCharacterMovement()->Velocity.Z);
 		GetCharacterMovement()->BrakingFriction = 0;
 
 		//GetCharacterMovement()->Velocity = FVector::ZeroVector;
