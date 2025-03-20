@@ -17,4 +17,12 @@ class DEGREEPROJECT_API UBTTask_IncrementPathIndex : public UBTTask_BlackboardBa
 public:
 	explicit UBTTask_IncrementPathIndex(FObjectInitializer const& ObjectInitializer);
 	virtual EBTNodeResult::Type ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) override;
+
+private:
+	 enum class EDirectionType {Forward, Reverse};
+
+	 EDirectionType Direction = EDirectionType::Forward;
+
+	 UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI", meta = (AllowPrivateAccess = "true"))
+	 bool bBiDirectional = false; 
 };
