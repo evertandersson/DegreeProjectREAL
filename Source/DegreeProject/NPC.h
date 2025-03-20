@@ -16,8 +16,7 @@ class DEGREEPROJECT_API ANPC : public ACharacter
 public:
 	// Sets default values for this character's properties
 	ANPC();
-
-public:	
+	 
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
