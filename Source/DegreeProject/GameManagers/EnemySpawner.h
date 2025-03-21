@@ -58,6 +58,6 @@ private:
 	UFUNCTION()
 	void SpawnEnemy();
 
-	UPROPERTY()
+	UPROPERTY()	
 	UPoolSubsystem* PoolSubsystem;
 };

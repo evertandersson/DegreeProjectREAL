@@ -97,24 +97,27 @@ void AEnemySpawner::SpawnEnemy()
     if (AlreadySpawnedCount < SpawnCount)
     {
         // Generate random location within a specific range
-        float RandomX = FMath::RandRange(800.0f, 1000.0f); // Range for X coordinate
-        float RandomY = FMath::RandRange(800.0f, 1000.0f); // Range for Y coordinate
-        float RandomZ = 200.0f; // Set a fixed Z height (you can adjust this as needed)
+        FVector SpawnLocation(FMath::RandRange(800.0f, 1000.0f), FMath::RandRange(800.0f, 1000.0f), 200.0f);
+        FRotator SpawnRotation = FRotator::ZeroRotator;
 
         if (PoolSubsystem)
         {
-            // Spawn the actor from the pool
-            AActor* SpawnedActor = PoolSubsystem->SpawnFromPool(NPCClass, FVector(RandomX, RandomY, RandomZ), FRotator::ZeroRotator);
+            AActor* SpawnedActor = nullptr;
 
-            // Check if the actor was spawned successfully
+            // Call the function with a reference to SpawnedActor
+            PoolSubsystem->SpawnFromPool(NPCClass, SpawnLocation, SpawnRotation, SpawnedActor);
+
             if (SpawnedActor)
             {
-                // Optionally cast it to ANPC to perform NPC-specific logic
+                // Optionally cast it to ANPC
                 ANPC* SpawnedNPC = Cast<ANPC>(SpawnedActor);
                 if (SpawnedNPC)
                 {
-                    // You can now use the spawned NPC object for further setup
+                    // You can now use SpawnedNPC for additional setup if needed
                 }
+
+                // Increment the spawn count for this NPC type
+                SpawnedEnemiesPerType.Add(NPCClass, AlreadySpawnedCount + 1);
             }
         }
 

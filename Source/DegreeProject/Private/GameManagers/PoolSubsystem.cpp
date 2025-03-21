@@ -3,36 +3,19 @@
 #include "GameManagers/PoolSubsystem.h"
 #include "GameManagers/Poolable.h"
 
-AActor* UPoolSubsystem::SpawnFromPool(TSubclassOf<AActor> PoolClass, FVector Location, FRotator Rotation)
+void UPoolSubsystem::SpawnFromPool(TSubclassOf<AActor> PoolClass, FVector Location, FRotator Rotation, AActor*& SpawnedActor)
 {
-	AActor* PooledActor = nullptr;
-
-	if (PoolClass.Get()->ImplementsInterface(UPoolable::StaticClass())) 
-	{
-		if (ObjectPool.IsEmpty())
-		{
-			FActorSpawnParameters SpawnParams;
-			SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
-			PooledActor = GetWorld()->SpawnActor<AActor>(PoolClass, Location, Rotation, SpawnParams);
-		}
-		else 
-		{
-			PooledActor = ObjectPool.Pop();
-			PooledActor->SetActorLocationAndRotation(Location, Rotation);
-		}
-
-		IPoolable::Execute_OnSpawnFromPool(PooledActor);
-	}
-
-	return PooledActor;
+	SpawnedActor = SpawnFromPool<AActor>(PoolClass, Location, Rotation);
 }
 
 void UPoolSubsystem::ReturnToPool(AActor* Poolable)
 {
-	if (Poolable->GetClass()->ImplementsInterface(UPoolable::StaticClass()))
+	const UClass* PoolableClass = Poolable->GetClass();
+	if (PoolableClass->ImplementsInterface(UPoolable::StaticClass()))
 	{
 		IPoolable::Execute_OnReturnToPool(Poolable);
-		ObjectPool.Add(Poolable);
+		FPoolArray* ObjectPool = ObjectPools.Find(PoolableClass);
+		ObjectPool->Add(Poolable);
 	}
 	else
 	{
