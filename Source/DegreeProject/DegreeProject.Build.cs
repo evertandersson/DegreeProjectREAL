@@ -10,5 +10,6 @@ public class DegreeProject : ModuleRules
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 
 		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "GameplayAbilities", "AIModule", "NavigationSystem", "GameplayTags", "GameplayTasks", "EnhancedInput" });
+        PublicIncludePaths.AddRange(new string[] { "DegreeProject" });
     }
 }
