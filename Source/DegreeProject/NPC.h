@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "PatrolPath.h"
 #include "BehaviorTree/BehaviorTree.h"
 #include "GameFramework/Character.h"
 #include "NPC.generated.h"
@@ -15,8 +16,7 @@ class DEGREEPROJECT_API ANPC : public ACharacter
 public:
 	// Sets default values for this character's properties
 	ANPC();
-
-public:	
+	 
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
@@ -25,11 +25,15 @@ public:
 
 	UBehaviorTree* GetBehaviortree() const;
 
+	APatrolPath* GetPatrolPath() const;
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
-
+private:
 	UPROPERTY(EditAnyWhere, BlueprintReadWrite, Category = "AI", meta=(AllowPrivateAccess = "true"))
 	UBehaviorTree* Tree;
 
+	UPROPERTY(EditAnyWhere, BlueprintReadWrite, Category = "AI", meta = (AllowPrivateAccess = "true"))
+	APatrolPath* PatrolPath;
 };
