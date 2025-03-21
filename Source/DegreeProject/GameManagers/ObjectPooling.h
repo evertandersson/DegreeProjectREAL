@@ -5,39 +5,39 @@
 #include "PooledObject.h"
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
+#include "PoolData.h"
 #include "ObjectPooling.generated.h"
 
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class DEGREEPROJECT_API AObjectPooling : public AActor
 {
-	GENERATED_BODY()
+    GENERATED_BODY()
 
-public:	
-	// Sets default values for this component's properties
-	AObjectPooling();
+public:
+    AObjectPooling();
+    ~AObjectPooling();
 
-	UFUNCTION(BlueprintCallable, Category = "Object Pool")
-	APooledObject* SpawnPooledObject(FVector Location, FRotator Rotation);
+    static AObjectPooling* GetInstance(UWorld* World);
 
-	UPROPERTY(EditAnywhere, Category = "Object Pool")
-	TSubclassOf<class APooledObject> PooledObjectSubclass;
+    UFUNCTION(BlueprintCallable, Category = "Pooling")
+    AActor* SpawnFromPool(FName Tag, FVector Location, FRotator Rotation);
 
-	UPROPERTY(EditAnywhere, Category = "Object Pool")
-	int PoolSize = 20;
-
-	UPROPERTY(EditAnywhere, Category = "Object Pool")
-	float PooledObjectLifeSpan = 0.0f;
-
-	UFUNCTION()
-	void OnPooledObjectDespawn(APooledObject* PoolActor);
+    UFUNCTION(BlueprintCallable, Category = "Pooling")
+    void DespawnObject(AActor* ObjectToDespawn);
 
 protected:
-	// Called when the game starts
-	virtual void BeginPlay() override;
+    virtual void BeginPlay() override;
+    virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
-	UPROPERTY()
-	TArray<APooledObject*> ObjectPool;
-	UPROPERTY()
-	TArray<int> SpawnedPoolIndexes;
+private:
+    void InitializePools();
+    void OnLevelLoaded(UWorld* LoadedWorld, const UWorld::InitializationValues InitValues);
+
+    static AObjectPooling* Instance;
+
+    UPROPERTY(EditAnywhere, Category = "Pooling")
+    TArray<FPoolData> Pools;
+
+    TMap<FName, TQueue<AActor*, EQueueMode::Spsc>*> PoolDictionary;
 };

@@ -11,6 +11,12 @@ struct FPoolData
 {
     GENERATED_BODY()
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    TMap<TSubclassOf<AActor>, int32> ObjectCount;
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Pooling")
+    FName Tag;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Pooling")
+    TSubclassOf<AActor> Prefab;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Pooling")
+    int32 Size = 10;
 };

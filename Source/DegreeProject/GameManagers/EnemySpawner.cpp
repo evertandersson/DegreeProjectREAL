@@ -10,8 +10,6 @@ AEnemySpawner::AEnemySpawner()
 
 	CurrentRound = 0;
 	EnemiesKilled = 0;
-
-
 }
 
 
@@ -49,19 +47,15 @@ void AEnemySpawner::OnNewRoundBegin()
 
         for (int32 i = 0; i < SpawnCount; i++)
         {
-            GetWorld()->SpawnActor<ANPC>(NPCClass, GetActorLocation(), FRotator::ZeroRotator);
             // Spawn enemy from object pool (or use SpawnActor if no object pool is used)
-            //if (ObjectPool)
-            //{
-            //    ObjectPool->SpawnPooledObject(NPCClass); // Assuming your object pool supports this
-            //}
-            //else
-            //{
-            //    GetWorld()->SpawnActor<ANPC>(NPCClass, GetActorLocation(), FRotator::ZeroRotator);
-            //}
+            if (ObjectPool)
+            {
+                AActor* SpawnedActor = ObjectPool->SpawnFromPool(TEXT("Enemy"), FVector(1000, 1000, 200), FRotator::ZeroRotator);
+            }
         }
     }
 }
+
 
 int AEnemySpawner::GetTotalEnemiesThisRound()
 {

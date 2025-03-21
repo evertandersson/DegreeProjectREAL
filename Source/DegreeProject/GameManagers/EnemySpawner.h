@@ -43,4 +43,8 @@ protected:
 	UFUNCTION()
 	int GetTotalEnemiesThisRound();
 
+//:
+//	UFUNCTION()
+//	void SpawnEnemy();
+
 };
