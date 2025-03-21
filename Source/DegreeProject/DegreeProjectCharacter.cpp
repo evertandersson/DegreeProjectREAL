@@ -30,6 +30,7 @@
 #include "InputActionValue.h"
 #include "Perception/AIPerceptionStimuliSourceComponent.h"
 #include "Perception/AISenseConfig_Sight.h"
+#include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
@@ -131,6 +132,12 @@ void ADegreeProjectCharacter::BeginPlay()
 
 	bCanDash = true;
 	bCanJump = true;
+
+	if (!HitCameraShake)
+	{
+		UE_LOG(LogTemp, Error, TEXT("Camera shake class is not assigned in the Blueprint."));
+	}
+
 }
 
 void ADegreeProjectCharacter::PossessedBy(AController* NewController)
@@ -236,14 +243,22 @@ void ADegreeProjectCharacter::GetLifetimeReplicatedProps(TArray<FLifetimePropert
 //////////////////////////////////////////////////////////////////////////
 // Input
 
-void ADegreeProjectCharacter::OnSwordHit(UPrimitiveComponent* OverlappedComponent, 
-	AActor* OtherActor, UPrimitiveComponent* OtherComp, 
-	int32 OtherBodyIndex, bool bFromSweep, 
+void ADegreeProjectCharacter::OnSwordHit(UPrimitiveComponent* OverlappedComponent,
+	AActor* OtherActor, UPrimitiveComponent* OtherComp,
+	int32 OtherBodyIndex, bool bFromSweep,
 	const FHitResult& SweepResult)
 {
 	if (OtherActor && OtherActor != this)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Hit: %s"), *OtherActor->GetName());
+		if (HitCameraShake)
+		{
+			APlayerController* PlayerController = GetWorld()->GetFirstPlayerController();
+			if (PlayerController)
+			{
+				PlayerController->ClientStartCameraShake(HitCameraShake);
+			}
+		}
 		OtherActor->Destroy(); // For testing, destroy the hit actor
 	}
 }

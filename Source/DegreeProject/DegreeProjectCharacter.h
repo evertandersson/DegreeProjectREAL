@@ -139,6 +139,10 @@ protected:
 	int Damage;
 
 	int Health;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera Shake")
+	TSubclassOf<UCameraShakeBase> HitCameraShake;
+
 			
 	void StartAttack(const FInputActionValue& Value);
 
