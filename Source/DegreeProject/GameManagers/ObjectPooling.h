@@ -40,4 +40,10 @@ private:
     TArray<FPoolData> Pools;
 
     TMap<FName, TQueue<AActor*, EQueueMode::Spsc>*> PoolDictionary;
+
+    UPROPERTY(VisibleAnywhere, Category = "Pooling")
+    TArray<AActor*> ActiveActors;
+
+    UFUNCTION()
+    void InitializeActor();
 };

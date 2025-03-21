@@ -87,23 +87,82 @@ AActor* AObjectPooling::SpawnFromPool(FName Tag, FVector Location, FRotator Rota
     }
 
     AActor* ObjectToSpawn = nullptr;
+    TQueue<AActor*, EQueueMode::Spsc>* ObjectPool = PoolDictionary[Tag];
 
-    if (!PoolDictionary[Tag]->Dequeue(ObjectToSpawn) || !ObjectToSpawn)
+    // If the pool is empty, handle reusing an active object
+    if (ObjectPool->IsEmpty())
     {
-        UE_LOG(LogTemp, Error, TEXT("Spawned object from pool %s is null!"), *Tag.ToString());
-        return nullptr;
+        UE_LOG(LogTemp, Warning, TEXT("Pool %s is empty! Reusing the oldest active object."), *Tag.ToString());
+
+        // If there are active actors, despawn the first one and reuse it
+        if (ActiveActors.Num() > 0)
+        {
+            // Get the oldest active actor (FIFO - first-in, first-out)
+            AActor* OldestActor = ActiveActors[0];
+
+            // Despawn this object
+            DespawnObject(OldestActor);
+
+            // Remove the oldest actor from the active list
+            ActiveActors.RemoveAt(0);
+
+            // Reuse this actor for the new spawn
+            ObjectToSpawn = OldestActor;
+            ObjectToSpawn->SetActorLocation(Location);
+            ObjectToSpawn->SetActorRotation(Rotation);
+            ObjectToSpawn->SetActorHiddenInGame(false);
+            ObjectToSpawn->SetActorEnableCollision(true);
+            ObjectToSpawn->SetActorTickEnabled(true);
+        }
+        else
+        {
+            // If there are no active actors, we can't reuse one from the pool
+            UE_LOG(LogTemp, Warning, TEXT("No active actors to reuse. Cannot spawn."));
+            return nullptr;
+        }
+    }
+    else
+    {
+        // If there are objects in the pool, just dequeue one
+        if (ObjectPool->Dequeue(ObjectToSpawn) && ObjectToSpawn)
+        {
+            // Initialize the object for use
+            ObjectToSpawn->SetActorLocation(Location);
+            ObjectToSpawn->SetActorRotation(Rotation);
+            ObjectToSpawn->SetActorHiddenInGame(false);
+            ObjectToSpawn->SetActorEnableCollision(true);
+            ObjectToSpawn->SetActorTickEnabled(true);
+        }
+        else
+        {
+            UE_LOG(LogTemp, Error, TEXT("Failed to dequeue object from pool %s."), *Tag.ToString());
+            return nullptr;
+        }
     }
 
-    ObjectToSpawn->SetActorLocation(Location);
-    ObjectToSpawn->SetActorRotation(Rotation);
-    ObjectToSpawn->SetActorHiddenInGame(false);
-    ObjectToSpawn->SetActorEnableCollision(true);
-    ObjectToSpawn->SetActorTickEnabled(true);
+    // Before adding the object to ActiveActors, ensure it's not already there
+    if (!ActiveActors.Contains(ObjectToSpawn))
+    {
+        // After spawning or reusing the object, re-enqueue it to be reused later
+        ObjectPool->Enqueue(ObjectToSpawn);
 
-    PoolDictionary[Tag]->Enqueue(ObjectToSpawn);
+        // Track this actor as active
+        ActiveActors.Add(ObjectToSpawn);
+    }
+    else
+    {
+        UE_LOG(LogTemp, Warning, TEXT("Actor already exists in the active actors array."));
+    }
 
     return ObjectToSpawn;
 }
+
+
+void AObjectPooling::InitializeActor()
+{
+
+}
+
 
 
 void AObjectPooling::DespawnObject(AActor* ObjectToDespawn)
