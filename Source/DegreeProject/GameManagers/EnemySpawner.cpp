@@ -96,8 +96,19 @@ void AEnemySpawner::SpawnEnemy()
     // If we haven't spawned all enemies of this type, spawn one more
     if (AlreadySpawnedCount < SpawnCount)
     {
-        // Generate random location within a specific range
-        FVector SpawnLocation(FMath::RandRange(800.0f, 1000.0f), FMath::RandRange(800.0f, 1000.0f), 200.0f);
+        // Define the center of the circle
+        FVector CircleCenter = GetActorLocation();
+        float Radius = 1000.f;
+        float AngleStep = 360 / SpawnCount;
+        float Angle = AlreadySpawnedCount * AngleStep;
+
+        // Convert angle to radians for calculations
+        float RadAngle = FMath::DegreesToRadians(Angle);
+        float X = CircleCenter.X + Radius * FMath::Cos(RadAngle);
+        float Y = CircleCenter.Y + Radius * FMath::Sin(RadAngle);
+        float Z = 200.f;
+
+        FVector SpawnLocation = FVector(X, Y, Z);
         FRotator SpawnRotation = FRotator::ZeroRotator;
 
         if (PoolSubsystem)
