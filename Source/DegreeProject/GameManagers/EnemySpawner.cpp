@@ -2,6 +2,7 @@
 
 #include "GameManagers/EnemySpawner.h"
 
+
 // Sets default values
 AEnemySpawner::AEnemySpawner()
 {
@@ -17,12 +18,32 @@ void AEnemySpawner::BeginPlay()
 {
 	Super::BeginPlay();
 
+    PoolSubsystem = GetWorld()->GetSubsystem<UPoolSubsystem>();
+
     OnNewRoundBegin();
 }
 
-void AEnemySpawner::AddEnemyKilled()
+void AEnemySpawner::AddEnemyKilled(AActor* ActorToDespawn)
 {
+    // Despawn the actor
+    PoolSubsystem->ReturnToPool(ActorToDespawn);
 
+    // Increment the killed enemies counter
+    EnemiesKilled++;
+
+    // Calculate total enemies for the current round (sum of all values in the EnemyCount map)
+    int32 TotalEnemiesThisRound = 0;
+    const TMap<TSubclassOf<ANPC>, int32>& EnemyMap = AllRounds[CurrentRound].EnemyCount;
+    for (const TPair<TSubclassOf<ANPC>, int32>& Pair : EnemyMap)
+    {
+        TotalEnemiesThisRound += Pair.Value;
+    }
+
+    // If we've killed all enemies for the round, start a new round
+    if (EnemiesKilled >= TotalEnemiesThisRound)
+    {
+        OnNewRoundBegin();
+    }
 }
 
 void AEnemySpawner::OnNewRoundBegin()
@@ -52,7 +73,7 @@ void AEnemySpawner::OnNewRoundBegin()
     SpawnedEnemiesPerType.Empty(); // Reset this map to track spawned enemies per type
 
     // Start the timer to spawn enemies every 1 second
-    GetWorld()->GetTimerManager().SetTimer(SpawnTimerHandle, this, &AEnemySpawner::SpawnEnemy, 1.0f, true);
+    GetWorld()->GetTimerManager().SetTimer(SpawnTimerHandle, this, &AEnemySpawner::SpawnEnemy, 0.01f, true);
 }
 
 void AEnemySpawner::SpawnEnemy()
@@ -75,24 +96,36 @@ void AEnemySpawner::SpawnEnemy()
     // If we haven't spawned all enemies of this type, spawn one more
     if (AlreadySpawnedCount < SpawnCount)
     {
-        if (ObjectPool)
+        // Generate random location within a specific range
+        float RandomX = FMath::RandRange(800.0f, 1000.0f); // Range for X coordinate
+        float RandomY = FMath::RandRange(800.0f, 1000.0f); // Range for Y coordinate
+        float RandomZ = 200.0f; // Set a fixed Z height (you can adjust this as needed)
+
+        if (PoolSubsystem)
         {
-            // Generate random location within a specific range
-            float RandomX = FMath::RandRange(800.0f, 1000.0f); // Range for X coordinate
-            float RandomY = FMath::RandRange(800.0f, 1000.0f); // Range for Y coordinate
-            float RandomZ = 200.0f; // Set a fixed Z height (you can adjust this as needed)
+            // Spawn the actor from the pool
+            AActor* SpawnedActor = PoolSubsystem->SpawnFromPool(NPCClass, FVector(RandomX, RandomY, RandomZ), FRotator::ZeroRotator);
 
-            AActor* SpawnedActor = ObjectPool->SpawnFromPool(TEXT("Enemy"), FVector(RandomX, RandomY, RandomZ), FRotator::ZeroRotator);
-            // Optionally, you can set the specific NPC class if necessary
-            // SpawnedActor->SetClass(NPCClass);
-
-            // Increment the spawn count for this NPC type
-            SpawnedEnemiesPerType.Add(NPCClass, AlreadySpawnedCount + 1);
+            // Check if the actor was spawned successfully
+            if (SpawnedActor)
+            {
+                // Optionally cast it to ANPC to perform NPC-specific logic
+                ANPC* SpawnedNPC = Cast<ANPC>(SpawnedActor);
+                if (SpawnedNPC)
+                {
+                    // You can now use the spawned NPC object for further setup
+                }
+            }
         }
+
+        // Increment the spawn count for this NPC type
+        SpawnedEnemiesPerType.Add(NPCClass, AlreadySpawnedCount + 1);
+        
     }
     else
     {
         // Move to the next enemy type after we've spawned all of the current type
         SpawnCounter++;
     }
+    
 }

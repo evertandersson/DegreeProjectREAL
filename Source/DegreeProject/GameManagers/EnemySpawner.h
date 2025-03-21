@@ -4,9 +4,9 @@
 #include "GameFramework/Actor.h"
 #include "EnemyRoundData.h"
 #include "NPC.h"
-#include "ObjectPooling.h"
 #include "Containers/Map.h"
 #include "TimerManager.h" 
+#include "GameManagers/PoolSubsystem.h"
 #include "EnemySpawner.generated.h"
 
 UCLASS()
@@ -31,12 +31,8 @@ public:
 	int EnemiesKilled;
 
 	// Function to call when an enemy is killed
-	UFUNCTION()
-	void AddEnemyKilled();
-
-	// Object pool to spawn enemies
-	UPROPERTY(EditAnywhere)
-	AObjectPooling* ObjectPool;
+	UFUNCTION(BlueprintCallable)
+	void AddEnemyKilled(AActor* ActorToDespawn);
 
 protected:
 	// Called when the game starts or when spawned
@@ -45,10 +41,6 @@ protected:
 	// Called when a new round begins
 	UFUNCTION()
 	void OnNewRoundBegin();
-
-	// Get total number of enemies to spawn in the current round
-	//UFUNCTION()
-	//int GetTotalEnemiesThisRound();
 
 private:
 	// Timer handle for spawning enemies
@@ -65,4 +57,7 @@ private:
 	// Function to spawn one enemy at a time
 	UFUNCTION()
 	void SpawnEnemy();
+
+	UPROPERTY()
+	UPoolSubsystem* PoolSubsystem;
 };
