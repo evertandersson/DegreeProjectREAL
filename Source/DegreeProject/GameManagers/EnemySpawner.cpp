@@ -1,0 +1,134 @@
+// Fill out your copyright notice in the Description page of Project Settings.
+
+#include "GameManagers/EnemySpawner.h"
+
+
+// Sets default values
+AEnemySpawner::AEnemySpawner()
+{
+ 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
+	PrimaryActorTick.bCanEverTick = false;
+
+	CurrentRound = 0;
+	EnemiesKilled = 0;
+}
+
+
+void AEnemySpawner::BeginPlay()
+{
+	Super::BeginPlay();
+
+    PoolSubsystem = GetWorld()->GetSubsystem<UPoolSubsystem>();
+
+    OnNewRoundBegin();
+}
+
+void AEnemySpawner::AddEnemyKilled(AActor* ActorToDespawn)
+{
+    // Despawn the actor
+    PoolSubsystem->ReturnToPool(ActorToDespawn);
+
+    // Increment the killed enemies counter
+    EnemiesKilled++;
+
+    // Calculate total enemies for the current round (sum of all values in the EnemyCount map)
+    int32 TotalEnemiesThisRound = 0;
+    const TMap<TSubclassOf<ANPC>, int32>& EnemyMap = AllRounds[CurrentRound].EnemyCount;
+    for (const TPair<TSubclassOf<ANPC>, int32>& Pair : EnemyMap)
+    {
+        TotalEnemiesThisRound += Pair.Value;
+    }
+
+    // If we've killed all enemies for the round, start a new round
+    if (EnemiesKilled >= TotalEnemiesThisRound)
+    {
+        OnNewRoundBegin();
+    }
+}
+
+void AEnemySpawner::OnNewRoundBegin()
+{
+    CurrentRound++;
+    EnemiesKilled = 0;
+
+    // Ensure CurrentRound is within bounds
+    if (!AllRounds.IsValidIndex(CurrentRound))
+    {
+        UE_LOG(LogTemp, Warning, TEXT("Invalid CurrentRound index!"));
+        return;
+    }
+
+    // Get the enemy count map for the current round
+    const TMap<TSubclassOf<ANPC>, int32>& EnemyMap = AllRounds[CurrentRound].EnemyCount;
+
+    // Convert the TMap to an array of pairs for easier access by index
+    EnemyDataArray.Empty();
+    for (const TPair<TSubclassOf<ANPC>, int32>& Pair : EnemyMap)
+    {
+        EnemyDataArray.Add(Pair);
+    }
+
+    // Initialize spawn counter and start the spawning process
+    SpawnCounter = 0;
+    SpawnedEnemiesPerType.Empty(); // Reset this map to track spawned enemies per type
+
+    // Start the timer to spawn enemies every 1 second
+    GetWorld()->GetTimerManager().SetTimer(SpawnTimerHandle, this, &AEnemySpawner::SpawnEnemy, 0.01f, true);
+}
+
+void AEnemySpawner::SpawnEnemy()
+{
+    // Check if we've spawned all enemies, then stop the timer
+    if (SpawnCounter >= EnemyDataArray.Num())
+    {
+        GetWorld()->GetTimerManager().ClearTimer(SpawnTimerHandle);
+        return;
+    }
+
+    // Get the next enemy class and spawn count from the array
+    const TPair<TSubclassOf<ANPC>, int32>& Pair = EnemyDataArray[SpawnCounter];
+    TSubclassOf<ANPC> NPCClass = Pair.Key;
+    int32 SpawnCount = Pair.Value;
+
+    // Check if we have already spawned all the enemies for this type
+    int32 AlreadySpawnedCount = SpawnedEnemiesPerType.Contains(NPCClass) ? SpawnedEnemiesPerType[NPCClass] : 0;
+
+    // If we haven't spawned all enemies of this type, spawn one more
+    if (AlreadySpawnedCount < SpawnCount)
+    {
+        // Generate random location within a specific range
+        FVector SpawnLocation(FMath::RandRange(800.0f, 1000.0f), FMath::RandRange(800.0f, 1000.0f), 200.0f);
+        FRotator SpawnRotation = FRotator::ZeroRotator;
+
+        if (PoolSubsystem)
+        {
+            AActor* SpawnedActor = nullptr;
+
+            // Call the function with a reference to SpawnedActor
+            PoolSubsystem->SpawnFromPool(NPCClass, SpawnLocation, SpawnRotation, SpawnedActor);
+
+            if (SpawnedActor)
+            {
+                // Optionally cast it to ANPC
+                ANPC* SpawnedNPC = Cast<ANPC>(SpawnedActor);
+                if (SpawnedNPC)
+                {
+                    // You can now use SpawnedNPC for additional setup if needed
+                }
+
+                // Increment the spawn count for this NPC type
+                SpawnedEnemiesPerType.Add(NPCClass, AlreadySpawnedCount + 1);
+            }
+        }
+
+        // Increment the spawn count for this NPC type
+        SpawnedEnemiesPerType.Add(NPCClass, AlreadySpawnedCount + 1);
+        
+    }
+    else
+    {
+        // Move to the next enemy type after we've spawned all of the current type
+        SpawnCounter++;
+    }
+    
+}
