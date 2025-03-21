@@ -369,7 +369,7 @@ void ADegreeProjectCharacter::StartAttack(const FInputActionValue& Value)
 		//UpdateAnimationState(true);
 		UE_LOG(LogTemp, Warning, TEXT("Attack Started!"));
 
-		EnableHitbox(); // Enable the hitbox when the attack starts
+		//EnableHitbox(); // Enable the hitbox when the attack starts
 	}
 }
 

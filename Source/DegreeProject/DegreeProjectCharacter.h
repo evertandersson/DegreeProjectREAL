@@ -176,8 +176,10 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void LineTrace();
 
+	UFUNCTION(BlueprintCallable)
 	void EnableHitbox();
 
+	UFUNCTION(BlueprintCallable)
 	void DisableHitbox();
 
 	void TogglePauseMenu();
