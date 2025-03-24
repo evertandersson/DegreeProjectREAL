@@ -11,6 +11,11 @@
 #include "GameplayTagContainer.h"
 #include <GameplayEffectTypes.h>
 
+#include "Particles/ParticleSystem.h"
+#include "NiagaraSystem.h"
+#include "NiagaraFunctionLibrary.h"
+#include "Kismet/GameplayStatics.h"
+
 #include "UStandardAttributeSet.h"
 #include "DegreeProjectCharacter.generated.h"
 
@@ -142,7 +147,6 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera Shake")
 	TSubclassOf<UCameraShakeBase> HitCameraShake;
-
 			
 	void StartAttack(const FInputActionValue& Value);
 
@@ -159,6 +163,12 @@ protected:
 	void OnSwordHit(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
 		UPrimitiveComponent* OtherComp, int32 OtherBodyIndex,
 		bool bFromSweep, const FHitResult& SweepResult);
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat|VFX")
+	UParticleSystem* ImpactVFX;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat|VFX")
+	UNiagaraSystem* NiagaraImpactVFX;
 
 	virtual void NotifyControllerChanged() override;
 
