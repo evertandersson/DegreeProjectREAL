@@ -6,7 +6,7 @@
 #include "GameplayEffectExtension.h"
 
 // Initilizes attribute values
-UStandardAttributeSet::UStandardAttributeSet() : CurrentHealth(100), MaxHealth(100), Defence(4), Mana(100), Crit_Chance(4), Crit_Damage(60), Damage(40)
+UStandardAttributeSet::UStandardAttributeSet() : CurrentHealth(100), MaxHealth(100), Defence(4), Mana(100), Stamina(100), Crit_Chance(4), Crit_Damage(60), Damage(40)
 {
 	
 	
