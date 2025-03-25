@@ -5,21 +5,8 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "UStandardAttributeSet.h"
+#include "Components/Image.h"
 #include "SkillUpgrade.generated.h"
-
-UENUM(BlueprintType)
-enum class EUpgradeType : uint8
-{
-	HEALTH_INCREASE UMETA(DisplayName = "Health Increase"),
-	MANA_INCREASE UMETA(DisplayName = "Mana Increase"),
-	STAMINA_INCREASE UMETA(DisplayName = "Stamina Increase"),
-	CRIT_CHANCE_INCREASE UMETA(DisplayName = "Crit Chance Increase"),
-	CRIT_DAMAGE_INCREASE UMETA(DisplayName = "Crit Damage Increase"),
-	DAMAGE_INCREASE UMETA(DisplayName = "Damage Increase"),
-	DEFENSE_INCREASE UMETA(DisplayName = "Defense Increase"),
-	ATTACK_SPEED_INCREASE UMETA(DisplayName = "Attack Speed Increase"),
-	SKILL UMETA(DisplayName = "Skill")
-};
 
 USTRUCT(BlueprintType)
 struct FSkillUpgrade
@@ -37,4 +24,13 @@ struct FSkillUpgrade
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Upgrade")
 	float Level = 0.0f;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Upgrade")
+	FString UpgradeName;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Upgrade")
+	FString UpgradeDescription;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Upgrade")
+	UTexture2D* UpgradeImage;
 };
