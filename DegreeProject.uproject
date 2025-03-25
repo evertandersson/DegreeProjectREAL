@@ -11,7 +11,8 @@
 			"AdditionalDependencies": [
 				"GameplayAbilities",
 				"UMG",
-				"Engine"
+				"Engine",
+				"AIModule"
 			]
 		}
 	],

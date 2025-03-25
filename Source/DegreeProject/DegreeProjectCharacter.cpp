@@ -91,8 +91,8 @@ ADegreeProjectCharacter::ADegreeProjectCharacter()
 	AttributeSet = CreateDefaultSubobject<UStandardAttributeSet>(TEXT("AttributeSet"));
 	
 
-
 	SetupStimulusSource();
+
 }
 
 
