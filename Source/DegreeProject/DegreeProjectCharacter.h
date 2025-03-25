@@ -168,8 +168,8 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat|VFX")
 	UParticleSystem* ImpactVFX;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat|VFX")
-	UNiagaraSystem* NiagaraImpactVFX;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Dash|VFX")
+	UNiagaraSystem* NiagaraDashVFX;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat|SFX")
 	USoundCue* SoundCue;

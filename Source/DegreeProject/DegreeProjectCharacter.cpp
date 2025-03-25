@@ -28,6 +28,7 @@
 #include "EnhancedInputSubsystems.h"
 
 #include "NiagaraFunctionLibrary.h"
+#include "NiagaraComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Components/AudioComponent.h"
 
@@ -283,10 +284,10 @@ void ADegreeProjectCharacter::OnSwordHit(UPrimitiveComponent* OverlappedComponen
 			UGameplayStatics::PlaySoundAtLocation(this, SoundCue, GetActorLocation());
 		}
 
-		if (NiagaraImpactVFX)
-		{
-			UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), NiagaraImpactVFX, ActorLoc, FRotator::ZeroRotator);
-		}
+		//if (NiagaraDashVFX)
+		//{
+		//	UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), NiagaraDashVFX, ActorLoc, FRotator::ZeroRotator);
+		//}
 
 		// Destroy the actor after the VFX is spawned
 		//OtherActor->Destroy();
@@ -470,6 +471,26 @@ void ADegreeProjectCharacter::Dash()
 
 		bIsDashing = true;
 		bCanDash = false;
+		TArray<FName> DashSockets = { "DashVFX", "VFX_C", "RightFootVFX", "LeftFootVFX" };
+		if (NiagaraDashVFX)
+		{
+			for (FName SocketName : DashSockets)
+			{
+				UNiagaraComponent* DashEffect = UNiagaraFunctionLibrary::SpawnSystemAttached(
+					NiagaraDashVFX, 
+					GetMesh(), 
+					SocketName, 
+					FVector::ZeroVector, 
+					FRotator::ZeroRotator, 
+					EAttachLocation::SnapToTarget, true
+				);
+
+				if (DashEffect)
+				{
+					DashEffect->SetFloatParameter("Lifetime", DashDuration);
+				}
+			}
+		}
 
 		DefaultFriction = GetCharacterMovement()->GroundFriction;
 		DefaultWalkSpeed = GetCharacterMovement()->MaxWalkSpeed;
