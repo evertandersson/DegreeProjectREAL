@@ -7,20 +7,6 @@
 #include "UStandardAttributeSet.h"
 #include "SkillUpgrade.generated.h"
 
-UENUM(BlueprintType)
-enum class EUpgradeType : uint8
-{
-	HEALTH_INCREASE UMETA(DisplayName = "Health Increase"),
-	MANA_INCREASE UMETA(DisplayName = "Mana Increase"),
-	STAMINA_INCREASE UMETA(DisplayName = "Stamina Increase"),
-	CRIT_CHANCE_INCREASE UMETA(DisplayName = "Crit Chance Increase"),
-	CRIT_DAMAGE_INCREASE UMETA(DisplayName = "Crit Damage Increase"),
-	DAMAGE_INCREASE UMETA(DisplayName = "Damage Increase"),
-	DEFENSE_INCREASE UMETA(DisplayName = "Defense Increase"),
-	ATTACK_SPEED_INCREASE UMETA(DisplayName = "Attack Speed Increase"),
-	SKILL UMETA(DisplayName = "Skill")
-};
-
 USTRUCT(BlueprintType)
 struct FSkillUpgrade
 {
