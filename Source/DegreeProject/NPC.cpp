@@ -42,3 +42,18 @@ APatrolPath* ANPC::GetPatrolPath() const
 	return PatrolPath;
 }
 
+UAnimMontage* ANPC::GetMontage() const
+{
+	return Montage;
+}
+
+int ANPC::MeleeAttackAI_Implementation()
+{
+
+	if (Montage)
+	{
+		PlayAnimMontage(Montage);
+	}
+	return 0;
+}
+
