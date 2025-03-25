@@ -29,6 +29,7 @@
 
 #include "NiagaraFunctionLibrary.h"
 #include "Kismet/GameplayStatics.h"
+#include "Components/AudioComponent.h"
 
 #include "InputActionValue.h"
 #include "Perception/AIPerceptionStimuliSourceComponent.h"
@@ -100,6 +101,9 @@ ADegreeProjectCharacter::ADegreeProjectCharacter()
 
 	SetupStimulusSource();
 
+	AudioComponent = CreateDefaultSubobject<UAudioComponent>(TEXT("AudioComponent"));
+	AudioComponent->bAutoActivate = false;
+	AudioComponent->SetupAttachment(RootComponent);
 }
 
 
@@ -274,6 +278,11 @@ void ADegreeProjectCharacter::OnSwordHit(UPrimitiveComponent* OverlappedComponen
 			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ImpactVFX, ActorLoc, FRotator::ZeroRotator);
 		}
 
+		if (SoundCue)
+		{
+			UGameplayStatics::PlaySoundAtLocation(this, SoundCue, GetActorLocation());
+		}
+
 		if (NiagaraImpactVFX)
 		{
 			UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), NiagaraImpactVFX, ActorLoc, FRotator::ZeroRotator);
@@ -444,7 +453,11 @@ void ADegreeProjectCharacter::DisableHitbox()
 void ADegreeProjectCharacter::Jump()
 {
 	if (!bCanJump) return;
-
+	if (JumpSFX)
+	{
+		AudioComponent->SetSound(JumpSFX);
+		AudioComponent->Play(0.3f);
+	}
 	Super::Jump();
 }
 
