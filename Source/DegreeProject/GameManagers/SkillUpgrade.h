@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "UStandardAttributeSet.h"
+#include "Components/Image.h"
 #include "SkillUpgrade.generated.h"
 
 USTRUCT(BlueprintType)
@@ -23,4 +24,13 @@ struct FSkillUpgrade
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Upgrade")
 	float Level = 0.0f;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Upgrade")
+	FString UpgradeName;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Upgrade")
+	FString UpgradeDescription;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Upgrade")
+	UTexture2D* UpgradeImage;
 };
