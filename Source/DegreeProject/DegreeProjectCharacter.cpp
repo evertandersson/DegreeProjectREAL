@@ -27,9 +27,14 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 
+#include "NiagaraFunctionLibrary.h"
+#include "Kismet/GameplayStatics.h"
+#include "Components/AudioComponent.h"
+
 #include "InputActionValue.h"
 #include "Perception/AIPerceptionStimuliSourceComponent.h"
 #include "Perception/AISenseConfig_Sight.h"
+#include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
@@ -75,11 +80,14 @@ ADegreeProjectCharacter::ADegreeProjectCharacter()
 	SwordMesh->SetupAttachment(GetMesh(),FName("FirstHandSocket"));
 
 	SwordHitbox = CreateDefaultSubobject<UCapsuleComponent>(TEXT("SwordHitbox"));
-	SwordHitbox->SetupAttachment(SwordMesh);
-	SwordHitbox->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-	SwordHitbox->SetCollisionObjectType(ECC_WorldDynamic);
-	SwordHitbox->SetCollisionResponseToAllChannels(ECR_Ignore);
-	SwordHitbox->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
+	SwordHitbox->SetupAttachment(SwordMesh);  // Make sure it's attached to the sword mesh properly
+	SwordHitbox->SetRelativeLocation(FVector(0, 0, 0));  // Adjust based on the sword's position
+	SwordHitbox->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+	SwordHitbox->SetCollisionObjectType(ECollisionChannel::ECC_WorldDynamic);
+	SwordHitbox->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
+	SwordHitbox->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Overlap);
+
+	// Bind the overlap event
 	SwordHitbox->OnComponentBeginOverlap.AddDynamic(this, &ADegreeProjectCharacter::OnSwordHit);
 
 	// Initialize the Ability System Component and enable replication
@@ -93,6 +101,9 @@ ADegreeProjectCharacter::ADegreeProjectCharacter()
 
 	SetupStimulusSource();
 
+	AudioComponent = CreateDefaultSubobject<UAudioComponent>(TEXT("AudioComponent"));
+	AudioComponent->bAutoActivate = false;
+	AudioComponent->SetupAttachment(RootComponent);
 }
 
 
@@ -131,6 +142,13 @@ void ADegreeProjectCharacter::BeginPlay()
 
 	bCanDash = true;
 	bCanJump = true;
+
+	if (!HitCameraShake)
+	{
+		UE_LOG(LogTemp, Error, TEXT("Camera shake class is not assigned in the Blueprint."));
+	}
+
+	DisableHitbox();
 }
 
 void ADegreeProjectCharacter::PossessedBy(AController* NewController)
@@ -236,17 +254,45 @@ void ADegreeProjectCharacter::GetLifetimeReplicatedProps(TArray<FLifetimePropert
 //////////////////////////////////////////////////////////////////////////
 // Input
 
-void ADegreeProjectCharacter::OnSwordHit(UPrimitiveComponent* OverlappedComponent, 
-	AActor* OtherActor, UPrimitiveComponent* OtherComp, 
-	int32 OtherBodyIndex, bool bFromSweep, 
+void ADegreeProjectCharacter::OnSwordHit(UPrimitiveComponent* OverlappedComponent,
+	AActor* OtherActor, UPrimitiveComponent* OtherComp,
+	int32 OtherBodyIndex, bool bFromSweep,
 	const FHitResult& SweepResult)
 {
-	if (OtherActor && OtherActor != this)
+	if (OverlappedComponent == SwordHitbox && OtherActor && OtherActor != this)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Hit: %s"), *OtherActor->GetName());
-		OtherActor->Destroy(); // For testing, destroy the hit actor
+		if (HitCameraShake)
+		{
+			APlayerController* PlayerController = GetWorld()->GetFirstPlayerController();
+			if (PlayerController)
+			{
+				PlayerController->ClientStartCameraShake(HitCameraShake);
+			}
+		}
+
+		FVector ActorLoc = OtherActor->GetActorLocation(); 
+		
+		if (ImpactVFX)
+		{
+			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ImpactVFX, ActorLoc, FRotator::ZeroRotator);
+		}
+
+		if (SoundCue)
+		{
+			UGameplayStatics::PlaySoundAtLocation(this, SoundCue, GetActorLocation());
+		}
+
+		if (NiagaraImpactVFX)
+		{
+			UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), NiagaraImpactVFX, ActorLoc, FRotator::ZeroRotator);
+		}
+
+		// Destroy the actor after the VFX is spawned
+		//OtherActor->Destroy();
 	}
 }
+
 
 void ADegreeProjectCharacter::NotifyControllerChanged()
 {
@@ -407,7 +453,11 @@ void ADegreeProjectCharacter::DisableHitbox()
 void ADegreeProjectCharacter::Jump()
 {
 	if (!bCanJump) return;
-
+	if (JumpSFX)
+	{
+		AudioComponent->SetSound(JumpSFX);
+		AudioComponent->Play(0.3f);
+	}
 	Super::Jump();
 }
 
