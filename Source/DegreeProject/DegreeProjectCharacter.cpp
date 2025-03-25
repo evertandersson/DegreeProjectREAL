@@ -193,6 +193,11 @@ void ADegreeProjectCharacter::GiveDefualtAbilities()
 			AbilitySystemComponent->GiveAbility(FGameplayAbilitySpec(StartupAbility.GetDefaultObject(), 1, 0));
 }
 
+UStandardAttributeSet* ADegreeProjectCharacter::GetAttributeSet()
+{
+	return AttributeSet;
+}
+
 void ADegreeProjectCharacter::TogglePauseMenu()
 {
 	APlayerController* PlayerController = Cast<APlayerController>(GetController());

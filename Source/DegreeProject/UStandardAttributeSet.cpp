@@ -12,13 +12,26 @@ UStandardAttributeSet::UStandardAttributeSet() : CurrentHealth(100), MaxHealth(1
 	
 
 	// Set default values for health attributes
-	CurrentHealth.SetBaseValue(100.f);
-	CurrentHealth.SetCurrentValue(100.f);
+    CurrentHealth.SetBaseValue(100.f);
+	CurrentHealth.SetCurrentValue(70.f);
 
 	// Set default values for max health attributes
 	MaxHealth.SetBaseValue(100.f);
 	MaxHealth.SetCurrentValue(100.f);
+
 }
+
+void UStandardAttributeSet::AddHealth(float Amount)
+{
+	if (CurrentHealth.GetCurrentValue() < MaxHealth.GetCurrentValue())
+    {
+		UE_LOG(LogTemp, Warning, TEXT("HEAL"));
+		CurrentHealth.SetCurrentValue(CurrentHealth.GetCurrentValue() + Amount);
+	}	
+}
+
+
+
 
 // Define which properties are replicated over the network
 void UStandardAttributeSet::GetLifetimeReplicatedProps(TArray <FLifetimeProperty>& OutLifetimeProps) const

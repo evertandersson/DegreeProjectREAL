@@ -23,6 +23,12 @@ class DEGREEPROJECT_API UStandardAttributeSet : public UAttributeSet
 public:
 	UStandardAttributeSet();
 
+	void AddHealth(float Amount);
+
+	UPROPERTY(EditAnywhere)
+	float addhealth;
+
+
 	// Health attributes:
 
 	// Declares the CurrentHealth attribute, making it readonly in blueprints and replicated to clients.

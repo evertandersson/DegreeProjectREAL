@@ -110,6 +110,8 @@ public:
 	virtual void OnRep_PlayerState() override;
 	virtual void GiveDefualtAbilities();
 
+	UStandardAttributeSet* GetAttributeSet();
+
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Abilities")
 	TSubclassOf<class UGameplayEffect> DefaultEffect;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Abilities")
