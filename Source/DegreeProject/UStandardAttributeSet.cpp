@@ -6,33 +6,32 @@
 #include "GameplayEffectExtension.h"
 
 // Initilizes attribute values
-UStandardAttributeSet::UStandardAttributeSet()
-//CurrentHealth(100),
-//MaxHealth(100),
-//Defence(4),
-//CurrentMana(100),
-//MaxMana(100),
-//CurrentStamina(100),
-//MaxStamina(100),
-//Crit_Chance(4),
-//Crit_Damage(60),
-//Damage(40)
+UStandardAttributeSet::UStandardAttributeSet() : CurrentHealth(100), MaxHealth(100), Defence(4), Mana(100), Stamina(100), Crit_Chance(4), Crit_Damage(60), Damage(40)
 {
 	
+	
+
 	// Set default values for health attributes
-	CurrentHealth.SetBaseValue(100.f);
-	CurrentHealth.SetCurrentValue(100.f);
+    CurrentHealth.SetBaseValue(100.f);
+	CurrentHealth.SetCurrentValue(70.f);
 
 	// Set default values for max health attributes
 	MaxHealth.SetBaseValue(100.f);
 	MaxHealth.SetCurrentValue(100.f);
 
-	CurrentMana.SetBaseValue(100.f);
-	CurrentMana.SetCurrentValue(100.f);
-
-	CurrentStamina.SetBaseValue(100.f);
-	CurrentStamina.SetCurrentValue(100.f);
 }
+
+void UStandardAttributeSet::AddHealth(float Amount)
+{
+	if (CurrentHealth.GetCurrentValue() < MaxHealth.GetCurrentValue())
+    {
+		UE_LOG(LogTemp, Warning, TEXT("HEAL"));
+		CurrentHealth.SetCurrentValue(CurrentHealth.GetCurrentValue() + Amount);
+	}	
+}
+
+
+
 
 // Define which properties are replicated over the network
 void UStandardAttributeSet::GetLifetimeReplicatedProps(TArray <FLifetimeProperty>& OutLifetimeProps) const
@@ -41,10 +40,8 @@ void UStandardAttributeSet::GetLifetimeReplicatedProps(TArray <FLifetimeProperty
 
 	DOREPLIFETIME_CONDITION_NOTIFY(UStandardAttributeSet, CurrentHealth, COND_None, REPNOTIFY_Always);
 	DOREPLIFETIME_CONDITION_NOTIFY(UStandardAttributeSet, MaxHealth, COND_None, REPNOTIFY_Always);
-	DOREPLIFETIME_CONDITION_NOTIFY(UStandardAttributeSet, CurrentMana, COND_None, REPNOTIFY_Always);
-	DOREPLIFETIME_CONDITION_NOTIFY(UStandardAttributeSet, MaxMana, COND_None, REPNOTIFY_Always);
-	DOREPLIFETIME_CONDITION_NOTIFY(UStandardAttributeSet, CurrentStamina, COND_None, REPNOTIFY_Always);
-	DOREPLIFETIME_CONDITION_NOTIFY(UStandardAttributeSet, MaxStamina, COND_None, REPNOTIFY_Always);
+	DOREPLIFETIME_CONDITION_NOTIFY(UStandardAttributeSet, Mana, COND_None, REPNOTIFY_Always);
+	DOREPLIFETIME_CONDITION_NOTIFY(UStandardAttributeSet, Stamina, COND_None, REPNOTIFY_Always);
 	DOREPLIFETIME_CONDITION_NOTIFY(UStandardAttributeSet, Crit_Chance, COND_None, REPNOTIFY_Always);
 	DOREPLIFETIME_CONDITION_NOTIFY(UStandardAttributeSet, Crit_Damage, COND_None, REPNOTIFY_Always);
 	DOREPLIFETIME_CONDITION_NOTIFY(UStandardAttributeSet, Damage, COND_None, REPNOTIFY_Always);
@@ -62,24 +59,14 @@ void UStandardAttributeSet::OnRep_MaxHealth(const FGameplayAttributeData& OldHea
 	GAMEPLAYATTRIBUTE_REPNOTIFY(UStandardAttributeSet, MaxHealth, OldHealthMax);
 }
 
-void UStandardAttributeSet::OnRep_CurrentMana(const FGameplayAttributeData& OldCurrentMana)
+void UStandardAttributeSet::OnRep_Mana(const FGameplayAttributeData& OldMana)
 {
-	GAMEPLAYATTRIBUTE_REPNOTIFY(UStandardAttributeSet, CurrentMana, OldCurrentMana);
+	GAMEPLAYATTRIBUTE_REPNOTIFY(UStandardAttributeSet, Mana, OldMana);
 }
 
-void UStandardAttributeSet::OnRep_MaxMana(const FGameplayAttributeData& OldManaMax)
+void UStandardAttributeSet::OnRep_Stamina(const FGameplayAttributeData& OldStamina)
 {
-	GAMEPLAYATTRIBUTE_REPNOTIFY(UStandardAttributeSet, MaxMana, OldManaMax);
-}
-
-void UStandardAttributeSet::OnRep_CurrentStamina(const FGameplayAttributeData& OldCurrentStamina)
-{
-	GAMEPLAYATTRIBUTE_REPNOTIFY(UStandardAttributeSet, CurrentStamina, OldCurrentStamina);
-}
-
-void UStandardAttributeSet::OnRep_MaxStamina(const FGameplayAttributeData& OldStaminaMax)
-{
-	GAMEPLAYATTRIBUTE_REPNOTIFY(UStandardAttributeSet, MaxStamina, OldStaminaMax);
+	GAMEPLAYATTRIBUTE_REPNOTIFY(UStandardAttributeSet, Stamina, OldStamina);
 }
 
 void UStandardAttributeSet::OnRep_Crit_Chance(const FGameplayAttributeData& OldCritChance)

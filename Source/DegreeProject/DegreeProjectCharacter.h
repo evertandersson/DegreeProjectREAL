@@ -110,6 +110,8 @@ public:
 	virtual void OnRep_PlayerState() override;
 	virtual void GiveDefualtAbilities();
 
+	UStandardAttributeSet* GetAttributeSet();
+
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Abilities")
 	TSubclassOf<class UGameplayEffect> DefaultEffect;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Abilities")
@@ -168,8 +170,8 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat|VFX")
 	UParticleSystem* ImpactVFX;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat|VFX")
-	UNiagaraSystem* NiagaraImpactVFX;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Dash|VFX")
+	UNiagaraSystem* NiagaraDashVFX;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat|SFX")
 	USoundCue* SoundCue;

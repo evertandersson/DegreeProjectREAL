@@ -4,19 +4,17 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "Pickup.h"
 #include "UStandardAttributeSet.h"
-#include "HealthPickup.generated.h"
+#include "PowerupsPickups.generated.h"
 
 UCLASS()
-class DEGREEPROJECT_API AHealthPickup : public AActor
+class DEGREEPROJECT_API APowerupsPickups : public AActor
 {
 	GENERATED_BODY()
 	
 public:	
 	// Sets default values for this actor's properties
-	AHealthPickup();
-
+	APowerupsPickups();
 
 public:
 
@@ -34,7 +32,7 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-public:	
+public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
