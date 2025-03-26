@@ -16,6 +16,7 @@
 #include "NiagaraFunctionLibrary.h"
 #include "Kismet/GameplayStatics.h"
 #include "Sound/SoundCue.h"
+#include "Components/SphereComponent.h"
 
 #include "UStandardAttributeSet.h"
 #include "DegreeProjectCharacter.generated.h"
@@ -200,6 +201,29 @@ public:
 	void EndAttack(const FInputActionValue& Value);
 
 	UFUNCTION(BlueprintCallable)
+	void ExplosionAttack();
+
+	UFUNCTION(BlueprintCallable)
+	void DestroyExplosionHitbox();
+
+	UFUNCTION()
+	void ExpandExplosionHitbox();
+
+	UFUNCTION()
+	void OnExplosionOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
+		UPrimitiveComponent* OtherComp, int32 OtherBodyIndex,
+		bool bFromSweep, const FHitResult& SweepResult);
+
+	UPROPERTY(EditAnywhere, Category = "Explosion Attack")
+	float MaxExplosionRadius = 200.0f;
+
+	UPROPERTY(EditAnywhere, Category = "Explosion Attack")
+	float ExpansionTime = 0.5f;
+
+	UPROPERTY(EditAnywhere, Category = "Explosion Attack")
+	float ExplosionForce = 1500.0f;
+
+	UFUNCTION(BlueprintCallable)
 	void LineTrace();
 
 	UFUNCTION(BlueprintCallable)
@@ -242,6 +266,10 @@ public:
 	bool bIsDashing = false;
 
 private:
+	UPROPERTY()
+	USphereComponent* ExplosionHitbox;
+
+	FTimerHandle DestroyHitboxTimerHandle;
 	// Function to handle attribute changes
 
 	// Function to handle changes in health attributes
