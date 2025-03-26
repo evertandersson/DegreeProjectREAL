@@ -14,6 +14,8 @@
 #include "UStandardAttributeSet.h"
 #include "MyDashAbility.h"
 
+#include "TimerManager.h"
+
 #include "DegreeProject/UI/PauseMenuWidget.h"
 #include "Blueprint/UserWidget.h"
 
@@ -126,6 +128,7 @@ void ADegreeProjectCharacter::BeginPlay()
 	if (AbilitySystemComponent && AttributeSet)
 	{
 		AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(AttributeSet->GetCurrentHealthAttribute()).AddUObject(this, &ADegreeProjectCharacter::HandleHealthChanged);
+		GetWorldTimerManager().SetTimer(RegenTimerHandle, this, &ADegreeProjectCharacter::RegenerateAttributes, RegenInterval, true);
 	}
 
 	if (AbilitySystemComponent)
@@ -543,6 +546,23 @@ void ADegreeProjectCharacter::StopDash()
 void ADegreeProjectCharacter::ResetDashCoolDown()
 {
 	bCanDash = true;
+}
+
+void ADegreeProjectCharacter::RegenerateAttributes()
+{
+	if (!AttributeSet) return;
+
+	if (AttributeSet->GetCurrentStamina() < AttributeSet->GetMaxStamina())
+	{
+		float NewStamina = FMath::Clamp(AttributeSet->GetCurrentStamina() + StaminaRegenRate, 0.0f, AttributeSet->GetMaxStamina());
+		AttributeSet->SetCurrentStamina(NewStamina);
+	}
+
+	if (AttributeSet->GetCurrentMana() < AttributeSet->GetMaxMana())
+	{
+		float NewMana = FMath::Clamp(AttributeSet->GetCurrentMana() + ManaRegenRate, 0.0f, AttributeSet->GetMaxMana());
+		AttributeSet->SetCurrentMana(NewMana);
+	}
 }
 
 void ADegreeProjectCharacter::EndAttack(const FInputActionValue& Value)
