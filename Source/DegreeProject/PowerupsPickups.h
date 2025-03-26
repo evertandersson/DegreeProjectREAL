@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "TimerManager.h" 
 #include "UStandardAttributeSet.h"
 #include "PowerupsPickups.generated.h"
 
@@ -18,14 +19,16 @@ public:
 
 public:
 
-	UPROPERTY(Editanywhere)
+	UPROPERTY(EditAnywhere)
 	USceneComponent* PickUpRoot;
 
-	UPROPERTY(Editanywhere)
+	UPROPERTY(EditAnywhere)
 	class UBoxComponent* PickUpBox;
 
-	UPROPERTY(Editanywhere)
+	UPROPERTY(EditAnywhere)
 	UStaticMeshComponent* PickUpMesh;
+
+	FTimerHandle TimerHandle;
 
 
 protected:
@@ -44,14 +47,13 @@ public:
 	void OnPlayerInteraction(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* otherComp,
 		int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResults);
 
-
-protected:
-	virtual void OnPickup(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* otherComp,
-		int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResults);
-
-
-public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Pickup")
 	FRotator RotationRate;
 
+private:
+	UPROPERTY()
+	UStandardAttributeSet* AttributeSet;
+
+	UFUNCTION()
+	void ResetDefense();
 };

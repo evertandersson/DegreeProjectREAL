@@ -24,9 +24,10 @@ public:
 	UStandardAttributeSet();
 
 	void AddHealth(float Amount);
+	void AddDefence(float Number);
+	void ResetDefance(float Number);
 
-	UPROPERTY(EditAnywhere)
-	float addhealth;
+	
 
 
 	// Health attributes:
