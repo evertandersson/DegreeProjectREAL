@@ -34,6 +34,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void AddEnemyKilled(AActor* ActorToDespawn);
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	float Radius;
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
