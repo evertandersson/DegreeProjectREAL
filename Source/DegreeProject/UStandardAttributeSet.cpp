@@ -139,6 +139,14 @@ void UStandardAttributeSet::PreAttributeChange(const FGameplayAttribute& Attribu
 		const float MaxHealthValue = MaxHealth.GetCurrentValue();
 		NewValue = FMath::Clamp(NewValue, 0.0f, MaxHealthValue);
 	}
+	if (Attribute == GetCurrentManaAttribute()) {
+		const float MaxManaValue = MaxMana.GetCurrentValue();
+		NewValue = FMath::Clamp(NewValue, 0.f, MaxManaValue);
+	}
+	if (Attribute == GetCurrentStaminaAttribute()) {
+		const float MaxStaminaValue = MaxStamina.GetCurrentValue();
+		NewValue = FMath::Clamp(NewValue, 0.f, MaxStaminaValue);
+	}
 }
 
 // Handles additional logic after a gameplay effect modifies an attribute
@@ -150,6 +158,16 @@ void UStandardAttributeSet::PostGameplayEffectExecute(const FGameplayEffectModCa
 	{
 		float NewHealth = FMath::Clamp(CurrentHealth.GetCurrentValue(), 0.0f, MaxHealth.GetCurrentValue());
 		SetCurrentHealth(NewHealth);
+	}
+	if (Data.EvaluatedData.Attribute == GetCurrentManaAttribute())
+	{
+		float NewMana = FMath::Clamp(CurrentMana.GetCurrentValue(), 0.0f, MaxMana.GetCurrentValue());
+		SetCurrentMana(NewMana);
+	}
+	if (Data.EvaluatedData.Attribute == GetCurrentStaminaAttribute())
+	{
+		float NewStamina = FMath::Clamp(CurrentStamina.GetCurrentValue(), 0.0f, MaxStamina.GetCurrentValue());
+		SetCurrentStamina(NewStamina);
 	}
 }
 
