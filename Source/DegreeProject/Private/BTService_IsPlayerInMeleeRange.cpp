@@ -23,7 +23,7 @@ void UBTService_IsPlayerInMeleeRange::OnBecomeRelevant(UBehaviorTreeComponent& O
 
 	auto const* const player = UGameplayStatics::GetPlayerCharacter(GetWorld(), 0);
 
-	OwnerComp.GetBlackboardComponent()->SetValueAsBool(
+	    OwnerComp.GetBlackboardComponent()->SetValueAsBool(
 		GetSelectedBlackboardKey(), 
 		npc->GetDistanceTo(player) <= MeleeRange);
 }
