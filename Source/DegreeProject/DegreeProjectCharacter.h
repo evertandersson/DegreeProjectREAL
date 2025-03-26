@@ -240,6 +240,15 @@ public:
 	float ExplosionForce = 1500.0f;
 
 	UFUNCTION(BlueprintCallable)
+	void LockMovement();
+
+	UFUNCTION(BlueprintCallable)
+	void UnlockMovement();
+
+	UFUNCTION(BlueprintCallable)
+	void ApplyRootMotionRotation();
+
+	UFUNCTION(BlueprintCallable)
 	void LineTrace();
 
 	UFUNCTION(BlueprintCallable)
@@ -286,6 +295,9 @@ private:
 	USphereComponent* ExplosionHitbox;
 
 	FTimerHandle DestroyHitboxTimerHandle;
+
+	FVector InitialLocation;  // Stores the location before attack starts
+	FTimerHandle AttackTimer;
 	// Function to handle attribute changes
 
 	// Function to handle changes in health attributes

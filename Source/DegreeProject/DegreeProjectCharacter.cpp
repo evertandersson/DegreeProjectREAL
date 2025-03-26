@@ -29,6 +29,10 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 
+#include "Animation/AnimInstance.h"
+#include "Animation/AnimMontage.h"
+#include "GameFramework/Actor.h"
+
 #include "NiagaraFunctionLibrary.h"
 #include "NiagaraComponent.h"
 #include "Kismet/GameplayStatics.h"
@@ -428,6 +432,48 @@ void ADegreeProjectCharacter::StartAttack(const FInputActionValue& Value)
 	}
 }
 
+void ADegreeProjectCharacter::LockMovement()
+{
+	bIsAttacking = true;
+	InitialLocation = GetActorLocation();
+
+	GetWorldTimerManager().SetTimer(AttackTimer, this, &ADegreeProjectCharacter::ApplyRootMotionRotation, 0.016f, true);
+}
+
+void ADegreeProjectCharacter::UnlockMovement()
+{
+	bIsAttacking = false;
+	GetWorldTimerManager().ClearTimer(AttackTimer);
+}
+
+void ADegreeProjectCharacter::ApplyRootMotionRotation()
+{
+	if (bIsAttacking)
+	{
+		// Keep the character locked in place
+		SetActorLocation(InitialLocation);
+
+		// Ensure the mesh and anim instance are valid
+		if (GetMesh() && GetMesh()->GetAnimInstance())
+		{
+			// Automatically extract root motion from the animation
+			GetMesh()->ExtractRootMotionFromAnim(GetMesh()->GetAnimInstance()->GetCurrentActiveMontage());
+
+			// Get the root motion data from the mesh
+			FTransform RootMotionTransform = GetMesh()->GetRootMotionTransform();
+
+			if (RootMotionTransform.IsValid())
+			{
+				// Get the rotation part from the root motion transform
+				FRotator RootMotionRotation = RootMotionTransform.GetRotation().Rotator();
+
+				// Apply the rotation to the character without translating
+				AddActorWorldRotation(RootMotionRotation);
+			}
+		}
+	}
+}
+
 void ADegreeProjectCharacter::LineTrace()
 {
 	//FVector StartLocation = SwordMesh->GetSocketLocation(FName("Start"));
@@ -451,6 +497,7 @@ void ADegreeProjectCharacter::EnableHitbox()
 {
 	SwordHitbox->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 	UE_LOG(LogTemp, Warning, TEXT("Hitbox Enabled!"));
+
 }
 
 void ADegreeProjectCharacter::DisableHitbox()
