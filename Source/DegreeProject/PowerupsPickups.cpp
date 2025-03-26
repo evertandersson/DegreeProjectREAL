@@ -32,23 +32,37 @@ void APowerupsPickups::BeginPlay()
 {
 	Super::BeginPlay();
 	
+	
 }
 
 // Called every frame
 void APowerupsPickups::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
 }
 
 void APowerupsPickups::OnPlayerInteraction(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* otherComp,
 	int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResults)
 {
+	if (OtherActor->ActorHasTag("Player"))
+	{
+		ADegreeProjectCharacter* Player = Cast<ADegreeProjectCharacter>(OtherActor);
+		AttributeSet = Player->GetAttributeSet();
+
+		AttributeSet->AddDefence(3);
+
+		SetActorHiddenInGame(true);
+		SetActorEnableCollision(false);
+		
+		GetWorld()->GetTimerManager().SetTimer(TimerHandle, this, &APowerupsPickups::ResetDefense, 2.0f, false);
+		UE_LOG(LogTemp, Warning, TEXT("ADDED DEFENSE"));
+	}
 }
 
-void APowerupsPickups::OnPickup(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* otherComp,
-	int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResults)
+void APowerupsPickups::ResetDefense()
 {
-
+	AttributeSet->Defence.SetCurrentValue(AttributeSet->Defence.GetCurrentValue() - 3);
+	UE_LOG(LogTemp, Warning, TEXT("REMOVED DEFENSE"));
 }
+
 
