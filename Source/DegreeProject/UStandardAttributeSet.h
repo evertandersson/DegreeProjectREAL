@@ -44,12 +44,20 @@ public:
 	ATTRIBUTE_ACCESSORS(UStandardAttributeSet, MaxHealth);
 
 	UPROPERTY(BlueprintReadOnly, Category = "Attributes")
-	FGameplayAttributeData Mana;
-	ATTRIBUTE_ACCESSORS(UStandardAttributeSet, Mana);
+	FGameplayAttributeData CurrentMana;
+	ATTRIBUTE_ACCESSORS(UStandardAttributeSet, CurrentMana);
 
 	UPROPERTY(BlueprintReadOnly, Category = "Attributes")
-	FGameplayAttributeData Stamina;
-	ATTRIBUTE_ACCESSORS(UStandardAttributeSet, Stamina);
+	FGameplayAttributeData MaxMana;
+	ATTRIBUTE_ACCESSORS(UStandardAttributeSet, MaxMana);
+
+	UPROPERTY(BlueprintReadOnly, Category = "Attributes")
+	FGameplayAttributeData CurrentStamina;
+	ATTRIBUTE_ACCESSORS(UStandardAttributeSet, CurrentStamina);
+
+	UPROPERTY(BlueprintReadOnly, Category = "Attributes")
+	FGameplayAttributeData MaxStamina;
+	ATTRIBUTE_ACCESSORS(UStandardAttributeSet, MaxStamina);
 
 	UPROPERTY(BlueprintReadOnly, Category = "Attributes")
 	FGameplayAttributeData Crit_Chance;
@@ -80,9 +88,13 @@ protected:
 	UFUNCTION()
 	void OnRep_MaxHealth(const FGameplayAttributeData& OldMaxHealth);
 	UFUNCTION()
-	virtual void OnRep_Mana(const FGameplayAttributeData& OldMana);
+	virtual void OnRep_CurrentMana(const FGameplayAttributeData& OldMana);
 	UFUNCTION()
-	virtual void OnRep_Stamina(const FGameplayAttributeData& OldStamina);
+	virtual void OnRep_MaxMana(const FGameplayAttributeData& OldMana);
+	UFUNCTION()
+	virtual void OnRep_CurrentStamina(const FGameplayAttributeData& OldStamina);
+	UFUNCTION()
+	virtual void OnRep_MaxStamina(const FGameplayAttributeData& OldStamina);
 	UFUNCTION()
 	virtual void OnRep_Crit_Chance(const FGameplayAttributeData& OldCritChance);
 	UFUNCTION()
