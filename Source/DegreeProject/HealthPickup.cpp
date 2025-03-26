@@ -60,6 +60,8 @@ void AHealthPickup::OnPlayerInteraction(UPrimitiveComponent* OverlappedComp, AAc
 			AttributeSet->AddHealth(10.f);
 			Destroy();
 		}
+
+		
 	}
 }
 

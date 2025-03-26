@@ -54,6 +54,16 @@ void UStandardAttributeSet::AddHealth(float Amount)
 	}	
 }
 
+void UStandardAttributeSet::AddDefence(float Number)
+{
+	UStandardAttributeSet::Defence.SetCurrentValue(Defence.GetCurrentValue() + Number);
+}
+
+void UStandardAttributeSet::ResetDefance(float Number)
+{
+
+}
+
 
 
 
