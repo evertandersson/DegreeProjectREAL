@@ -6,10 +6,12 @@
 #include "PatrolPath.h"
 #include "BehaviorTree/BehaviorTree.h"
 #include "GameFramework/Character.h"
+#include "CombatInterface.h"
+#include "Animation/AnimMontage.h"
 #include "NPC.generated.h"
 
 UCLASS()
-class DEGREEPROJECT_API ANPC : public ACharacter
+class DEGREEPROJECT_API ANPC : public ACharacter, public ICombatInterface
 {
 	GENERATED_BODY()
 
@@ -26,8 +28,12 @@ public:
 	UBehaviorTree* GetBehaviortree() const;
 
 	APatrolPath* GetPatrolPath() const;
+	
+	UAnimMontage* GetMontage() const;
+
 
 protected:
+	int MeleeAttackAI_Implementation() override;
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 private:
@@ -36,4 +42,7 @@ private:
 
 	UPROPERTY(EditAnyWhere, BlueprintReadWrite, Category = "AI", meta = (AllowPrivateAccess = "true"))
 	APatrolPath* PatrolPath;
+
+	UPROPERTY(EditAnyWhere, BlueprintReadWrite, Category = "Animation", meta = (AllowPrivateAccess = "true"))
+	UAnimMontage* Montage;
 };
