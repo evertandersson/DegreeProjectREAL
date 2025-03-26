@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "PatrolPath.h"
+
 #include "BehaviorTree/BehaviorTree.h"
 #include "GameFramework/Character.h"
 #include "CombatInterface.h"
@@ -27,7 +27,7 @@ public:
 
 	UBehaviorTree* GetBehaviortree() const;
 
-	APatrolPath* GetPatrolPath() const;
+	
 	
 	UAnimMontage* GetMontage() const;
 
@@ -39,9 +39,6 @@ protected:
 private:
 	UPROPERTY(EditAnyWhere, BlueprintReadWrite, Category = "AI", meta=(AllowPrivateAccess = "true"))
 	UBehaviorTree* Tree;
-
-	UPROPERTY(EditAnyWhere, BlueprintReadWrite, Category = "AI", meta = (AllowPrivateAccess = "true"))
-	APatrolPath* PatrolPath;
 
 	UPROPERTY(EditAnyWhere, BlueprintReadWrite, Category = "Animation", meta = (AllowPrivateAccess = "true"))
 	UAnimMontage* Montage;
