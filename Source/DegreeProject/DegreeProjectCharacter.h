@@ -191,6 +191,22 @@ private:
 	 
 	void SetupStimulusSource(); 
 
+	// Timer handle for stamina/mana regen
+	FTimerHandle RegenTimerHandle;
+
+	// Regeneration amount per tick
+	UPROPERTY(EditAnywhere, Category = "Attributes")
+	float StaminaRegenRate = 5.0f;
+
+	UPROPERTY(EditAnywhere, Category = "Attributes")
+	float ManaRegenRate = 5.0f;
+
+	UPROPERTY(EditAnywhere, Category = "Attributes")
+	float RegenInterval = 1.0f; // Every second
+
+	// Function to restore stamina/mana
+	void RegenerateAttributes();
+
 public:
 	/** Returns CameraBoom subobject **/
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
