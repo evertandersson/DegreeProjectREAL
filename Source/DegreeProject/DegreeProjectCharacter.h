@@ -87,6 +87,7 @@ public:
 	ADegreeProjectCharacter();
 	
 	virtual void BeginPlay() override;
+	virtual void Tick(float DeltaTime) override;
 
 	// Implement the interface method to return the Ability System
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
@@ -186,6 +187,9 @@ protected:
 	virtual void NotifyControllerChanged() override;
 
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+
+	UPROPERTY(EditAnywhere);
+	bool bCanRegenStamina = true;
 private:
 	class UAIPerceptionStimuliSourceComponent* StimulusSource;
 	 
@@ -193,6 +197,11 @@ private:
 
 	// Timer handle for stamina/mana regen
 	FTimerHandle RegenTimerHandle;
+
+	FTimerHandle StaminaRegenTimerHandle;
+	
+	UPROPERTY(EditAnywhere, Category = "Attributes")
+	float RegenDelay = 0.1f;
 
 	// Regeneration amount per tick
 	UPROPERTY(EditAnywhere, Category = "Attributes")
@@ -205,7 +214,9 @@ private:
 	float RegenInterval = 1.0f; // Every second
 
 	// Function to restore stamina/mana
-	void RegenerateAttributes();
+	void RegenerateAttributes(float DeltaTime);
+	void StartUtilityRegen();
+	void RegenerateUtility();
 
 public:
 	/** Returns CameraBoom subobject **/

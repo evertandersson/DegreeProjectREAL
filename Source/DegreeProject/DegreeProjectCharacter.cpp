@@ -128,7 +128,7 @@ void ADegreeProjectCharacter::BeginPlay()
 	if (AbilitySystemComponent && AttributeSet)
 	{
 		AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(AttributeSet->GetCurrentHealthAttribute()).AddUObject(this, &ADegreeProjectCharacter::HandleHealthChanged);
-		GetWorldTimerManager().SetTimer(RegenTimerHandle, this, &ADegreeProjectCharacter::RegenerateAttributes, RegenInterval, true);
+		//GetWorldTimerManager().SetTimer(RegenTimerHandle, this, &ADegreeProjectCharacter::RegenerateAttributes, RegenInterval, true);
 	}
 
 	if (AbilitySystemComponent)
@@ -153,6 +153,12 @@ void ADegreeProjectCharacter::BeginPlay()
 	}
 
 	DisableHitbox();
+}
+
+void ADegreeProjectCharacter::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+	RegenerateAttributes(DeltaTime);
 }
 
 void ADegreeProjectCharacter::PossessedBy(AController* NewController)
@@ -548,21 +554,39 @@ void ADegreeProjectCharacter::ResetDashCoolDown()
 	bCanDash = true;
 }
 
-void ADegreeProjectCharacter::RegenerateAttributes()
+void ADegreeProjectCharacter::RegenerateAttributes(float DeltaTime)
 {
 	if (!AttributeSet) return;
 
-	if (AttributeSet->GetCurrentStamina() < AttributeSet->GetMaxStamina())
+	if (AttributeSet->GetCurrentStamina() < AttributeSet->GetMaxStamina() && bCanRegenStamina)
 	{
-		float NewStamina = FMath::Clamp(AttributeSet->GetCurrentStamina() + StaminaRegenRate, 0.0f, AttributeSet->GetMaxStamina());
-		AttributeSet->SetCurrentStamina(NewStamina);
+
+		bCanRegenStamina = false;
+		GetWorldTimerManager().ClearTimer(StaminaRegenTimerHandle);
+		GetWorldTimerManager().SetTimer(StaminaRegenTimerHandle, this, &ADegreeProjectCharacter::StartUtilityRegen, RegenDelay, false);
 	}
 
-	if (AttributeSet->GetCurrentMana() < AttributeSet->GetMaxMana())
+	if (AttributeSet->GetCurrentMana() < AttributeSet->GetMaxMana() && bCanRegenStamina)
 	{
-		float NewMana = FMath::Clamp(AttributeSet->GetCurrentMana() + ManaRegenRate, 0.0f, AttributeSet->GetMaxMana());
-		AttributeSet->SetCurrentMana(NewMana);
+		bCanRegenStamina = false;
+		GetWorldTimerManager().ClearTimer(StaminaRegenTimerHandle);
+		GetWorldTimerManager().SetTimer(StaminaRegenTimerHandle, this, &ADegreeProjectCharacter::StartUtilityRegen, RegenDelay, false);
 	}
+}
+
+void ADegreeProjectCharacter::StartUtilityRegen()
+{
+	bCanRegenStamina = true;
+	RegenerateUtility();
+}
+
+void ADegreeProjectCharacter::RegenerateUtility()
+{
+	float NewStamina = FMath::FInterpTo(AttributeSet->GetCurrentStamina(), AttributeSet->GetMaxStamina(), GetWorld()->GetDeltaSeconds(), 1.f);
+	AttributeSet->SetCurrentStamina(FMath::CeilToInt(NewStamina));
+
+	float NewMana = FMath::FInterpTo(AttributeSet->GetCurrentMana(),AttributeSet->GetMaxMana(), GetWorld()->GetDeltaSeconds(), 1.f);
+	AttributeSet->SetCurrentMana(FMath::CeilToInt(NewMana));
 }
 
 void ADegreeProjectCharacter::EndAttack(const FInputActionValue& Value)
