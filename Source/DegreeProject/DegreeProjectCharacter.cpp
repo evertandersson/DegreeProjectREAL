@@ -345,6 +345,8 @@ void ADegreeProjectCharacter::SetupPlayerInputComponent(UInputComponent* PlayerI
 
 		EnhancedInputComponent->BindAction(PauseAction, ETriggerEvent::Triggered, this, &ADegreeProjectCharacter::TogglePauseMenu);
 
+		EnhancedInputComponent->BindAction(TurnAction, ETriggerEvent::Triggered, this, &ADegreeProjectCharacter::RotateCharacter);
+
 		//Dashing Ensure the abilitySystemComponent is valid
 		if (AbilitySystemComponent && PlayerInputComponent)
 		{
@@ -424,55 +426,55 @@ void ADegreeProjectCharacter::StartAttack(const FInputActionValue& Value)
 	if (!bIsAttacking) // Check if not already attacking
 	{
 		bIsAttacking = true;
-		//GetMesh()->SetAnimationMode(EAnimationMode::AnimationBlueprint);
-		//UpdateAnimationState(true);
-		UE_LOG(LogTemp, Warning, TEXT("Attack Started!"));
 
-		//EnableHitbox(); // Enable the hitbox when the attack starts
+		bCanRotateDuringAttack = true;
+
+		UE_LOG(LogTemp, Warning, TEXT("Attack Started!"));
 	}
 }
 
-void ADegreeProjectCharacter::LockMovement()
+void ADegreeProjectCharacter::RotateCharacter(const FInputActionValue& Value)
 {
-	bIsAttacking = true;
-	InitialLocation = GetActorLocation();
+	if (bIsAttacking) // Only rotate during attack
+	{
+		float InputYaw = Value.Get<float>(); // -1 (A), 1 (D)
+		float TurnSpeed = 4.0f; // Adjust speed if needed
 
-	GetWorldTimerManager().SetTimer(AttackTimer, this, &ADegreeProjectCharacter::ApplyRootMotionRotation, 0.016f, true);
-}
-
-void ADegreeProjectCharacter::UnlockMovement()
-{
-	bIsAttacking = false;
-	GetWorldTimerManager().ClearTimer(AttackTimer);
+		AddActorWorldRotation(FRotator(0, InputYaw * TurnSpeed, 0)); // Rotate character
+	}
 }
 
 void ADegreeProjectCharacter::ApplyRootMotionRotation()
 {
-	if (bIsAttacking)
-	{
-		// Keep the character locked in place
-		SetActorLocation(InitialLocation);
-
-		// Ensure the mesh and anim instance are valid
-		if (GetMesh() && GetMesh()->GetAnimInstance())
-		{
-			// Automatically extract root motion from the animation
-			GetMesh()->ExtractRootMotionFromAnim(GetMesh()->GetAnimInstance()->GetCurrentActiveMontage());
-
-			// Get the root motion data from the mesh
-			FTransform RootMotionTransform = GetMesh()->GetRootMotionTransform();
-
-			if (RootMotionTransform.IsValid())
-			{
-				// Get the rotation part from the root motion transform
-				FRotator RootMotionRotation = RootMotionTransform.GetRotation().Rotator();
-
-				// Apply the rotation to the character without translating
-				AddActorWorldRotation(RootMotionRotation);
-			}
-		}
-	}
+	//if (bIsAttacking)
+	//{
+	//	// Keep the character locked in place
+	//	SetActorLocation(InitialLocation);
+	//
+	//	// Ensure the mesh and anim instance are valid
+	//	if (GetMesh())
+	//	{
+	//		// Get the active root motion animation montage instance
+	//		const FAnimMontageInstance* MontageInstance = GetMesh()->GetAnimInstance()->GetRootMotionAnimMontageInstance();
+	//		if (MontageInstance && MontageInstance->IsActive())
+	//		{
+	//			// Extract the root motion delta transform
+	//			const FTransform RootMotionDelta = MontageInstance->GetRootMotionDeltaTransform();
+	//
+	//			// Extract only the rotation part
+	//			FRotator RootMotionRotation = RootMotionDelta.GetRotation().Rotator();
+	//
+	//			// Smoothly interpolate towards the root motion rotation
+	//			FRotator CurrentRotation = GetActorRotation();
+	//			FRotator InterpolatedRotation = FMath::RInterpTo(CurrentRotation, CurrentRotation + RootMotionRotation, GetWorld()->GetDeltaSeconds(), 2.0f); // Adjust speed
+	//
+	//			// Apply the interpolated rotation
+	//			SetActorRotation(InterpolatedRotation);
+	//		}
+	//	}
+	//}
 }
+
 
 void ADegreeProjectCharacter::LineTrace()
 {
@@ -612,12 +614,22 @@ void ADegreeProjectCharacter::RegenerateAttributes()
 	}
 }
 
-void ADegreeProjectCharacter::EndAttack(const FInputActionValue& Value)
+void ADegreeProjectCharacter::EndAttack()
 {
 	bIsAttacking = false;
-	//UpdateAnimationState(false);
-	DisableHitbox(); // Disable the hitbox when the attack ends
 	UE_LOG(LogTemp, Warning, TEXT("Attack Ended!"));
+
+	// Root motion will automatically handle stopping movement. Just restore the ability to move.
+	GetCharacterMovement()->SetMovementMode(MOVE_Walking); // Ensure character can move again.
+
+	// Disable rotation control after the attack
+	bCanRotateDuringAttack = false;
+
+	// Reset input handling for rotation
+	if (UEnhancedInputComponent* EnhancedInput = Cast<UEnhancedInputComponent>(InputComponent))
+	{
+		EnhancedInput->RemoveBindingByHandle(TurnAction->GetUniqueID());
+	}
 }
 
 void ADegreeProjectCharacter::ExplosionAttack()

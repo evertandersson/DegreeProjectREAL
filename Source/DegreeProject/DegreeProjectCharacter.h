@@ -82,6 +82,9 @@ class ADegreeProjectCharacter : public ACharacter, public IAbilitySystemInterfac
 	UPROPERTY(EditAnywhere, BlueprintReadonly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* PauseAction;
 
+	UPROPERTY(EditAnywhere, BlueprintReadonly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction* TurnAction;
+
 
 public:
 	ADegreeProjectCharacter();
@@ -214,7 +217,7 @@ public:
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
 
 	UFUNCTION(BlueprintCallable)
-	void EndAttack(const FInputActionValue& Value);
+	void EndAttack();
 
 	UFUNCTION(BlueprintCallable)
 	void ExplosionAttack();
@@ -240,10 +243,7 @@ public:
 	float ExplosionForce = 1500.0f;
 
 	UFUNCTION(BlueprintCallable)
-	void LockMovement();
-
-	UFUNCTION(BlueprintCallable)
-	void UnlockMovement();
+	void RotateCharacter(const FInputActionValue& Value);
 
 	UFUNCTION(BlueprintCallable)
 	void ApplyRootMotionRotation();
@@ -267,6 +267,9 @@ public:
 
 	UPROPERTY(BlueprintReadWrite, VisibleAnywhere)
 	bool bIsAttacking;
+
+	UPROPERTY(BlueprintReadWrite, VisibleAnywhere)
+	bool bCanRotateDuringAttack;
 	
 	UPROPERTY(BlueprintReadWrite, VisibleAnywhere)
 	bool bIsHoldingAttack;
