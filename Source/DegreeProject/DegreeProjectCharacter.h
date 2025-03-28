@@ -26,6 +26,7 @@ class UCameraComponent;
 class UInputMappingContext;
 class UInputAction;
 class UPauseMenuWidget;
+class UGameOverWidget;
 class UMyAbilitySystemComponent;
 class UAbilitySystemComponent;
 struct FInputActionValue;
@@ -268,12 +269,17 @@ public:
 	void DisableHitbox();
 
 	void TogglePauseMenu();
+	void ToggleGameOver();
 
 	UPROPERTY(EditAnywhere, Category = "UI")
 	TSubclassOf<UPauseMenuWidget> PauseMenuClass;
+	UPROPERTY(EditAnywhere, Category = "UI")
+	TSubclassOf<UGameOverWidget> GameOverClass;
 
 	UPROPERTY()
 	UPauseMenuWidget* PauseMenuInstance;
+	UPROPERTY()
+	UGameOverWidget* GameOverInstance;
 
 	UPROPERTY(BlueprintReadWrite, VisibleAnywhere)
 	bool bIsAttacking;
