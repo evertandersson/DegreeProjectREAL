@@ -24,6 +24,7 @@ public:
 	UStandardAttributeSet();
 
 	void AddHealth(float Amount);
+	void RemoveHealth(float Amount);
 	void AddDefence(float Number);
 	void ResetDefance(float Number);
 

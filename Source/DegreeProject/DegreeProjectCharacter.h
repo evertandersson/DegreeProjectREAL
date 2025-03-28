@@ -90,6 +90,7 @@ public:
 	ADegreeProjectCharacter();
 	
 	virtual void BeginPlay() override;
+	virtual void Tick(float DeltaTime) override;
 
 	// Implement the interface method to return the Ability System
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
@@ -98,12 +99,20 @@ public:
 	UFUNCTION(BlueprintImplementableEvent, Category = "Health")
 	void OnHealthChanged(float DeltaValue, const FGameplayTagContainer& EventTags);
 
+	UFUNCTION(BlueprintCallable, Category = "Health")
+	void TakeDamage(float DamageAmount);
+
+	void HandleDeath();
+	
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attributes")
 	int MaxMana = 100;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attributes")
 	int MaxStamina = 100;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attributes")
 	int MaxStat = 99; //Change later if needed
+
+
 
 	//Dash mechanic
 	void Dash();
@@ -130,6 +139,7 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Attributes", Replicated, meta = (AllowPrivateAccess = "true"))
 	UStandardAttributeSet* AttributeSet;
 
+
 	// Initializes the character's attributes when the game starts.
 	void InitializeAttributes();
 
@@ -148,6 +158,7 @@ protected:
 	/** Handle Jump */
 	virtual void Jump() override;
 
+	void DestroyCharacter();
 	int Damage;
 
 	int Health;
@@ -189,13 +200,19 @@ protected:
 	virtual void NotifyControllerChanged() override;
 
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+
+	UPROPERTY(EditAnywhere);
+	bool bCanRegenStamina = true;
 private:
 	class UAIPerceptionStimuliSourceComponent* StimulusSource;
 	 
 	void SetupStimulusSource(); 
 
 	// Timer handle for stamina/mana regen
-	FTimerHandle RegenTimerHandle;
+
+	
+	UPROPERTY(EditAnywhere, Category = "Attributes")
+	float RegenDelay = 0.1f;
 
 	// Regeneration amount per tick
 	UPROPERTY(EditAnywhere, Category = "Attributes")
@@ -208,7 +225,9 @@ private:
 	float RegenInterval = 1.0f; // Every second
 
 	// Function to restore stamina/mana
-	void RegenerateAttributes();
+	void RegenerateAttributes(float DeltaTime);
+	void StartUtilityRegen();
+	void RegenerateUtility();
 
 public:
 	/** Returns CameraBoom subobject **/
@@ -319,10 +338,15 @@ private:
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 private:
+	bool bIsDead = false;
+
 	float DefaultFriction;
 	float DefaultWalkSpeed;
 	float DefualtBreakFriction;
 
+	FTimerHandle RegenTimerHandle;
+	FTimerHandle DeathTimerHandle;
+	FTimerHandle StaminaRegenTimerHandle;
 	FTimerHandle DashTimerHandle;
 	FTimerHandle CoolDownTimerHandle;
 

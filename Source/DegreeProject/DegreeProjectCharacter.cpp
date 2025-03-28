@@ -132,7 +132,7 @@ void ADegreeProjectCharacter::BeginPlay()
 	if (AbilitySystemComponent && AttributeSet)
 	{
 		AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(AttributeSet->GetCurrentHealthAttribute()).AddUObject(this, &ADegreeProjectCharacter::HandleHealthChanged);
-		GetWorldTimerManager().SetTimer(RegenTimerHandle, this, &ADegreeProjectCharacter::RegenerateAttributes, RegenInterval, true);
+		//GetWorldTimerManager().SetTimer(RegenTimerHandle, this, &ADegreeProjectCharacter::RegenerateAttributes, RegenInterval, true);
 	}
 
 	if (AbilitySystemComponent)
@@ -157,6 +157,12 @@ void ADegreeProjectCharacter::BeginPlay()
 	}
 
 	DisableHitbox();
+}
+
+void ADegreeProjectCharacter::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+	RegenerateAttributes(DeltaTime);
 }
 
 void ADegreeProjectCharacter::PossessedBy(AController* NewController)
@@ -203,6 +209,39 @@ void ADegreeProjectCharacter::GiveDefualtAbilities()
 UStandardAttributeSet* ADegreeProjectCharacter::GetAttributeSet()
 {
 	return AttributeSet;
+}
+
+void ADegreeProjectCharacter::TakeDamage(float DamageAmount)
+{
+	if (DamageAmount <= 0.0f) return;
+
+	if (AttributeSet)
+	{
+		AttributeSet->RemoveHealth(DamageAmount);
+	}
+	if (AttributeSet->CurrentHealth.GetCurrentValue() <= 0.0f && !bIsDead)
+	{
+		AttributeSet->CurrentHealth.SetCurrentValue(0.0f);
+		HandleDeath();
+	}
+}
+
+void ADegreeProjectCharacter::HandleDeath()
+{
+	bIsDead = true;
+
+	if (UCharacterMovementComponent* MovementComponent = GetCharacterMovement())
+	{
+		MovementComponent->DisableMovement();
+	}
+	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
+	GetWorld()->GetTimerManager().SetTimer(DeathTimerHandle, this, &ADegreeProjectCharacter::DestroyCharacter, 0.5f, false);
+}
+
+void ADegreeProjectCharacter::DestroyCharacter()
+{
+	Destroy();
 }
 
 void ADegreeProjectCharacter::TogglePauseMenu()
@@ -345,8 +384,6 @@ void ADegreeProjectCharacter::SetupPlayerInputComponent(UInputComponent* PlayerI
 
 		EnhancedInputComponent->BindAction(PauseAction, ETriggerEvent::Triggered, this, &ADegreeProjectCharacter::TogglePauseMenu);
 
-		EnhancedInputComponent->BindAction(TurnAction, ETriggerEvent::Triggered, this, &ADegreeProjectCharacter::RotateCharacter);
-
 		//Dashing Ensure the abilitySystemComponent is valid
 		if (AbilitySystemComponent && PlayerInputComponent)
 		{
@@ -426,55 +463,13 @@ void ADegreeProjectCharacter::StartAttack(const FInputActionValue& Value)
 	if (!bIsAttacking) // Check if not already attacking
 	{
 		bIsAttacking = true;
-
-		bCanRotateDuringAttack = true;
-
+		//GetMesh()->SetAnimationMode(EAnimationMode::AnimationBlueprint);
+		//UpdateAnimationState(true);
 		UE_LOG(LogTemp, Warning, TEXT("Attack Started!"));
+
+		//EnableHitbox(); // Enable the hitbox when the attack starts
 	}
 }
-
-void ADegreeProjectCharacter::RotateCharacter(const FInputActionValue& Value)
-{
-	if (bIsAttacking) // Only rotate during attack
-	{
-		float InputYaw = Value.Get<float>(); // -1 (A), 1 (D)
-		float TurnSpeed = 4.0f; // Adjust speed if needed
-
-		AddActorWorldRotation(FRotator(0, InputYaw * TurnSpeed, 0)); // Rotate character
-	}
-}
-
-void ADegreeProjectCharacter::ApplyRootMotionRotation()
-{
-	//if (bIsAttacking)
-	//{
-	//	// Keep the character locked in place
-	//	SetActorLocation(InitialLocation);
-	//
-	//	// Ensure the mesh and anim instance are valid
-	//	if (GetMesh())
-	//	{
-	//		// Get the active root motion animation montage instance
-	//		const FAnimMontageInstance* MontageInstance = GetMesh()->GetAnimInstance()->GetRootMotionAnimMontageInstance();
-	//		if (MontageInstance && MontageInstance->IsActive())
-	//		{
-	//			// Extract the root motion delta transform
-	//			const FTransform RootMotionDelta = MontageInstance->GetRootMotionDeltaTransform();
-	//
-	//			// Extract only the rotation part
-	//			FRotator RootMotionRotation = RootMotionDelta.GetRotation().Rotator();
-	//
-	//			// Smoothly interpolate towards the root motion rotation
-	//			FRotator CurrentRotation = GetActorRotation();
-	//			FRotator InterpolatedRotation = FMath::RInterpTo(CurrentRotation, CurrentRotation + RootMotionRotation, GetWorld()->GetDeltaSeconds(), 2.0f); // Adjust speed
-	//
-	//			// Apply the interpolated rotation
-	//			SetActorRotation(InterpolatedRotation);
-	//		}
-	//	}
-	//}
-}
-
 
 void ADegreeProjectCharacter::LineTrace()
 {
@@ -499,7 +494,6 @@ void ADegreeProjectCharacter::EnableHitbox()
 {
 	SwordHitbox->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 	UE_LOG(LogTemp, Warning, TEXT("Hitbox Enabled!"));
-
 }
 
 void ADegreeProjectCharacter::DisableHitbox()
@@ -525,7 +519,7 @@ void ADegreeProjectCharacter::Dash()
 	{
 		FRotator TargetRotation = UKismetMathLibrary::MakeRotFromX(GetCharacterMovement()->GetLastInputVector());
 		SetActorRotation(TargetRotation);
-
+		
 		bIsDashing = true;
 		bCanDash = false;
 		TArray<FName> DashSockets = { "DashVFX", "VFX_C", "RightFootVFX", "LeftFootVFX" };
@@ -597,21 +591,39 @@ void ADegreeProjectCharacter::ResetDashCoolDown()
 	bCanDash = true;
 }
 
-void ADegreeProjectCharacter::RegenerateAttributes()
+void ADegreeProjectCharacter::RegenerateAttributes(float DeltaTime)
 {
 	if (!AttributeSet) return;
 
-	if (AttributeSet->GetCurrentStamina() < AttributeSet->GetMaxStamina())
+	if (AttributeSet->GetCurrentStamina() < AttributeSet->GetMaxStamina() && bCanRegenStamina)
 	{
-		float NewStamina = FMath::Clamp(AttributeSet->GetCurrentStamina() + StaminaRegenRate, 0.0f, AttributeSet->GetMaxStamina());
-		AttributeSet->SetCurrentStamina(NewStamina);
+
+		bCanRegenStamina = false;
+		GetWorldTimerManager().ClearTimer(StaminaRegenTimerHandle);
+		GetWorldTimerManager().SetTimer(StaminaRegenTimerHandle, this, &ADegreeProjectCharacter::StartUtilityRegen, RegenDelay, false);
 	}
 
-	if (AttributeSet->GetCurrentMana() < AttributeSet->GetMaxMana())
+	if (AttributeSet->GetCurrentMana() < AttributeSet->GetMaxMana() && bCanRegenStamina)
 	{
-		float NewMana = FMath::Clamp(AttributeSet->GetCurrentMana() + ManaRegenRate, 0.0f, AttributeSet->GetMaxMana());
-		AttributeSet->SetCurrentMana(NewMana);
+		bCanRegenStamina = false;
+		GetWorldTimerManager().ClearTimer(StaminaRegenTimerHandle);
+		GetWorldTimerManager().SetTimer(StaminaRegenTimerHandle, this, &ADegreeProjectCharacter::StartUtilityRegen, RegenDelay, false);
 	}
+}
+
+void ADegreeProjectCharacter::StartUtilityRegen()
+{
+	bCanRegenStamina = true;
+	RegenerateUtility();
+}
+
+void ADegreeProjectCharacter::RegenerateUtility()
+{
+	float NewStamina = FMath::FInterpTo(AttributeSet->GetCurrentStamina(), AttributeSet->GetMaxStamina(), GetWorld()->GetDeltaSeconds(), 1.f);
+	AttributeSet->SetCurrentStamina(FMath::CeilToInt(NewStamina));
+
+	float NewMana = FMath::FInterpTo(AttributeSet->GetCurrentMana(),AttributeSet->GetMaxMana(), GetWorld()->GetDeltaSeconds(), 1.f);
+	AttributeSet->SetCurrentMana(FMath::CeilToInt(NewMana));
 }
 
 void ADegreeProjectCharacter::EndAttack()

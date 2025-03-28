@@ -3,6 +3,7 @@
 
 #include "UStandardAttributeSet.h"
 #include "Net/UnrealNetwork.h"
+#include "DegreeProjectCharacter.h"
 #include "GameplayEffectExtension.h"
 
 // Initilizes attribute values
@@ -54,6 +55,11 @@ void UStandardAttributeSet::AddHealth(float Amount)
 	}	
 }
 
+void UStandardAttributeSet::RemoveHealth(float Amount)
+{
+	CurrentHealth.SetCurrentValue(CurrentHealth.GetCurrentValue() - Amount);
+}
+
 void UStandardAttributeSet::AddDefence(float Number)
 {
 	UStandardAttributeSet::Defence.SetCurrentValue(Defence.GetCurrentValue() + Number);
@@ -63,9 +69,6 @@ void UStandardAttributeSet::ResetDefance(float Number)
 {
 
 }
-
-
-
 
 // Define which properties are replicated over the network
 void UStandardAttributeSet::GetLifetimeReplicatedProps(TArray <FLifetimeProperty>& OutLifetimeProps) const
@@ -169,6 +172,7 @@ void UStandardAttributeSet::PostGameplayEffectExecute(const FGameplayEffectModCa
 		float NewHealth = FMath::Clamp(CurrentHealth.GetCurrentValue(), 0.0f, MaxHealth.GetCurrentValue());
 		SetCurrentHealth(NewHealth);
 	}
+
 	if (Data.EvaluatedData.Attribute == GetCurrentManaAttribute())
 	{
 		float NewMana = FMath::Clamp(CurrentMana.GetCurrentValue(), 0.0f, MaxMana.GetCurrentValue());
