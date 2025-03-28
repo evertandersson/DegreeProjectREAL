@@ -262,12 +262,6 @@ public:
 	float ExplosionForce = 1500.0f;
 
 	UFUNCTION(BlueprintCallable)
-	void RotateCharacter(const FInputActionValue& Value);
-
-	UFUNCTION(BlueprintCallable)
-	void ApplyRootMotionRotation();
-
-	UFUNCTION(BlueprintCallable)
 	void LineTrace();
 
 	UFUNCTION(BlueprintCallable)
@@ -286,9 +280,6 @@ public:
 
 	UPROPERTY(BlueprintReadWrite, VisibleAnywhere)
 	bool bIsAttacking;
-
-	UPROPERTY(BlueprintReadWrite, VisibleAnywhere)
-	bool bCanRotateDuringAttack;
 	
 	UPROPERTY(BlueprintReadWrite, VisibleAnywhere)
 	bool bIsHoldingAttack;

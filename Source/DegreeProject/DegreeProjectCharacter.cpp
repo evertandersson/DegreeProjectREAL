@@ -463,8 +463,10 @@ void ADegreeProjectCharacter::StartAttack(const FInputActionValue& Value)
 	if (!bIsAttacking) // Check if not already attacking
 	{
 		bIsAttacking = true;
+
 		//GetMesh()->SetAnimationMode(EAnimationMode::AnimationBlueprint);
 		//UpdateAnimationState(true);
+
 		UE_LOG(LogTemp, Warning, TEXT("Attack Started!"));
 
 		//EnableHitbox(); // Enable the hitbox when the attack starts
@@ -630,19 +632,8 @@ void ADegreeProjectCharacter::EndAttack()
 {
 	bIsAttacking = false;
 	UE_LOG(LogTemp, Warning, TEXT("Attack Ended!"));
-
-	// Root motion will automatically handle stopping movement. Just restore the ability to move.
-	GetCharacterMovement()->SetMovementMode(MOVE_Walking); // Ensure character can move again.
-
-	// Disable rotation control after the attack
-	bCanRotateDuringAttack = false;
-
-	// Reset input handling for rotation
-	if (UEnhancedInputComponent* EnhancedInput = Cast<UEnhancedInputComponent>(InputComponent))
-	{
-		EnhancedInput->RemoveBindingByHandle(TurnAction->GetUniqueID());
-	}
 }
+
 
 void ADegreeProjectCharacter::ExplosionAttack()
 {
