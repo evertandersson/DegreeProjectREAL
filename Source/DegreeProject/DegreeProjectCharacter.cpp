@@ -482,7 +482,7 @@ void ADegreeProjectCharacter::Dash()
 	{
 		FRotator TargetRotation = UKismetMathLibrary::MakeRotFromX(GetCharacterMovement()->GetLastInputVector());
 		SetActorRotation(TargetRotation);
-
+		
 		bIsDashing = true;
 		bCanDash = false;
 		TArray<FName> DashSockets = { "DashVFX", "VFX_C", "RightFootVFX", "LeftFootVFX" };

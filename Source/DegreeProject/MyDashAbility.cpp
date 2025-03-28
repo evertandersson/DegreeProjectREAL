@@ -13,6 +13,12 @@ void UMyDashAbility::ActivateAbility(const FGameplayAbilitySpecHandle Handle, co
 	{
 		Character->Dash();
 
+		UAbilitySystemComponent* ASC = ActorInfo->AbilitySystemComponent.Get();
+		if (ASC)
+		{
+			ASC->ApplyModToAttribute(UStandardAttributeSet::GetCurrentStaminaAttribute(), EGameplayModOp::Additive, -20.f);
+		}
+
 		FTimerHandle DashTimerHandle;
 		Character->GetWorldTimerManager().SetTimer(DashTimerHandle, FTimerDelegate::CreateLambda([this, Handle, ActorInfo, ActivationInfo, Character]()
 			{
