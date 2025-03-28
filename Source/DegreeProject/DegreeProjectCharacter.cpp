@@ -17,6 +17,7 @@
 #include "TimerManager.h"
 
 #include "DegreeProject/UI/PauseMenuWidget.h"
+#include "DegreeProject/UI/GameOverWidget.h"
 #include "Blueprint/UserWidget.h"
 
 #include "Camera/CameraComponent.h"
@@ -213,6 +214,8 @@ UStandardAttributeSet* ADegreeProjectCharacter::GetAttributeSet()
 
 void ADegreeProjectCharacter::TakeDamage(float DamageAmount)
 {
+	if (bIsDead) return;
+
 	if (DamageAmount <= 0.0f) return;
 
 	if (AttributeSet)
@@ -221,7 +224,8 @@ void ADegreeProjectCharacter::TakeDamage(float DamageAmount)
 	}
 	if (AttributeSet->CurrentHealth.GetCurrentValue() <= 0.0f && !bIsDead)
 	{
-		AttributeSet->CurrentHealth.SetCurrentValue(0.0f);
+		AttributeSet->CurrentHealth.SetCurrentValue(FMath::Max(0.0f, AttributeSet->CurrentHealth.GetCurrentValue()));
+
 		HandleDeath();
 	}
 }
@@ -241,6 +245,7 @@ void ADegreeProjectCharacter::HandleDeath()
 
 void ADegreeProjectCharacter::DestroyCharacter()
 {
+	ToggleGameOver();
 	Destroy();
 }
 
@@ -274,6 +279,40 @@ void ADegreeProjectCharacter::TogglePauseMenu()
 			PlayerController->SetPause(true);
 			PlayerController->SetShowMouseCursor(true);
 			//PlayerController->SetInputMode(FInputModeUIOnly());
+		}
+	}
+}
+
+void ADegreeProjectCharacter::ToggleGameOver()
+{
+	APlayerController* PlayerController = Cast<APlayerController>(GetController());
+	if (!PlayerController) return;
+
+	if (PlayerController->IsPaused())
+	{
+		if (GameOverInstance)
+		{
+			GameOverInstance->RemoveFromParent();
+			GameOverInstance = nullptr;
+		}
+		PlayerController->SetPause(false);
+		PlayerController->SetShowMouseCursor(false);
+		PlayerController->SetInputMode(FInputModeGameOnly());
+	}
+	else
+	{
+		// Pause game and show menu
+		if (!GameOverInstance && GameOverClass && bIsDead)
+		{
+			GameOverInstance = CreateWidget<UGameOverWidget>(PlayerController, GameOverClass);
+			if (!GameOverInstance) return;
+		}
+
+		if (GameOverInstance)
+		{
+			GameOverInstance->AddToViewport();
+			PlayerController->SetPause(true);
+			PlayerController->SetShowMouseCursor(true);
 		}
 	}
 }
