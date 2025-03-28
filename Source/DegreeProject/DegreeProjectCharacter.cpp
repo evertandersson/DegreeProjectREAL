@@ -117,6 +117,7 @@ UAbilitySystemComponent* ADegreeProjectCharacter::GetAbilitySystemComponent() co
 }
 
 
+
 void ADegreeProjectCharacter::BeginPlay()
 {
 	Super::BeginPlay();
@@ -182,6 +183,8 @@ void ADegreeProjectCharacter::OnRep_PlayerState()
 	InitializeAttributes();
 }
 
+
+
 void ADegreeProjectCharacter::InitializeAttributes()
 {
 	if (AbilitySystemComponent && DefaultEffect)
@@ -205,6 +208,39 @@ void ADegreeProjectCharacter::GiveDefualtAbilities()
 UStandardAttributeSet* ADegreeProjectCharacter::GetAttributeSet()
 {
 	return AttributeSet;
+}
+
+void ADegreeProjectCharacter::TakeDamage(float DamageAmount)
+{
+	if (DamageAmount <= 0.0f) return;
+
+	if (AttributeSet)
+	{
+		AttributeSet->RemoveHealth(DamageAmount);
+	}
+	if (AttributeSet->CurrentHealth.GetCurrentValue() <= 0.0f && !bIsDead)
+	{
+		AttributeSet->CurrentHealth.SetCurrentValue(0.0f);
+		HandleDeath();
+	}
+}
+
+void ADegreeProjectCharacter::HandleDeath()
+{
+	bIsDead = true;
+
+	if (UCharacterMovementComponent* MovementComponent = GetCharacterMovement())
+	{
+		MovementComponent->DisableMovement();
+	}
+	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
+	GetWorld()->GetTimerManager().SetTimer(DeathTimerHandle, this, &ADegreeProjectCharacter::DestroyCharacter, 0.5f, false);
+}
+
+void ADegreeProjectCharacter::DestroyCharacter()
+{
+	Destroy();
 }
 
 void ADegreeProjectCharacter::TogglePauseMenu()
