@@ -96,12 +96,20 @@ public:
 	UFUNCTION(BlueprintImplementableEvent, Category = "Health")
 	void OnHealthChanged(float DeltaValue, const FGameplayTagContainer& EventTags);
 
+	UFUNCTION(BlueprintCallable, Category = "Health")
+	void TakeDamage(float DamageAmount);
+
+	void HandleDeath();
+	
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attributes")
 	int MaxMana = 100;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attributes")
 	int MaxStamina = 100;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attributes")
 	int MaxStat = 99; //Change later if needed
+
+
 
 	//Dash mechanic
 	void Dash();
@@ -128,6 +136,7 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Attributes", Replicated, meta = (AllowPrivateAccess = "true"))
 	UStandardAttributeSet* AttributeSet;
 
+
 	// Initializes the character's attributes when the game starts.
 	void InitializeAttributes();
 
@@ -146,6 +155,7 @@ protected:
 	/** Handle Jump */
 	virtual void Jump() override;
 
+	void DestroyCharacter();
 	int Damage;
 
 	int Health;
@@ -196,9 +206,7 @@ private:
 	void SetupStimulusSource(); 
 
 	// Timer handle for stamina/mana regen
-	FTimerHandle RegenTimerHandle;
 
-	FTimerHandle StaminaRegenTimerHandle;
 	
 	UPROPERTY(EditAnywhere, Category = "Attributes")
 	float RegenDelay = 0.1f;
@@ -315,10 +323,15 @@ private:
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 private:
+	bool bIsDead = false;
+
 	float DefaultFriction;
 	float DefaultWalkSpeed;
 	float DefualtBreakFriction;
 
+	FTimerHandle RegenTimerHandle;
+	FTimerHandle DeathTimerHandle;
+	FTimerHandle StaminaRegenTimerHandle;
 	FTimerHandle DashTimerHandle;
 	FTimerHandle CoolDownTimerHandle;
 
