@@ -2,6 +2,8 @@
 
 
 #include "HealthPickup.h"
+#include "UStandardAttributeSet.h"
+#include "DegreeProjectCharacter.h"
 #include "Components/BoxComponent.h"
 
 // Sets default values
@@ -41,16 +43,30 @@ void AHealthPickup::Tick(float DeltaTime)
 void AHealthPickup::OnPlayerInteraction(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* otherComp,
 	int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResults)
 {
-	OnPickup(OverlappedComp, OtherActor, otherComp, OtherBodyIndex, bFromSweep, SweepResults);
+	//OnPickup(OverlappedComp, OtherActor, otherComp, OtherBodyIndex, bFromSweep, SweepResults);
+	if (OtherActor->ActorHasTag("Player"))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("hITT"));
+		ADegreeProjectCharacter* Player = Cast<ADegreeProjectCharacter>(OtherActor);
+		UStandardAttributeSet* AttributeSet = Player->GetAttributeSet();
+		if (!AttributeSet)
+		{
+			return;
+		}
 
+		if (AttributeSet->CurrentHealth.GetCurrentValue() < AttributeSet->MaxHealth.GetCurrentValue())
+		{
+			UE_LOG(LogTemp, Warning, TEXT("HEAL"));
+			AttributeSet->AddHealth(10.f);
+			Destroy();
+		}
+
+		
+	}
 }
 
 void AHealthPickup::OnPickup(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* otherComp,
 	int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResults)
 {
-	if (OtherActor->ActorHasTag("Player"))
-	{
-		UE_LOG(LogTemp, Warning, TEXT("hITT"));
-		Destroy();
-	}
+	
 }

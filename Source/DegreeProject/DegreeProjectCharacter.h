@@ -16,6 +16,7 @@
 #include "NiagaraFunctionLibrary.h"
 #include "Kismet/GameplayStatics.h"
 #include "Sound/SoundCue.h"
+#include "Components/SphereComponent.h"
 
 #include "UStandardAttributeSet.h"
 #include "DegreeProjectCharacter.generated.h"
@@ -86,6 +87,7 @@ public:
 	ADegreeProjectCharacter();
 	
 	virtual void BeginPlay() override;
+	virtual void Tick(float DeltaTime) override;
 
 	// Implement the interface method to return the Ability System
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
@@ -94,12 +96,20 @@ public:
 	UFUNCTION(BlueprintImplementableEvent, Category = "Health")
 	void OnHealthChanged(float DeltaValue, const FGameplayTagContainer& EventTags);
 
+	UFUNCTION(BlueprintCallable, Category = "Health")
+	void TakeDamage(float DamageAmount);
+
+	void HandleDeath();
+	
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attributes")
 	int MaxMana = 100;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attributes")
 	int MaxStamina = 100;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attributes")
 	int MaxStat = 99; //Change later if needed
+
+
 
 	//Dash mechanic
 	void Dash();
@@ -109,6 +119,8 @@ public:
 	virtual void PossessedBy(AController* NewController) override;
 	virtual void OnRep_PlayerState() override;
 	virtual void GiveDefualtAbilities();
+
+	UStandardAttributeSet* GetAttributeSet();
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Abilities")
 	TSubclassOf<class UGameplayEffect> DefaultEffect;
@@ -123,6 +135,7 @@ protected:
 	// Attribute Set that stores and manages health and other attributes for replication.
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Attributes", Replicated, meta = (AllowPrivateAccess = "true"))
 	UStandardAttributeSet* AttributeSet;
+
 
 	// Initializes the character's attributes when the game starts.
 	void InitializeAttributes();
@@ -142,6 +155,7 @@ protected:
 	/** Handle Jump */
 	virtual void Jump() override;
 
+	void DestroyCharacter();
 	int Damage;
 
 	int Health;
@@ -168,8 +182,8 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat|VFX")
 	UParticleSystem* ImpactVFX;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat|VFX")
-	UNiagaraSystem* NiagaraImpactVFX;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Dash|VFX")
+	UNiagaraSystem* NiagaraDashVFX;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat|SFX")
 	USoundCue* SoundCue;
@@ -183,10 +197,34 @@ protected:
 	virtual void NotifyControllerChanged() override;
 
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+
+	UPROPERTY(EditAnywhere);
+	bool bCanRegenStamina = true;
 private:
 	class UAIPerceptionStimuliSourceComponent* StimulusSource;
 	 
 	void SetupStimulusSource(); 
+
+	// Timer handle for stamina/mana regen
+
+	
+	UPROPERTY(EditAnywhere, Category = "Attributes")
+	float RegenDelay = 0.1f;
+
+	// Regeneration amount per tick
+	UPROPERTY(EditAnywhere, Category = "Attributes")
+	float StaminaRegenRate = 5.0f;
+
+	UPROPERTY(EditAnywhere, Category = "Attributes")
+	float ManaRegenRate = 5.0f;
+
+	UPROPERTY(EditAnywhere, Category = "Attributes")
+	float RegenInterval = 1.0f; // Every second
+
+	// Function to restore stamina/mana
+	void RegenerateAttributes(float DeltaTime);
+	void StartUtilityRegen();
+	void RegenerateUtility();
 
 public:
 	/** Returns CameraBoom subobject **/
@@ -196,6 +234,29 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void EndAttack(const FInputActionValue& Value);
+
+	UFUNCTION(BlueprintCallable)
+	void ExplosionAttack();
+
+	UFUNCTION(BlueprintCallable)
+	void DestroyExplosionHitbox();
+
+	UFUNCTION()
+	void ExpandExplosionHitbox();
+
+	UFUNCTION()
+	void OnExplosionOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
+		UPrimitiveComponent* OtherComp, int32 OtherBodyIndex,
+		bool bFromSweep, const FHitResult& SweepResult);
+
+	UPROPERTY(EditAnywhere, Category = "Explosion Attack")
+	float MaxExplosionRadius = 200.0f;
+
+	UPROPERTY(EditAnywhere, Category = "Explosion Attack")
+	float ExpansionTime = 0.5f;
+
+	UPROPERTY(EditAnywhere, Category = "Explosion Attack")
+	float ExplosionForce = 1500.0f;
 
 	UFUNCTION(BlueprintCallable)
 	void LineTrace();
@@ -240,6 +301,10 @@ public:
 	bool bIsDashing = false;
 
 private:
+	UPROPERTY()
+	USphereComponent* ExplosionHitbox;
+
+	FTimerHandle DestroyHitboxTimerHandle;
 	// Function to handle attribute changes
 
 	// Function to handle changes in health attributes
@@ -258,10 +323,15 @@ private:
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 private:
+	bool bIsDead = false;
+
 	float DefaultFriction;
 	float DefaultWalkSpeed;
 	float DefualtBreakFriction;
 
+	FTimerHandle RegenTimerHandle;
+	FTimerHandle DeathTimerHandle;
+	FTimerHandle StaminaRegenTimerHandle;
 	FTimerHandle DashTimerHandle;
 	FTimerHandle CoolDownTimerHandle;
 

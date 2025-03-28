@@ -36,8 +36,17 @@ FSkillUpgrade& USkillUpgradeManager::ApplyUpgrade(AActor* Player, int32 UpgradeI
 {
     if (AvailableUpgrades.IsValidIndex(UpgradeIndex))
     {
-        AvailableUpgrades[UpgradeIndex].Level++;
+        if (!AvailableUpgrades[UpgradeIndex].bIsSkillUpgrade) 
+            AvailableUpgrades[UpgradeIndex].Level++;
         return AvailableUpgrades[UpgradeIndex];
     }
     return AvailableUpgrades[UpgradeIndex];
+}
+
+void USkillUpgradeManager::RemoveSkillFromAvailableUpgrades(int32 UpgradeIndex)
+{
+    if (AvailableUpgrades.IsValidIndex(UpgradeIndex))
+    {
+        AvailableUpgrades.RemoveAt(UpgradeIndex);
+    }
 }

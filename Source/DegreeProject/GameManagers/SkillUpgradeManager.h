@@ -18,7 +18,6 @@ class DEGREEPROJECT_API USkillUpgradeManager : public UActorComponent
 public:
 	USkillUpgradeManager();
 
-	// The pool of all possible upgrades
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
 	TArray<FSkillUpgrade> AvailableUpgrades;
 
@@ -29,4 +28,8 @@ public:
 	// Function to apply the chosen upgrade to the player
 	UFUNCTION(BlueprintCallable)
 	FSkillUpgrade& ApplyUpgrade(AActor* Player, int32 UpgradeIndex);
+
+	// Function to remove the chosen skill from available upgrades list
+	UFUNCTION(BlueprintCallable)
+	void RemoveSkillFromAvailableUpgrades(int32 UpgradeIndex);
 };

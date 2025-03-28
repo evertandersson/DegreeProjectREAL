@@ -14,6 +14,8 @@
 #include "UStandardAttributeSet.h"
 #include "MyDashAbility.h"
 
+#include "TimerManager.h"
+
 #include "DegreeProject/UI/PauseMenuWidget.h"
 #include "Blueprint/UserWidget.h"
 
@@ -28,6 +30,7 @@
 #include "EnhancedInputSubsystems.h"
 
 #include "NiagaraFunctionLibrary.h"
+#include "NiagaraComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Components/AudioComponent.h"
 
@@ -114,6 +117,7 @@ UAbilitySystemComponent* ADegreeProjectCharacter::GetAbilitySystemComponent() co
 }
 
 
+
 void ADegreeProjectCharacter::BeginPlay()
 {
 	Super::BeginPlay();
@@ -125,6 +129,7 @@ void ADegreeProjectCharacter::BeginPlay()
 	if (AbilitySystemComponent && AttributeSet)
 	{
 		AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(AttributeSet->GetCurrentHealthAttribute()).AddUObject(this, &ADegreeProjectCharacter::HandleHealthChanged);
+		//GetWorldTimerManager().SetTimer(RegenTimerHandle, this, &ADegreeProjectCharacter::RegenerateAttributes, RegenInterval, true);
 	}
 
 	if (AbilitySystemComponent)
@@ -151,6 +156,12 @@ void ADegreeProjectCharacter::BeginPlay()
 	DisableHitbox();
 }
 
+void ADegreeProjectCharacter::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+	RegenerateAttributes(DeltaTime);
+}
+
 void ADegreeProjectCharacter::PossessedBy(AController* NewController)
 {
 	Super::PossessedBy(NewController);
@@ -172,6 +183,8 @@ void ADegreeProjectCharacter::OnRep_PlayerState()
 	InitializeAttributes();
 }
 
+
+
 void ADegreeProjectCharacter::InitializeAttributes()
 {
 	if (AbilitySystemComponent && DefaultEffect)
@@ -190,6 +203,44 @@ void ADegreeProjectCharacter::GiveDefualtAbilities()
 	if (AbilitySystemComponent)
 		for (TSubclassOf<UGameplayAbility>& StartupAbility : DefaultAbilities)
 			AbilitySystemComponent->GiveAbility(FGameplayAbilitySpec(StartupAbility.GetDefaultObject(), 1, 0));
+}
+
+UStandardAttributeSet* ADegreeProjectCharacter::GetAttributeSet()
+{
+	return AttributeSet;
+}
+
+void ADegreeProjectCharacter::TakeDamage(float DamageAmount)
+{
+	if (DamageAmount <= 0.0f) return;
+
+	if (AttributeSet)
+	{
+		AttributeSet->RemoveHealth(DamageAmount);
+	}
+	if (AttributeSet->CurrentHealth.GetCurrentValue() <= 0.0f && !bIsDead)
+	{
+		AttributeSet->CurrentHealth.SetCurrentValue(0.0f);
+		HandleDeath();
+	}
+}
+
+void ADegreeProjectCharacter::HandleDeath()
+{
+	bIsDead = true;
+
+	if (UCharacterMovementComponent* MovementComponent = GetCharacterMovement())
+	{
+		MovementComponent->DisableMovement();
+	}
+	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
+	GetWorld()->GetTimerManager().SetTimer(DeathTimerHandle, this, &ADegreeProjectCharacter::DestroyCharacter, 0.5f, false);
+}
+
+void ADegreeProjectCharacter::DestroyCharacter()
+{
+	Destroy();
 }
 
 void ADegreeProjectCharacter::TogglePauseMenu()
@@ -283,10 +334,10 @@ void ADegreeProjectCharacter::OnSwordHit(UPrimitiveComponent* OverlappedComponen
 			UGameplayStatics::PlaySoundAtLocation(this, SoundCue, GetActorLocation());
 		}
 
-		if (NiagaraImpactVFX)
-		{
-			UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), NiagaraImpactVFX, ActorLoc, FRotator::ZeroRotator);
-		}
+		//if (NiagaraDashVFX)
+		//{
+		//	UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), NiagaraDashVFX, ActorLoc, FRotator::ZeroRotator);
+		//}
 
 		// Destroy the actor after the VFX is spawned
 		//OtherActor->Destroy();
@@ -467,9 +518,29 @@ void ADegreeProjectCharacter::Dash()
 	{
 		FRotator TargetRotation = UKismetMathLibrary::MakeRotFromX(GetCharacterMovement()->GetLastInputVector());
 		SetActorRotation(TargetRotation);
-
+		
 		bIsDashing = true;
 		bCanDash = false;
+		TArray<FName> DashSockets = { "DashVFX", "VFX_C", "RightFootVFX", "LeftFootVFX" };
+		if (NiagaraDashVFX)
+		{
+			for (FName SocketName : DashSockets)
+			{
+				UNiagaraComponent* DashEffect = UNiagaraFunctionLibrary::SpawnSystemAttached(
+					NiagaraDashVFX,
+					GetMesh(), 
+					SocketName,
+					FVector::ZeroVector,
+					FRotator::ZeroRotator,
+					EAttachLocation::SnapToTarget, true
+				);
+
+				if (DashEffect)
+				{
+					DashEffect->SetFloatParameter("Lifetime", DashDuration);
+				}
+			}
+		}
 
 		DefaultFriction = GetCharacterMovement()->GroundFriction;
 		DefaultWalkSpeed = GetCharacterMovement()->MaxWalkSpeed;
@@ -519,6 +590,41 @@ void ADegreeProjectCharacter::ResetDashCoolDown()
 	bCanDash = true;
 }
 
+void ADegreeProjectCharacter::RegenerateAttributes(float DeltaTime)
+{
+	if (!AttributeSet) return;
+
+	if (AttributeSet->GetCurrentStamina() < AttributeSet->GetMaxStamina() && bCanRegenStamina)
+	{
+
+		bCanRegenStamina = false;
+		GetWorldTimerManager().ClearTimer(StaminaRegenTimerHandle);
+		GetWorldTimerManager().SetTimer(StaminaRegenTimerHandle, this, &ADegreeProjectCharacter::StartUtilityRegen, RegenDelay, false);
+	}
+
+	if (AttributeSet->GetCurrentMana() < AttributeSet->GetMaxMana() && bCanRegenStamina)
+	{
+		bCanRegenStamina = false;
+		GetWorldTimerManager().ClearTimer(StaminaRegenTimerHandle);
+		GetWorldTimerManager().SetTimer(StaminaRegenTimerHandle, this, &ADegreeProjectCharacter::StartUtilityRegen, RegenDelay, false);
+	}
+}
+
+void ADegreeProjectCharacter::StartUtilityRegen()
+{
+	bCanRegenStamina = true;
+	RegenerateUtility();
+}
+
+void ADegreeProjectCharacter::RegenerateUtility()
+{
+	float NewStamina = FMath::FInterpTo(AttributeSet->GetCurrentStamina(), AttributeSet->GetMaxStamina(), GetWorld()->GetDeltaSeconds(), 1.f);
+	AttributeSet->SetCurrentStamina(FMath::CeilToInt(NewStamina));
+
+	float NewMana = FMath::FInterpTo(AttributeSet->GetCurrentMana(),AttributeSet->GetMaxMana(), GetWorld()->GetDeltaSeconds(), 1.f);
+	AttributeSet->SetCurrentMana(FMath::CeilToInt(NewMana));
+}
+
 void ADegreeProjectCharacter::EndAttack(const FInputActionValue& Value)
 {
 	bIsAttacking = false;
@@ -526,6 +632,139 @@ void ADegreeProjectCharacter::EndAttack(const FInputActionValue& Value)
 	DisableHitbox(); // Disable the hitbox when the attack ends
 	UE_LOG(LogTemp, Warning, TEXT("Attack Ended!"));
 }
+
+void ADegreeProjectCharacter::ExplosionAttack()
+{
+	FString SocketName = "EndSword_VFX";
+
+	if (!GetMesh()->DoesSocketExist(FName(SocketName)))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Socket %s does not exist!"), *SocketName);
+		return;
+	}
+
+	FVector SpawnLocation = GetMesh()->GetSocketLocation(FName(SocketName));
+
+	// Create ExplosionHitbox if not created yet
+	if (!ExplosionHitbox)
+	{
+		ExplosionHitbox = NewObject<USphereComponent>(this);
+		ExplosionHitbox->InitSphereRadius(50.0f);  // Start small
+		ExplosionHitbox->SetCollisionEnabled(ECollisionEnabled::QueryOnly);  // Enable only query collision (no physics)
+		ExplosionHitbox->SetCollisionObjectType(ECC_WorldDynamic);
+		ExplosionHitbox->SetCollisionResponseToAllChannels(ECR_Ignore);
+		ExplosionHitbox->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);  // Only overlap with enemies
+		ExplosionHitbox->OnComponentBeginOverlap.AddDynamic(this, &ADegreeProjectCharacter::OnExplosionOverlap);
+
+		ExplosionHitbox->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepWorldTransform);
+		ExplosionHitbox->SetWorldLocation(SpawnLocation);
+		ExplosionHitbox->RegisterComponent();
+
+		// Debug log for creation
+		UE_LOG(LogTemp, Warning, TEXT("ExplosionHitbox Created at: %s"), *ExplosionHitbox->GetComponentLocation().ToString());
+
+		// Extend the time before the hitbox is destroyed (increase this time for visibility)
+		float HitboxLifeTime = 1.0f;  // Keep the hitbox alive for 1 second
+		GetWorldTimerManager().SetTimer(DestroyHitboxTimerHandle, this, &ADegreeProjectCharacter::DestroyExplosionHitbox, HitboxLifeTime, false);
+
+		// Optional: Start expanding the hitbox to see it grow
+		ExpandExplosionHitbox();
+	}
+}
+
+void ADegreeProjectCharacter::DestroyExplosionHitbox()
+{
+	if (ExplosionHitbox)
+	{
+		// Disable collision and destroy hitbox
+		ExplosionHitbox->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		ExplosionHitbox->DestroyComponent();
+
+		// Log for confirmation
+		UE_LOG(LogTemp, Warning, TEXT("ExplosionHitbox destroyed after extended time"));
+		ExplosionHitbox = nullptr;  // Clear the reference to the hitbox
+	}
+}
+
+void ADegreeProjectCharacter::ExpandExplosionHitbox()
+{
+	if (ExplosionHitbox)
+	{
+		float CurrentRadius = ExplosionHitbox->GetUnscaledSphereRadius();
+
+		// Gradually expand the hitbox
+		if (CurrentRadius < MaxExplosionRadius)
+		{
+			// Smoothly expand the hitbox radius over time
+			float NewRadius = FMath::Lerp(CurrentRadius, MaxExplosionRadius, 0.2f);
+			ExplosionHitbox->SetSphereRadius(NewRadius);
+
+			// Keep the collision enabled while expanding
+			ExplosionHitbox->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+
+			// Debug: Drawing the expanding hitbox for visualization
+			DrawDebugSphere(GetWorld(), ExplosionHitbox->GetComponentLocation(), NewRadius, 12, FColor::Red, false, 0.1f, 0, 2.0f);
+
+			// Continue expanding the hitbox
+			GetWorldTimerManager().SetTimerForNextTick(this, &ADegreeProjectCharacter::ExpandExplosionHitbox);
+		}
+		else
+		{
+			// Once max radius is reached, disable collision
+			ExplosionHitbox->SetCollisionEnabled(ECollisionEnabled::NoCollision); // Disable collision
+
+			// Destroy the hitbox after a short delay
+			GetWorldTimerManager().SetTimerForNextTick([this]() {
+				if (ExplosionHitbox)
+				{
+					// Ensure the hitbox is destroyed and the pointer is cleared
+					ExplosionHitbox->DestroyComponent();
+					ExplosionHitbox = nullptr; // Clear the pointer after destruction
+					UE_LOG(LogTemp, Warning, TEXT("ExplosionHitbox destroyed and pointer nullified"));
+				}
+				});
+		}
+	}
+}
+
+void ADegreeProjectCharacter::OnExplosionOverlap(UPrimitiveComponent* OverlappedComponent,
+	AActor* OtherActor,
+	UPrimitiveComponent* OtherComp,
+	int32 OtherBodyIndex,
+	bool bFromSweep,
+	const FHitResult& SweepResult)
+{
+	if (!OtherActor || OtherActor == this) return;
+
+	UE_LOG(LogTemp, Warning, TEXT("Explosion Overlapped: %s"), *OtherActor->GetName());
+
+	FVector ExplosionOrigin = ExplosionHitbox->GetComponentLocation();
+	FVector KnockbackDirection = OtherActor->GetActorLocation() - ExplosionOrigin;
+	KnockbackDirection.Z = 0; // Prevent vertical movement
+	KnockbackDirection.Normalize();
+
+	float KnockbackStrength = 1000.0f; // Increase knockback force
+
+	UE_LOG(LogTemp, Warning, TEXT("KnockbackDirection: %s"), *KnockbackDirection.ToString());
+
+	// If the enemy is a Character, launch it
+	ACharacter* EnemyCharacter = Cast<ACharacter>(OtherActor);
+	if (EnemyCharacter)
+	{
+		EnemyCharacter->LaunchCharacter(KnockbackDirection * KnockbackStrength, false, false);
+		return;
+	}
+
+	// If it's not a Character, use AddActorWorldOffset
+	OtherActor->SetActorEnableCollision(false);
+	OtherActor->AddActorWorldOffset(KnockbackDirection * KnockbackStrength, true);
+	OtherActor->SetActorEnableCollision(true);
+
+	UE_LOG(LogTemp, Warning, TEXT("%s moved to: %s"), *OtherActor->GetName(), *OtherActor->GetActorLocation().ToString());
+}
+
+
+
 
 void ADegreeProjectCharacter::UpdateAnimationState(bool bIsAttackingAni)
 {
