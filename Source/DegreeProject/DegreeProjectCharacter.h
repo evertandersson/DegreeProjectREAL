@@ -83,6 +83,9 @@ class ADegreeProjectCharacter : public ACharacter, public IAbilitySystemInterfac
 	UPROPERTY(EditAnywhere, BlueprintReadonly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* PauseAction;
 
+	UPROPERTY(EditAnywhere, BlueprintReadonly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction* TurnAction;
+
 
 public:
 	ADegreeProjectCharacter();
@@ -234,7 +237,7 @@ public:
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
 
 	UFUNCTION(BlueprintCallable)
-	void EndAttack(const FInputActionValue& Value);
+	void EndAttack();
 
 	UFUNCTION(BlueprintCallable)
 	void ExplosionAttack();
@@ -311,6 +314,9 @@ private:
 	USphereComponent* ExplosionHitbox;
 
 	FTimerHandle DestroyHitboxTimerHandle;
+
+	FVector InitialLocation;  // Stores the location before attack starts
+	FTimerHandle AttackTimer;
 	// Function to handle attribute changes
 
 	// Function to handle changes in health attributes

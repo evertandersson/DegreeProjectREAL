@@ -30,6 +30,10 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 
+#include "Animation/AnimInstance.h"
+#include "Animation/AnimMontage.h"
+#include "GameFramework/Actor.h"
+
 #include "NiagaraFunctionLibrary.h"
 #include "NiagaraComponent.h"
 #include "Kismet/GameplayStatics.h"
@@ -118,7 +122,6 @@ UAbilitySystemComponent* ADegreeProjectCharacter::GetAbilitySystemComponent() co
 }
 
 
-
 void ADegreeProjectCharacter::BeginPlay()
 {
 	Super::BeginPlay();
@@ -183,8 +186,6 @@ void ADegreeProjectCharacter::OnRep_PlayerState()
 
 	InitializeAttributes();
 }
-
-
 
 void ADegreeProjectCharacter::InitializeAttributes()
 {
@@ -501,8 +502,10 @@ void ADegreeProjectCharacter::StartAttack(const FInputActionValue& Value)
 	if (!bIsAttacking) // Check if not already attacking
 	{
 		bIsAttacking = true;
+
 		//GetMesh()->SetAnimationMode(EAnimationMode::AnimationBlueprint);
 		//UpdateAnimationState(true);
+
 		UE_LOG(LogTemp, Warning, TEXT("Attack Started!"));
 
 		//EnableHitbox(); // Enable the hitbox when the attack starts
@@ -664,13 +667,12 @@ void ADegreeProjectCharacter::RegenerateUtility()
 	AttributeSet->SetCurrentMana(FMath::CeilToInt(NewMana));
 }
 
-void ADegreeProjectCharacter::EndAttack(const FInputActionValue& Value)
+void ADegreeProjectCharacter::EndAttack()
 {
 	bIsAttacking = false;
-	//UpdateAnimationState(false);
-	DisableHitbox(); // Disable the hitbox when the attack ends
 	UE_LOG(LogTemp, Warning, TEXT("Attack Ended!"));
 }
+
 
 void ADegreeProjectCharacter::ExplosionAttack()
 {
