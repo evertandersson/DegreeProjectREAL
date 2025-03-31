@@ -334,8 +334,11 @@ private:
 	// Specifies which properties should be replicated over the network
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
-private:
+	UPROPERTY(VisibleAnywhere)
 	bool bIsDead = false;
+
+private:
+	
 
 	float DefaultFriction;
 	float DefaultWalkSpeed;

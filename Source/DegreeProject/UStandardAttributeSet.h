@@ -28,7 +28,8 @@ public:
 	void AddDefence(float Number);
 	void ResetDefance(float Number);
 
-	
+	//static FGameplayAttribute GetCurrentHealthAttribute();
+	//static FGameplayAttribute GetMaxHealthAttribute();
 
 
 	// Health attributes:
