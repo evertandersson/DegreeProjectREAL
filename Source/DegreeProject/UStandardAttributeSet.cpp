@@ -70,6 +70,18 @@ void UStandardAttributeSet::ResetDefance(float Number)
 
 }
 
+//FGameplayAttribute UStandardAttributeSet::GetCurrentHealthAttribute()
+//{
+//	static FProperty* Property = FindFProperty<FProperty>(UStandardAttributeSet::StaticClass(), GET_MEMBER_NAME_CHECKED(UStandardAttributeSet, CurrentHealth));
+//	return FGameplayAttribute(Property);
+//}
+//
+//FGameplayAttribute UStandardAttributeSet::GetMaxHealthAttribute()
+//{
+//	static FProperty* Property = FindFProperty<FProperty>(UStandardAttributeSet::StaticClass(), GET_MEMBER_NAME_CHECKED(UStandardAttributeSet, MaxHealth));
+//	return FGameplayAttribute(Property);
+//}
+
 // Define which properties are replicated over the network
 void UStandardAttributeSet::GetLifetimeReplicatedProps(TArray <FLifetimeProperty>& OutLifetimeProps) const
 {
@@ -171,6 +183,13 @@ void UStandardAttributeSet::PostGameplayEffectExecute(const FGameplayEffectModCa
 	{
 		float NewHealth = FMath::Clamp(CurrentHealth.GetCurrentValue(), 0.0f, MaxHealth.GetCurrentValue());
 		SetCurrentHealth(NewHealth);
+
+		ADegreeProjectCharacter* OwnerCharacter = Cast<ADegreeProjectCharacter>(GetOwningActor());
+		if (OwnerCharacter && NewHealth <= 0.0f)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Character should die now!"));
+			OwnerCharacter->HandleDeath();
+		}
 	}
 
 	if (Data.EvaluatedData.Attribute == GetCurrentManaAttribute())
@@ -184,4 +203,3 @@ void UStandardAttributeSet::PostGameplayEffectExecute(const FGameplayEffectModCa
 		SetCurrentStamina(NewStamina);
 	}
 }
-
