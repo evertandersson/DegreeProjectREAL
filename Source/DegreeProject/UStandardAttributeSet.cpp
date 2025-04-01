@@ -3,6 +3,7 @@
 
 #include "UStandardAttributeSet.h"
 #include "Net/UnrealNetwork.h"
+#include "DegreeProjectCharacter.h"
 #include "GameplayEffectExtension.h"
 
 // Initilizes attribute values
@@ -23,7 +24,7 @@ UStandardAttributeSet::UStandardAttributeSet() :
 
 	// Set default values for health attributes
     CurrentHealth.SetBaseValue(100.f);
-	CurrentHealth.SetCurrentValue(70.f);
+	CurrentHealth.SetCurrentValue(100.f);
 
 	// Set default values for max health attributes
 	MaxHealth.SetBaseValue(100.f);
@@ -54,6 +55,11 @@ void UStandardAttributeSet::AddHealth(float Amount)
 	}	
 }
 
+void UStandardAttributeSet::RemoveHealth(float Amount)
+{
+	CurrentHealth.SetCurrentValue(CurrentHealth.GetCurrentValue() - Amount);
+}
+
 void UStandardAttributeSet::AddDefence(float Number)
 {
 	UStandardAttributeSet::Defence.SetCurrentValue(Defence.GetCurrentValue() + Number);
@@ -64,8 +70,17 @@ void UStandardAttributeSet::ResetDefance(float Number)
 
 }
 
-
-
+//FGameplayAttribute UStandardAttributeSet::GetCurrentHealthAttribute()
+//{
+//	static FProperty* Property = FindFProperty<FProperty>(UStandardAttributeSet::StaticClass(), GET_MEMBER_NAME_CHECKED(UStandardAttributeSet, CurrentHealth));
+//	return FGameplayAttribute(Property);
+//}
+//
+//FGameplayAttribute UStandardAttributeSet::GetMaxHealthAttribute()
+//{
+//	static FProperty* Property = FindFProperty<FProperty>(UStandardAttributeSet::StaticClass(), GET_MEMBER_NAME_CHECKED(UStandardAttributeSet, MaxHealth));
+//	return FGameplayAttribute(Property);
+//}
 
 // Define which properties are replicated over the network
 void UStandardAttributeSet::GetLifetimeReplicatedProps(TArray <FLifetimeProperty>& OutLifetimeProps) const
@@ -168,7 +183,15 @@ void UStandardAttributeSet::PostGameplayEffectExecute(const FGameplayEffectModCa
 	{
 		float NewHealth = FMath::Clamp(CurrentHealth.GetCurrentValue(), 0.0f, MaxHealth.GetCurrentValue());
 		SetCurrentHealth(NewHealth);
+
+		ADegreeProjectCharacter* OwnerCharacter = Cast<ADegreeProjectCharacter>(GetOwningActor());
+		if (OwnerCharacter && NewHealth <= 0.0f)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Character should die now!"));
+			OwnerCharacter->HandleDeath();
+		}
 	}
+
 	if (Data.EvaluatedData.Attribute == GetCurrentManaAttribute())
 	{
 		float NewMana = FMath::Clamp(CurrentMana.GetCurrentValue(), 0.0f, MaxMana.GetCurrentValue());
@@ -180,4 +203,3 @@ void UStandardAttributeSet::PostGameplayEffectExecute(const FGameplayEffectModCa
 		SetCurrentStamina(NewStamina);
 	}
 }
-

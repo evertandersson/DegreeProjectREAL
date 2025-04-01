@@ -17,6 +17,7 @@
 #include "TimerManager.h"
 
 #include "DegreeProject/UI/PauseMenuWidget.h"
+#include "DegreeProject/UI/GameOverWidget.h"
 #include "Blueprint/UserWidget.h"
 
 #include "Camera/CameraComponent.h"
@@ -28,6 +29,10 @@
 
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
+
+#include "Animation/AnimInstance.h"
+#include "Animation/AnimMontage.h"
+#include "GameFramework/Actor.h"
 
 #include "NiagaraFunctionLibrary.h"
 #include "NiagaraComponent.h"
@@ -128,7 +133,7 @@ void ADegreeProjectCharacter::BeginPlay()
 	if (AbilitySystemComponent && AttributeSet)
 	{
 		AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(AttributeSet->GetCurrentHealthAttribute()).AddUObject(this, &ADegreeProjectCharacter::HandleHealthChanged);
-		GetWorldTimerManager().SetTimer(RegenTimerHandle, this, &ADegreeProjectCharacter::RegenerateAttributes, RegenInterval, true);
+		//GetWorldTimerManager().SetTimer(RegenTimerHandle, this, &ADegreeProjectCharacter::RegenerateAttributes, RegenInterval, true);
 	}
 
 	if (AbilitySystemComponent)
@@ -153,6 +158,12 @@ void ADegreeProjectCharacter::BeginPlay()
 	}
 
 	DisableHitbox();
+}
+
+void ADegreeProjectCharacter::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+	RegenerateAttributes(DeltaTime);
 }
 
 void ADegreeProjectCharacter::PossessedBy(AController* NewController)
@@ -201,6 +212,52 @@ UStandardAttributeSet* ADegreeProjectCharacter::GetAttributeSet()
 	return AttributeSet;
 }
 
+void ADegreeProjectCharacter::TakeDamage(float DamageAmount)
+{
+	if (bIsDead || DamageAmount <= 0.0f) return;
+
+	static ConstructorHelpers::FClassFinder<UGameplayEffect> DamageEffect(TEXT("/Game/Ablities/Combat/GE_Damage"));
+
+	if(DamageEffect.Succeeded())
+	{
+		TSubclassOf<UGameplayEffect> DamageEffectClass = DamageEffect.Class;
+		FGameplayEffectSpecHandle EffectSpecHandle = AbilitySystemComponent->MakeOutgoingSpec(DamageEffectClass, 1.0f, AbilitySystemComponent->MakeEffectContext());
+		EffectSpecHandle.Data->SetSetByCallerMagnitude(FGameplayTag::RequestGameplayTag(FName("Effect.Damage")), DamageAmount);
+		AbilitySystemComponent->ApplyGameplayEffectSpecToSelf(*EffectSpecHandle.Data.Get());
+	}
+	if (AttributeSet->CurrentHealth.GetCurrentValue() <= 0.0f && !bIsDead)
+	{
+		AttributeSet->CurrentHealth.SetCurrentValue(FMath::Max(0.0f, AttributeSet->CurrentHealth.GetCurrentValue()));
+
+		HandleDeath();
+	}
+
+	/*if (AttributeSet)
+	{
+		AttributeSet->RemoveHealth(DamageAmount);
+	}
+	*/
+}
+
+void ADegreeProjectCharacter::HandleDeath()
+{
+	bIsDead = true;
+
+	if (UCharacterMovementComponent* MovementComponent = GetCharacterMovement())
+	{
+		MovementComponent->DisableMovement();
+	}
+	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
+	GetWorld()->GetTimerManager().SetTimer(DeathTimerHandle, this, &ADegreeProjectCharacter::DestroyCharacter, 0.5f, false);
+}
+
+void ADegreeProjectCharacter::DestroyCharacter()
+{
+	ToggleGameOver();
+	Destroy();
+}
+
 void ADegreeProjectCharacter::TogglePauseMenu()
 {
 	APlayerController* PlayerController = Cast<APlayerController>(GetController());
@@ -231,6 +288,41 @@ void ADegreeProjectCharacter::TogglePauseMenu()
 			PlayerController->SetPause(true);
 			PlayerController->SetShowMouseCursor(true);
 			//PlayerController->SetInputMode(FInputModeUIOnly());
+		}
+	}
+}
+
+void ADegreeProjectCharacter::ToggleGameOver()
+{
+	APlayerController* PlayerController = Cast<APlayerController>(GetController());
+	if (!PlayerController) return;
+
+	if (PlayerController->IsPaused())
+	{
+		if (GameOverInstance)
+		{
+			GameOverInstance->RemoveFromParent();
+			GameOverInstance = nullptr;
+		}
+		PlayerController->SetPause(false);
+		PlayerController->SetShowMouseCursor(false);
+		PlayerController->SetInputMode(FInputModeGameOnly());
+	}
+	else
+	{
+		// Pause game and show Game Over
+		if (!GameOverInstance && GameOverClass && bIsDead)
+		{
+			GameOverInstance = CreateWidget<UGameOverWidget>(PlayerController, GameOverClass);
+			if (!GameOverInstance) return;
+		}
+
+		if (GameOverInstance)
+		{
+			GameOverInstance->AddToViewport();
+			PlayerController->SetPause(true);
+			PlayerController->SetShowMouseCursor(true);
+			PlayerController->SetInputMode(FInputModeUIOnly());
 		}
 	}
 }
@@ -420,8 +512,10 @@ void ADegreeProjectCharacter::StartAttack(const FInputActionValue& Value)
 	if (!bIsAttacking) // Check if not already attacking
 	{
 		bIsAttacking = true;
+
 		//GetMesh()->SetAnimationMode(EAnimationMode::AnimationBlueprint);
 		//UpdateAnimationState(true);
+
 		UE_LOG(LogTemp, Warning, TEXT("Attack Started!"));
 
 		//EnableHitbox(); // Enable the hitbox when the attack starts
@@ -476,7 +570,7 @@ void ADegreeProjectCharacter::Dash()
 	{
 		FRotator TargetRotation = UKismetMathLibrary::MakeRotFromX(GetCharacterMovement()->GetLastInputVector());
 		SetActorRotation(TargetRotation);
-
+		
 		bIsDashing = true;
 		bCanDash = false;
 		TArray<FName> DashSockets = { "DashVFX", "VFX_C", "RightFootVFX", "LeftFootVFX" };
@@ -548,30 +642,47 @@ void ADegreeProjectCharacter::ResetDashCoolDown()
 	bCanDash = true;
 }
 
-void ADegreeProjectCharacter::RegenerateAttributes()
+void ADegreeProjectCharacter::RegenerateAttributes(float DeltaTime)
 {
 	if (!AttributeSet) return;
 
-	if (AttributeSet->GetCurrentStamina() < AttributeSet->GetMaxStamina())
+	if (AttributeSet->GetCurrentStamina() < AttributeSet->GetMaxStamina() && bCanRegenStamina)
 	{
-		float NewStamina = FMath::Clamp(AttributeSet->GetCurrentStamina() + StaminaRegenRate, 0.0f, AttributeSet->GetMaxStamina());
-		AttributeSet->SetCurrentStamina(NewStamina);
+
+		bCanRegenStamina = false;
+		GetWorldTimerManager().ClearTimer(StaminaRegenTimerHandle);
+		GetWorldTimerManager().SetTimer(StaminaRegenTimerHandle, this, &ADegreeProjectCharacter::StartUtilityRegen, RegenDelay, false);
 	}
 
-	if (AttributeSet->GetCurrentMana() < AttributeSet->GetMaxMana())
+	if (AttributeSet->GetCurrentMana() < AttributeSet->GetMaxMana() && bCanRegenStamina)
 	{
-		float NewMana = FMath::Clamp(AttributeSet->GetCurrentMana() + ManaRegenRate, 0.0f, AttributeSet->GetMaxMana());
-		AttributeSet->SetCurrentMana(NewMana);
+		bCanRegenStamina = false;
+		GetWorldTimerManager().ClearTimer(StaminaRegenTimerHandle);
+		GetWorldTimerManager().SetTimer(StaminaRegenTimerHandle, this, &ADegreeProjectCharacter::StartUtilityRegen, RegenDelay, false);
 	}
 }
 
-void ADegreeProjectCharacter::EndAttack(const FInputActionValue& Value)
+void ADegreeProjectCharacter::StartUtilityRegen()
+{
+	bCanRegenStamina = true;
+	RegenerateUtility();
+}
+
+void ADegreeProjectCharacter::RegenerateUtility()
+{
+	float NewStamina = FMath::FInterpTo(AttributeSet->GetCurrentStamina(), AttributeSet->GetMaxStamina(), GetWorld()->GetDeltaSeconds(), 1.f);
+	AttributeSet->SetCurrentStamina(FMath::CeilToInt(NewStamina));
+
+	float NewMana = FMath::FInterpTo(AttributeSet->GetCurrentMana(),AttributeSet->GetMaxMana(), GetWorld()->GetDeltaSeconds(), 1.f);
+	AttributeSet->SetCurrentMana(FMath::CeilToInt(NewMana));
+}
+
+void ADegreeProjectCharacter::EndAttack()
 {
 	bIsAttacking = false;
-	//UpdateAnimationState(false);
-	DisableHitbox(); // Disable the hitbox when the attack ends
 	UE_LOG(LogTemp, Warning, TEXT("Attack Ended!"));
 }
+
 
 void ADegreeProjectCharacter::ExplosionAttack()
 {

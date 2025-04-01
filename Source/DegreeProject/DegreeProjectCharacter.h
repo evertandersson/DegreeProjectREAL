@@ -26,6 +26,7 @@ class UCameraComponent;
 class UInputMappingContext;
 class UInputAction;
 class UPauseMenuWidget;
+class UGameOverWidget;
 class UMyAbilitySystemComponent;
 class UAbilitySystemComponent;
 struct FInputActionValue;
@@ -82,11 +83,15 @@ class ADegreeProjectCharacter : public ACharacter, public IAbilitySystemInterfac
 	UPROPERTY(EditAnywhere, BlueprintReadonly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* PauseAction;
 
+	UPROPERTY(EditAnywhere, BlueprintReadonly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction* TurnAction;
+
 
 public:
 	ADegreeProjectCharacter();
 	
 	virtual void BeginPlay() override;
+	virtual void Tick(float DeltaTime) override;
 
 	// Implement the interface method to return the Ability System
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
@@ -95,12 +100,20 @@ public:
 	UFUNCTION(BlueprintImplementableEvent, Category = "Health")
 	void OnHealthChanged(float DeltaValue, const FGameplayTagContainer& EventTags);
 
+	UFUNCTION(BlueprintCallable, Category = "Health")
+	void TakeDamage(float DamageAmount);
+
+	void HandleDeath();
+	
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attributes")
 	int MaxMana = 100;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attributes")
 	int MaxStamina = 100;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attributes")
 	int MaxStat = 99; //Change later if needed
+
+
 
 	//Dash mechanic
 	void Dash();
@@ -127,6 +140,7 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Attributes", Replicated, meta = (AllowPrivateAccess = "true"))
 	UStandardAttributeSet* AttributeSet;
 
+
 	// Initializes the character's attributes when the game starts.
 	void InitializeAttributes();
 
@@ -145,6 +159,7 @@ protected:
 	/** Handle Jump */
 	virtual void Jump() override;
 
+	void DestroyCharacter();
 	int Damage;
 
 	int Health;
@@ -186,13 +201,19 @@ protected:
 	virtual void NotifyControllerChanged() override;
 
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+
+	UPROPERTY(EditAnywhere);
+	bool bCanRegenStamina = true;
 private:
 	class UAIPerceptionStimuliSourceComponent* StimulusSource;
 	 
 	void SetupStimulusSource(); 
 
 	// Timer handle for stamina/mana regen
-	FTimerHandle RegenTimerHandle;
+
+	
+	UPROPERTY(EditAnywhere, Category = "Attributes")
+	float RegenDelay = 0.1f;
 
 	// Regeneration amount per tick
 	UPROPERTY(EditAnywhere, Category = "Attributes")
@@ -205,7 +226,9 @@ private:
 	float RegenInterval = 1.0f; // Every second
 
 	// Function to restore stamina/mana
-	void RegenerateAttributes();
+	void RegenerateAttributes(float DeltaTime);
+	void StartUtilityRegen();
+	void RegenerateUtility();
 
 public:
 	/** Returns CameraBoom subobject **/
@@ -214,7 +237,7 @@ public:
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
 
 	UFUNCTION(BlueprintCallable)
-	void EndAttack(const FInputActionValue& Value);
+	void EndAttack();
 
 	UFUNCTION(BlueprintCallable)
 	void ExplosionAttack();
@@ -249,12 +272,17 @@ public:
 	void DisableHitbox();
 
 	void TogglePauseMenu();
+	void ToggleGameOver();
 
 	UPROPERTY(EditAnywhere, Category = "UI")
 	TSubclassOf<UPauseMenuWidget> PauseMenuClass;
+	UPROPERTY(EditAnywhere, Category = "UI")
+	TSubclassOf<UGameOverWidget> GameOverClass;
 
 	UPROPERTY()
 	UPauseMenuWidget* PauseMenuInstance;
+	UPROPERTY()
+	UGameOverWidget* GameOverInstance;
 
 	UPROPERTY(BlueprintReadWrite, VisibleAnywhere)
 	bool bIsAttacking;
@@ -286,6 +314,9 @@ private:
 	USphereComponent* ExplosionHitbox;
 
 	FTimerHandle DestroyHitboxTimerHandle;
+
+	FVector InitialLocation;  // Stores the location before attack starts
+	FTimerHandle AttackTimer;
 	// Function to handle attribute changes
 
 	// Function to handle changes in health attributes
@@ -303,11 +334,19 @@ private:
 	// Specifies which properties should be replicated over the network
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
+	UPROPERTY(VisibleAnywhere)
+	bool bIsDead = false;
+
 private:
+	
+
 	float DefaultFriction;
 	float DefaultWalkSpeed;
 	float DefualtBreakFriction;
 
+	FTimerHandle RegenTimerHandle;
+	FTimerHandle DeathTimerHandle;
+	FTimerHandle StaminaRegenTimerHandle;
 	FTimerHandle DashTimerHandle;
 	FTimerHandle CoolDownTimerHandle;
 
