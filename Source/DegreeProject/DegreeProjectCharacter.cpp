@@ -39,6 +39,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "Components/AudioComponent.h"
 
+#include "Inventory/WeaponInventoryComponent.h"
 #include "InputActionValue.h"
 #include "Perception/AIPerceptionStimuliSourceComponent.h"
 #include "Perception/AISenseConfig_Sight.h"
@@ -52,6 +53,8 @@ DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 
 ADegreeProjectCharacter::ADegreeProjectCharacter()
 {
+	WeaponInventory = CreateDefaultSubobject<UWeaponInventoryComponent>(TEXT("WeaponInventory"));
+
 	// Set size for collision capsule
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
 		
@@ -432,6 +435,8 @@ void ADegreeProjectCharacter::SetupPlayerInputComponent(UInputComponent* PlayerI
 		EnhancedInputComponent->BindAction(AttackAction, ETriggerEvent::Triggered, this, &ADegreeProjectCharacter::StartAttack);
 
 		EnhancedInputComponent->BindAction(PauseAction, ETriggerEvent::Triggered, this, &ADegreeProjectCharacter::TogglePauseMenu);
+
+		EnhancedInputComponent->BindAction(SwitchWeapon, ETriggerEvent::Triggered, this, &ADegreeProjectCharacter::SwitchToNextWeapon);
 
 		//Dashing Ensure the abilitySystemComponent is valid
 		if (AbilitySystemComponent && PlayerInputComponent)
@@ -814,8 +819,13 @@ void ADegreeProjectCharacter::OnExplosionOverlap(UPrimitiveComponent* Overlapped
 	UE_LOG(LogTemp, Warning, TEXT("%s moved to: %s"), *OtherActor->GetName(), *OtherActor->GetActorLocation().ToString());
 }
 
-
-
+void ADegreeProjectCharacter::SwitchToNextWeapon()
+{
+	if (WeaponInventory)
+	{
+		WeaponInventory->SwitchWeapon(1);
+	}
+}
 
 void ADegreeProjectCharacter::UpdateAnimationState(bool bIsAttackingAni)
 {

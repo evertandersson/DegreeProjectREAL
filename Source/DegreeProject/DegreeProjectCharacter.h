@@ -11,6 +11,7 @@
 #include "GameplayTagContainer.h"
 #include <GameplayEffectTypes.h>
 
+#include "Inventory/WeaponInventoryComponent.h"
 #include "Particles/ParticleSystem.h"
 #include "NiagaraSystem.h"
 #include "NiagaraFunctionLibrary.h"
@@ -21,6 +22,7 @@
 #include "UStandardAttributeSet.h"
 #include "DegreeProjectCharacter.generated.h"
 
+class UWeaponInventoryComponent;
 class USpringArmComponent;
 class UCameraComponent;
 class UInputMappingContext;
@@ -84,9 +86,7 @@ class ADegreeProjectCharacter : public ACharacter, public IAbilitySystemInterfac
 	UInputAction* PauseAction;
 
 	UPROPERTY(EditAnywhere, BlueprintReadonly, Category = Input, meta = (AllowPrivateAccess = "true"))
-	UInputAction* TurnAction;
-
-
+	UInputAction* SwitchWeapon;
 public:
 	ADegreeProjectCharacter();
 	
@@ -205,6 +205,9 @@ protected:
 	UPROPERTY(EditAnywhere);
 	bool bCanRegenStamina = true;
 private:
+	UPROPERTY()
+	UWeaponInventoryComponent* WeaponInventory;
+
 	class UAIPerceptionStimuliSourceComponent* StimulusSource;
 	 
 	void SetupStimulusSource(); 
@@ -252,6 +255,9 @@ public:
 	void OnExplosionOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
 		UPrimitiveComponent* OtherComp, int32 OtherBodyIndex,
 		bool bFromSweep, const FHitResult& SweepResult);
+
+	UFUNCTION()
+	void SwitchToNextWeapon();
 
 	UPROPERTY(EditAnywhere, Category = "Explosion Attack")
 	float MaxExplosionRadius = 200.0f;
