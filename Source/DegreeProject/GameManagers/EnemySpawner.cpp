@@ -11,6 +11,7 @@ AEnemySpawner::AEnemySpawner()
 
 	CurrentRound = 0;
 	EnemiesKilled = 0;
+    Radius = 2000.f;
 }
 
 
@@ -98,7 +99,6 @@ void AEnemySpawner::SpawnEnemy()
     {
         // Define the center of the circle
         FVector CircleCenter = GetActorLocation();
-        float Radius = 1000.f;
         float AngleStep = 360 / SpawnCount;
         float Angle = AlreadySpawnedCount * AngleStep;
 
@@ -106,7 +106,7 @@ void AEnemySpawner::SpawnEnemy()
         float RadAngle = FMath::DegreesToRadians(Angle);
         float X = CircleCenter.X + Radius * FMath::Cos(RadAngle);
         float Y = CircleCenter.Y + Radius * FMath::Sin(RadAngle);
-        float Z = 200.f;
+        float Z = 1500.f;
 
         FVector SpawnLocation = FVector(X, Y, Z);
         FRotator SpawnRotation = FRotator::ZeroRotator;

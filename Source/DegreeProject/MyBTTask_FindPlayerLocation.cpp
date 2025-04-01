@@ -26,12 +26,12 @@ EBTNodeResult::Type UMyBTTask_FindPlayerLocation::ExecuteTask(UBehaviorTreeCompo
 			UE_LOG(LogTemp, Warning, TEXT("GetWorld(): %s"), GetWorld() ? TEXT("Valid") : TEXT("NULL"));
 			if(auto* const NavSys = UNavigationSystemV1::GetCurrent(GetWorld()))
 			{
-			  if(NavSys->GetRandomPointInNavigableRadius(PlayerLocation, SearchRadius, Loc))
-			  {
-				  OwnerComp.GetBlackboardComponent()->SetValueAsVector(GetSelectedBlackboardKey(), Loc.Location);
-				  FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
-				  return EBTNodeResult::Succeeded;
-			  }
+				if(NavSys->GetRandomPointInNavigableRadius(PlayerLocation, SearchRadius, Loc))
+				{
+					OwnerComp.GetBlackboardComponent()->SetValueAsVector(GetSelectedBlackboardKey(), Loc.Location);
+					FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
+					return EBTNodeResult::Succeeded;
+				}
 			}
 
 			else 
