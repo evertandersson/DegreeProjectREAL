@@ -3,6 +3,7 @@
 
 #include "HealthPickup.h"
 #include "UStandardAttributeSet.h"
+#include "Pickup.h"
 #include "DegreeProjectCharacter.h"
 #include "Components/BoxComponent.h"
 
@@ -23,6 +24,7 @@ AHealthPickup::AHealthPickup()
 	PickUpBox->SetWorldScale3D(FVector(1.0f, 1.0f, 1.0f));
 	PickUpBox->OnComponentBeginOverlap.AddDynamic(this, &AHealthPickup::OnPlayerInteraction);
 
+	
 }
 
 // Called when the game starts or when spawned
