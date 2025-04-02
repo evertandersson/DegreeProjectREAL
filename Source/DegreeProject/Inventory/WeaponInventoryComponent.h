@@ -23,13 +23,13 @@ protected:
 	virtual void BeginPlay() override;
 
 private: 
-	UPROPERTY()
+	UPROPERTY(VisibleAnywhere)
 	TArray<AWeaponBase*> WeaponSlots;
 
-	UPROPERTY()
+	UPROPERTY(VisibleAnywhere)
 	AWeaponBase* EquippedWeapon;
 
-	UPROPERTY()
+	UPROPERTY(VisibleAnywhere)
 	int32 EquippedWeaponIndex;
 
 public:	

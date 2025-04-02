@@ -4,7 +4,11 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "Inventory/WeaponBase.h"
 #include "WeaponPickUp.generated.h"
+
+class USphereComponent;
+class ADegreeProjectCharacter;
 
 UCLASS()
 class DEGREEPROJECT_API AWeaponPickUp : public AActor
@@ -20,7 +24,17 @@ protected:
 	virtual void BeginPlay() override;
 
 public:	
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
+	virtual void NotifyActorBeginOverlap(AActor* OtherActor)override;
+	virtual void NotifyActorEndOverlap(AActor* OtherActor)override;
 
+	void PickupWeapon();
+
+private:
+	UPROPERTY(VisibleAnywhere, Category="Components")
+	USphereComponent* CollisionComponent;
+
+	UPROPERTY(EditAnywhere, Category = "Weapon")
+	TSubclassOf<AWeaponBase> WeaponClass;
+
+	ADegreeProjectCharacter* OverlappingPlayer;
 };

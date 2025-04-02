@@ -39,6 +39,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "Components/AudioComponent.h"
 
+#include "Inventory/WeaponPickup.h"
 #include "Inventory/WeaponInventoryComponent.h"
 #include "InputActionValue.h"
 #include "Perception/AIPerceptionStimuliSourceComponent.h"
@@ -108,9 +109,6 @@ ADegreeProjectCharacter::ADegreeProjectCharacter()
 
 	// Initialize the Attribute Set component for managing health and other attributes
 	AttributeSet = CreateDefaultSubobject<UStandardAttributeSet>(TEXT("AttributeSet"));
-	
-
-	SetupStimulusSource();
 
 	AudioComponent = CreateDefaultSubobject<UAudioComponent>(TEXT("AudioComponent"));
 	AudioComponent->bAutoActivate = false;
@@ -438,6 +436,8 @@ void ADegreeProjectCharacter::SetupPlayerInputComponent(UInputComponent* PlayerI
 
 		EnhancedInputComponent->BindAction(SwitchWeapon, ETriggerEvent::Triggered, this, &ADegreeProjectCharacter::SwitchToNextWeapon);
 
+		EnhancedInputComponent->BindAction(PickUpWeapons, ETriggerEvent::Triggered, this, &ADegreeProjectCharacter::TryPickupWeapon);
+
 		//Dashing Ensure the abilitySystemComponent is valid
 		if (AbilitySystemComponent && PlayerInputComponent)
 		{
@@ -456,15 +456,27 @@ void ADegreeProjectCharacter::SetupPlayerInputComponent(UInputComponent* PlayerI
 	}
 }
 
-void ADegreeProjectCharacter::SetupStimulusSource()
+void ADegreeProjectCharacter::TryPickupWeapon()
 {
-	StimulusSource = CreateDefaultSubobject<UAIPerceptionStimuliSourceComponent>(TEXT("Stimulus"));
-	if (StimulusSource)
+	TArray<AActor*> OverlappingActors;
+	GetOverlappingActors(OverlappingActors, AWeaponPickUp::StaticClass());
+
+	UE_LOG(LogTemp, Warning, TEXT("Overlapping pickups found: %d"), OverlappingActors.Num());
+
+	for (AActor* Actor : OverlappingActors)
 	{
-		StimulusSource->RegisterForSense(TSubclassOf<UAISense_Sight>());
-		StimulusSource->RegisterWithPerceptionSystem();
+		AWeaponPickUp* Pickup = Cast<AWeaponPickUp>(Actor);
+		if (Pickup)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Found weapon pickup, attempting to pick up."));
+			Pickup->PickupWeapon();
+			return;
+		}
 	}
+
+	UE_LOG(LogTemp, Warning, TEXT("No valid weapon pickups found."));
 }
+
 
 void ADegreeProjectCharacter::Move(const FInputActionValue& Value)
 {
@@ -525,25 +537,6 @@ void ADegreeProjectCharacter::StartAttack(const FInputActionValue& Value)
 
 		//EnableHitbox(); // Enable the hitbox when the attack starts
 	}
-}
-
-void ADegreeProjectCharacter::LineTrace()
-{
-	//FVector StartLocation = SwordMesh->GetSocketLocation(FName("Start"));
-	//FVector EndLocation = SwordMesh->GetSocketLocation(FName("End"));
-	//
-	//FHitResult HitResult;
-	//FCollisionQueryParams TraceParams;
-	//TraceParams.AddIgnoredActor(this);
-	//
-	//GetWorld()->LineTraceSingleByChannel(HitResult, StartLocation, EndLocation, ECC_Visibility, TraceParams);
-	//
-	//DrawDebugLine(GetWorld(), StartLocation, EndLocation, FColor::Red, false, 1, 0, 1);
-	//if (HitResult.bBlockingHit)
-	//{
-	//	AActor* ActorHit = HitResult.GetActor();
-	//	ActorHit->Destroy();
-	//}
 }
 
 void ADegreeProjectCharacter::EnableHitbox()
@@ -824,27 +817,5 @@ void ADegreeProjectCharacter::SwitchToNextWeapon()
 	if (WeaponInventory)
 	{
 		WeaponInventory->SwitchWeapon(1);
-	}
-}
-
-void ADegreeProjectCharacter::UpdateAnimationState(bool bIsAttackingAni)
-{
-	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance(); // Get active AnimBP
-	if (AnimInstance)
-	{
-		UKnightAnimationClass* AnimBP = Cast<UKnightAnimationClass>(AnimInstance);
-		if (AnimBP)
-		{
-			AnimBP->bIsAttacking = bIsAttackingAni; // Set animation state
-			UE_LOG(LogTemp, Warning, TEXT("Updated Animation State: %s"), bIsAttackingAni ? TEXT("Attacking") : TEXT("Idle"));
-		}
-		else
-		{
-			UE_LOG(LogTemp, Error, TEXT("Failed to cast to KnightAnimationBlueprint!"));
-		}
-	}
-	else
-	{
-		UE_LOG(LogTemp, Error, TEXT("No Animation Instance found on the Skeletal Mesh!"));
 	}
 }

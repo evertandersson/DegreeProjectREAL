@@ -87,6 +87,9 @@ class ADegreeProjectCharacter : public ACharacter, public IAbilitySystemInterfac
 
 	UPROPERTY(EditAnywhere, BlueprintReadonly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* SwitchWeapon;
+
+	UPROPERTY(EditAnywhere, BlueprintReadonly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction* PickUpWeapons;
 public:
 	ADegreeProjectCharacter();
 	
@@ -205,12 +208,11 @@ protected:
 	UPROPERTY(EditAnywhere);
 	bool bCanRegenStamina = true;
 private:
-	UPROPERTY()
-	UWeaponInventoryComponent* WeaponInventory;
 
-	class UAIPerceptionStimuliSourceComponent* StimulusSource;
-	 
-	void SetupStimulusSource(); 
+	void TryPickupWeapon();
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Inventory", meta = (AllowPrivateAccess = "true"))
+	UWeaponInventoryComponent* WeaponInventory;
 
 	// Timer handle for stamina/mana regen
 
@@ -267,9 +269,6 @@ public:
 
 	UPROPERTY(EditAnywhere, Category = "Explosion Attack")
 	float ExplosionForce = 1500.0f;
-
-	UFUNCTION(BlueprintCallable)
-	void LineTrace();
 
 	UFUNCTION(BlueprintCallable)
 	void EnableHitbox();
@@ -355,7 +354,5 @@ private:
 	FTimerHandle StaminaRegenTimerHandle;
 	FTimerHandle DashTimerHandle;
 	FTimerHandle CoolDownTimerHandle;
-
-	void UpdateAnimationState(bool bIsAttackingAni);
 };
 

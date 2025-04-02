@@ -16,13 +16,29 @@ void UWeaponInventoryComponent ::BeginPlay()
 	Super::BeginPlay();
 }
 
-void UWeaponInventoryComponent ::AddWeapon(AWeaponBase* NewWeapon)
+void UWeaponInventoryComponent::AddWeapon(AWeaponBase* NewWeapon)
 {
-	if (NewWeapon && !WeaponSlots.Contains(NewWeapon))
+	if (NewWeapon)
 	{
 		WeaponSlots.Add(NewWeapon);
+
+		if (WeaponSlots.Num() == 1)
+		{
+			EquipWeapon(0);
+		}
+
+		// Show all inventory slots in debug log
+		FString InventoryList = "Current Inventory: ";
+		for (int32 i = 0; i < WeaponSlots.Num(); i++)
+		{
+			InventoryList += FString::Printf(TEXT("[%d] %s "), i, *WeaponSlots[i]->GetName());
+		}
+
+		UE_LOG(LogTemp, Warning, TEXT("Weapon Added! %s"), *InventoryList);
+		GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Green, InventoryList);
 	}
 }
+
 
 void UWeaponInventoryComponent ::RemoveWeapon(AWeaponBase* Weapon)
 {
@@ -36,12 +52,22 @@ void UWeaponInventoryComponent ::RemoveWeapon(AWeaponBase* Weapon)
 	}
 }
 
-void UWeaponInventoryComponent ::EquipWeapon(int32 SlotIndex)
+void UWeaponInventoryComponent::EquipWeapon(int32 SlotIndex)
 {
 	if (WeaponSlots.IsValidIndex(SlotIndex))
 	{
 		EquippedWeapon = WeaponSlots[SlotIndex];
 		EquippedWeaponIndex = SlotIndex;
+
+		UE_LOG(LogTemp, Warning, TEXT("Equipped Weapon at Index: %d"), EquippedWeaponIndex);
+
+		// Debug on-screen message
+		FString DebugMessage = FString::Printf(TEXT("Equipped Weapon at Index: %d"), EquippedWeaponIndex);
+		GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Yellow, DebugMessage);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("Invalid Equip Index: %d"), SlotIndex);
 	}
 }
 

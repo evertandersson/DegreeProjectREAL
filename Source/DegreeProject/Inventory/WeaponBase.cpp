@@ -18,10 +18,3 @@ void AWeaponBase::BeginPlay()
 	
 }
 
-// Called every frame
-void AWeaponBase::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-
-}
-
