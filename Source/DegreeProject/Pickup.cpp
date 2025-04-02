@@ -49,7 +49,6 @@ void APickup::OnPlayerInteraction(UPrimitiveComponent* OverlappedComp, AActor* O
 		if (pickupTypes == PickupType::HEALTH)
 		{
 
-			UE_LOG(LogTemp, Warning, TEXT("hITT"));
 			ADegreeProjectCharacter* Player = Cast<ADegreeProjectCharacter>(OtherActor);
 			UStandardAttributeSet* AttributeSet = Player->GetAttributeSet();
 			if (!AttributeSet)
@@ -59,9 +58,10 @@ void APickup::OnPlayerInteraction(UPrimitiveComponent* OverlappedComp, AActor* O
 
 			if (AttributeSet->CurrentHealth.GetCurrentValue() < AttributeSet->MaxHealth.GetCurrentValue())
 			{
-				UE_LOG(LogTemp, Warning, TEXT("HEAL"));
+				
 				AttributeSet->AddHealth(10.f);
 				Destroy();
+				UE_LOG(LogTemp, Warning, TEXT("HEAL"));
 			}
 		}
 

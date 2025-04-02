@@ -50,7 +50,6 @@ void UStandardAttributeSet::AddHealth(float Amount)
 {
 	if (CurrentHealth.GetCurrentValue() < MaxHealth.GetCurrentValue())
     {
-		UE_LOG(LogTemp, Warning, TEXT("HEAL"));
 		CurrentHealth.SetCurrentValue(CurrentHealth.GetCurrentValue() + Amount);
 	}	
 }
