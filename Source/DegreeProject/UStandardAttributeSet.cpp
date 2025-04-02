@@ -24,7 +24,7 @@ UStandardAttributeSet::UStandardAttributeSet() :
 
 	// Set default values for health attributes
     CurrentHealth.SetBaseValue(100.f);
-	CurrentHealth.SetCurrentValue(70.f);
+	CurrentHealth.SetCurrentValue(100.f);
 
 	// Set default values for max health attributes
 	MaxHealth.SetBaseValue(100.f);
@@ -50,7 +50,6 @@ void UStandardAttributeSet::AddHealth(float Amount)
 {
 	if (CurrentHealth.GetCurrentValue() < MaxHealth.GetCurrentValue())
     {
-		UE_LOG(LogTemp, Warning, TEXT("HEAL"));
 		CurrentHealth.SetCurrentValue(CurrentHealth.GetCurrentValue() + Amount);
 	}	
 }
@@ -171,6 +170,13 @@ void UStandardAttributeSet::PostGameplayEffectExecute(const FGameplayEffectModCa
 	{
 		float NewHealth = FMath::Clamp(CurrentHealth.GetCurrentValue(), 0.0f, MaxHealth.GetCurrentValue());
 		SetCurrentHealth(NewHealth);
+
+		ADegreeProjectCharacter* OwnerCharacter = Cast<ADegreeProjectCharacter>(GetOwningActor());
+		if (OwnerCharacter && NewHealth <= 0.0f)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Character should die now!"));
+			OwnerCharacter->HandleDeath();
+		}
 	}
 
 	if (Data.EvaluatedData.Attribute == GetCurrentManaAttribute())
@@ -184,4 +190,3 @@ void UStandardAttributeSet::PostGameplayEffectExecute(const FGameplayEffectModCa
 		SetCurrentStamina(NewStamina);
 	}
 }
-

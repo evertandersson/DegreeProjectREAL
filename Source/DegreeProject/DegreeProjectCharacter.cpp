@@ -214,13 +214,16 @@ UStandardAttributeSet* ADegreeProjectCharacter::GetAttributeSet()
 
 void ADegreeProjectCharacter::TakeDamage(float DamageAmount)
 {
-	if (bIsDead) return;
+	if (bIsDead || DamageAmount <= 0.0f) return;
 
-	if (DamageAmount <= 0.0f) return;
+	static ConstructorHelpers::FClassFinder<UGameplayEffect> DamageEffect(TEXT("/Game/Ablities/Combat/GE_Damage"));
 
-	if (AttributeSet)
+	if(DamageEffect.Succeeded())
 	{
-		AttributeSet->RemoveHealth(DamageAmount);
+		TSubclassOf<UGameplayEffect> DamageEffectClass = DamageEffect.Class;
+		FGameplayEffectSpecHandle EffectSpecHandle = AbilitySystemComponent->MakeOutgoingSpec(DamageEffectClass, 1.0f, AbilitySystemComponent->MakeEffectContext());
+		EffectSpecHandle.Data->SetSetByCallerMagnitude(FGameplayTag::RequestGameplayTag(FName("Effect.Damage")), DamageAmount);
+		AbilitySystemComponent->ApplyGameplayEffectSpecToSelf(*EffectSpecHandle.Data.Get());
 	}
 	if (AttributeSet->CurrentHealth.GetCurrentValue() <= 0.0f && !bIsDead)
 	{
@@ -228,6 +231,12 @@ void ADegreeProjectCharacter::TakeDamage(float DamageAmount)
 
 		HandleDeath();
 	}
+
+	/*if (AttributeSet)
+	{
+		AttributeSet->RemoveHealth(DamageAmount);
+	}
+	*/
 }
 
 void ADegreeProjectCharacter::HandleDeath()
@@ -301,7 +310,7 @@ void ADegreeProjectCharacter::ToggleGameOver()
 	}
 	else
 	{
-		// Pause game and show menu
+		// Pause game and show Game Over
 		if (!GameOverInstance && GameOverClass && bIsDead)
 		{
 			GameOverInstance = CreateWidget<UGameOverWidget>(PlayerController, GameOverClass);
@@ -313,6 +322,7 @@ void ADegreeProjectCharacter::ToggleGameOver()
 			GameOverInstance->AddToViewport();
 			PlayerController->SetPause(true);
 			PlayerController->SetShowMouseCursor(true);
+			PlayerController->SetInputMode(FInputModeUIOnly());
 		}
 	}
 }

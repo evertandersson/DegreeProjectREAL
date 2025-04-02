@@ -28,9 +28,6 @@ public:
 	void AddDefence(float Number);
 	void ResetDefance(float Number);
 
-	
-
-
 	// Health attributes:
 
 	// Declares the CurrentHealth attribute, making it readonly in blueprints and replicated to clients.

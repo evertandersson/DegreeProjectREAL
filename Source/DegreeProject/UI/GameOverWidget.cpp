@@ -42,16 +42,15 @@ bool UGameOverWidget::Initialize()
 
 void UGameOverWidget::OnRestartButtonClicked()
 {
-    UGameplayStatics::OpenLevel(this, FName(*GetWorld()->GetName()), false);
-
     APlayerController* PlayerController = UGameplayStatics::GetPlayerController(this, 0);
     if (!PlayerController) return;
 
     RemoveFromParent();
-
-    PlayerController->SetPause(false);
-    PlayerController->SetShowMouseCursor(false);
+    PlayerController->bShowMouseCursor = false;
     PlayerController->SetInputMode(FInputModeGameOnly());
+
+
+    UGameplayStatics::OpenLevel(this, FName(*GetWorld()->GetName()), false);
 }
 
 void UGameOverWidget::OnMainMenuButtonClicked()
