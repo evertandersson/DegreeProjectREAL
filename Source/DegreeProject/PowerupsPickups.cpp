@@ -54,7 +54,7 @@ void APowerupsPickups::OnPlayerInteraction(UPrimitiveComponent* OverlappedComp, 
 		SetActorHiddenInGame(true);
 		SetActorEnableCollision(false);
 		
-		GetWorld()->GetTimerManager().SetTimer(TimerHandle, this, &APowerupsPickups::ResetDefense, 2.0f, false);
+		GetWorld()->GetTimerManager().SetTimer(TimerHandle, this, &APowerupsPickups::ResetDefense, 5.0f, false);
 		UE_LOG(LogTemp, Warning, TEXT("ADDED DEFENSE"));
 	}
 }
