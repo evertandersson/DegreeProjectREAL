@@ -70,18 +70,6 @@ void UStandardAttributeSet::ResetDefance(float Number)
 
 }
 
-//FGameplayAttribute UStandardAttributeSet::GetCurrentHealthAttribute()
-//{
-//	static FProperty* Property = FindFProperty<FProperty>(UStandardAttributeSet::StaticClass(), GET_MEMBER_NAME_CHECKED(UStandardAttributeSet, CurrentHealth));
-//	return FGameplayAttribute(Property);
-//}
-//
-//FGameplayAttribute UStandardAttributeSet::GetMaxHealthAttribute()
-//{
-//	static FProperty* Property = FindFProperty<FProperty>(UStandardAttributeSet::StaticClass(), GET_MEMBER_NAME_CHECKED(UStandardAttributeSet, MaxHealth));
-//	return FGameplayAttribute(Property);
-//}
-
 // Define which properties are replicated over the network
 void UStandardAttributeSet::GetLifetimeReplicatedProps(TArray <FLifetimeProperty>& OutLifetimeProps) const
 {
