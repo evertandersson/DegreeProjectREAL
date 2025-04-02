@@ -2,6 +2,8 @@
 
 
 #include "Pickup.h"
+#include "UStandardAttributeSet.h"
+#include "DegreeProjectCharacter.h"
 #include "Components/BoxComponent.h"
 
 // Sets default values
@@ -42,8 +44,48 @@ void APickup::Tick(float DeltaTime)
 void APickup::OnPlayerInteraction(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* otherComp,
 	int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResults)
 {
-       OnPickup(OverlappedComp, OtherActor, otherComp, OtherBodyIndex, bFromSweep, SweepResults);
+	if (OtherActor->ActorHasTag("Player"))
+	{
+		if (pickupTypes == PickupType::HEALTH)
+		{
 
+			ADegreeProjectCharacter* Player = Cast<ADegreeProjectCharacter>(OtherActor);
+			UStandardAttributeSet* AttributeSet = Player->GetAttributeSet();
+			if (!AttributeSet)
+			{
+				return;
+			}
+
+			if (AttributeSet->CurrentHealth.GetCurrentValue() < AttributeSet->MaxHealth.GetCurrentValue())
+			{
+				
+				AttributeSet->AddHealth(10.f);
+				Destroy();
+				UE_LOG(LogTemp, Warning, TEXT("HEAL"));
+			}
+		}
+
+		else if (pickupTypes == PickupType::POWERUPS)
+		{
+			ADegreeProjectCharacter* Player = Cast<ADegreeProjectCharacter>(OtherActor);
+			AttributeSets = Player->GetAttributeSet();
+
+			AttributeSets->AddDefence(3);
+
+			SetActorHiddenInGame(true);
+			SetActorEnableCollision(false);
+
+			GetWorld()->GetTimerManager().SetTimer(TimerHandle, this, &APickup::ResetDefense, 5.0f, false);
+			UE_LOG(LogTemp, Warning, TEXT("ADDED DEFENSE"));
+		}
+	}
+	
+}
+
+void APickup::ResetDefense()
+{
+	AttributeSets->Defence.SetCurrentValue(AttributeSets->Defence.GetCurrentValue() - 3);
+	UE_LOG(LogTemp, Warning, TEXT("REMOVED DEFENSE"));
 }
 
 void APickup::OnPickup(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* otherComp,
@@ -51,3 +93,5 @@ void APickup::OnPickup(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, 
 {
 	
 }
+
+

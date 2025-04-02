@@ -4,7 +4,18 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "TimerManager.h" 
+#include "UStandardAttributeSet.h"
 #include "Pickup.generated.h"
+
+UENUM(BlueprintType)
+enum class PickupType : uint8
+{
+	NONE = 0		UMETA(DisplayName = "Invalid"),
+	HEALTH			UMETA(DisplayName = "Health"),
+	POWERUPS        UMETA(DisplayName = "Powerups"),
+
+};
 
 UCLASS()
 class DEGREEPROJECT_API APickup : public AActor
@@ -34,6 +45,15 @@ public:
 	UPROPERTY(Editanywhere)
 	UStaticMeshComponent* PickUpMesh;
 
+	UPROPERTY(EditDefaultsOnly)
+	PickupType pickupTypes;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Pickup")
+	float value = 1.0f;
+
+	FTimerHandle TimerHandle;
+
+
 	UFUNCTION()
 	void OnPlayerInteraction(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* otherComp,
 		int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResults);
@@ -41,6 +61,14 @@ public:
 protected:
 	virtual void OnPickup(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* otherComp,
 		int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResults);
+
+private:
+
+	UPROPERTY()
+	UStandardAttributeSet* AttributeSets;
+
+	UFUNCTION()
+	void ResetDefense();
 
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Pickup")
