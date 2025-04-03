@@ -11,6 +11,9 @@ UGrapplingComponent::UGrapplingComponent()
 	PrimaryComponentTick.bCanEverTick = false;
 
 	bCanDisableGrapple = false;
+	bCanGrapple = true;
+	bIsRotatingTowardsGrapplePoint = false;
+	bIsGrappling = false;
 }
 
 
@@ -62,5 +65,22 @@ bool UGrapplingComponent::IsBeyondGrapplePoint(ADegreeProjectCharacter* Player)
 							&& bCanDisableGrapple;
 
 	return bIsBeyondGrapplePoint;
+}
+
+void UGrapplingComponent::RotateTowardsGrapplePoint(ADegreeProjectCharacter* Player, float Delta, float InterpSpeed)
+{
+	FVector PlayerLocation = Player->GetActorLocation();
+	FRotator LookAt = UKismetMathLibrary::FindLookAtRotation(PlayerLocation, GrapplePoint);
+
+	FRotator InterpTo = FMath::RInterpTo(Player->GetActorRotation(), LookAt, Delta, InterpSpeed);
+	Player->SetActorRotation(InterpTo);
+}
+
+void UGrapplingComponent::ResetValues()
+{
+	bCanDisableGrapple = false;
+	bIsRotatingTowardsGrapplePoint = false;
+	bCanGrapple = true;
+	bIsGrappling = false;
 }
 
