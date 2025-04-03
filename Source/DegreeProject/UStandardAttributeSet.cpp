@@ -209,12 +209,12 @@ void UStandardAttributeSet::PostGameplayEffectExecute(const FGameplayEffectModCa
 		}
 	}
 
-	//if (Data.EvaluatedData.Attribute == GetCurrentHealthAIAttribute())
-	//{
-	//	float NewAIHealth = FMath::Clamp(CurrentHealthAI.GetCurrentValue(), 0.0f, MaxHealthAI.GetCurrentValue());
-	//	SetCurrentHealth(NewAIHealth);
-	//	//kill AI
-	//}
+	if (Data.EvaluatedData.Attribute == GetCurrentHealthAIAttribute())
+	{
+		float NewAIHealth = FMath::Clamp(CurrentHealthAI.GetCurrentValue(), 0.0f, MaxHealthAI.GetCurrentValue());
+		SetCurrentHealthAI(NewAIHealth);
+		//kill AI
+	}
 
 	if (Data.EvaluatedData.Attribute == GetCurrentManaAttribute())
 	{
