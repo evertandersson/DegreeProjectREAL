@@ -103,6 +103,9 @@ ADegreeProjectCharacter::ADegreeProjectCharacter()
 	AbilitySystemComponent->SetIsReplicated(true);
 	AbilitySystemComponent->SetReplicationMode(EGameplayEffectReplicationMode::Mixed);
 
+	// Initialize Grappling Component
+	GrapplingComponent = CreateDefaultSubobject<UGrapplingComponent>(TEXT("GrapplingComponent"));
+
 	// Initialize the Attribute Set component for managing health and other attributes
 	AttributeSet = CreateDefaultSubobject<UStandardAttributeSet>(TEXT("AttributeSet"));
 	
