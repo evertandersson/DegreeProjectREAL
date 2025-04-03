@@ -39,7 +39,7 @@ float UMantleComponent::MantleTrace(ADegreeProjectCharacter* Player, float Lengt
         ObjectTypesArray,
         false,
         ActorsToIgnore,
-        EDrawDebugTrace::ForOneFrame,
+        EDrawDebugTrace::None,
         HitResult,
         true
     );
@@ -64,7 +64,7 @@ float UMantleComponent::MantleTrace(ADegreeProjectCharacter* Player, float Lengt
             ObjectTypesArray,
             false,
             ActorsToIgnore,
-            EDrawDebugTrace::ForOneFrame,
+            EDrawDebugTrace::None,
             HitResult2,
             true
         );
