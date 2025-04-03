@@ -57,7 +57,12 @@ void UStandardAttributeSet::AddHealth(float Amount)
 	if (CurrentHealth.GetCurrentValue() < MaxHealth.GetCurrentValue())
     {
 		CurrentHealth.SetCurrentValue(CurrentHealth.GetCurrentValue() + Amount);
-	}	
+	}
+
+	if (CurrentHealth.GetCurrentValue() + Amount > MaxHealth.GetCurrentValue())
+	{
+		CurrentHealth.SetCurrentValue(MaxHealth.GetCurrentValue());
+	}
 }
 
 void UStandardAttributeSet::RemoveHealth(float Amount)
