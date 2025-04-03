@@ -29,6 +29,7 @@ class UPauseMenuWidget;
 class UGameOverWidget;
 class UMyAbilitySystemComponent;
 class UAbilitySystemComponent;
+class UGrapplingComponent;
 struct FInputActionValue;
 
 DECLARE_LOG_CATEGORY_EXTERN(LogTemplateCharacter, Log, All);
@@ -139,6 +140,9 @@ protected:
 	// Attribute Set that stores and manages health and other attributes for replication.
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Attributes", Replicated, meta = (AllowPrivateAccess = "true"))
 	UStandardAttributeSet* AttributeSet;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	UGrapplingComponent* GrapplingComponent;
 
 
 	// Initializes the character's attributes when the game starts.
