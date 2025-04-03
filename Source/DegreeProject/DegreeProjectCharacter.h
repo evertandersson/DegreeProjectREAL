@@ -11,6 +11,7 @@
 #include "GameplayTagContainer.h"
 #include <GameplayEffectTypes.h>
 
+#include "Blueprint/UserWidget.h"
 #include "Inventory/WeaponInventoryComponent.h"
 #include "Particles/ParticleSystem.h"
 #include "NiagaraSystem.h"
@@ -208,6 +209,14 @@ protected:
 	UPROPERTY(EditAnywhere);
 	bool bCanRegenStamina = true;
 private:
+	UPROPERTY(EditDefaultsOnly, Category = "UI")
+	TSubclassOf<UUserWidget> WeaponInventoryWidgetClass;
+
+	UPROPERTY(EditDefaultsOnly, Category = "UI")
+	TSubclassOf<UUserWidget> SlotWidgetClass;
+
+	UUserWidget* WeaponInventoryWidget;
+	UUserWidget* SlotWidget;
 
 	void TryPickupWeapon();
 
