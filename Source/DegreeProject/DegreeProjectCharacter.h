@@ -30,6 +30,7 @@ class UGameOverWidget;
 class UMyAbilitySystemComponent;
 class UAbilitySystemComponent;
 class UGrapplingComponent;
+class UMantleComponent;
 struct FInputActionValue;
 
 DECLARE_LOG_CATEGORY_EXTERN(LogTemplateCharacter, Log, All);
@@ -143,6 +144,9 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	UGrapplingComponent* GrapplingComponent;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	UMantleComponent* MantleComponent;
 
 
 	// Initializes the character's attributes when the game starts.
