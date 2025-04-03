@@ -30,10 +30,25 @@ public:
 	UFUNCTION(BlueprintCallable)
 	bool IsBeyondGrapplePoint(ADegreeProjectCharacter* Player);
 
+	UFUNCTION(BlueprintCallable)
+	void RotateTowardsGrapplePoint(ADegreeProjectCharacter* Player, float Delta, float InterpSpeed);
+
+	UFUNCTION(BlueprintCallable)
+	void ResetValues();
+
 	UPROPERTY(BlueprintReadWrite)
 	FVector GrapplePoint;
 
 	UPROPERTY(BlueprintReadWrite)
 	bool bCanDisableGrapple;
+
+	UPROPERTY(BlueprintReadWrite)
+	bool bCanGrapple;
+
+	UPROPERTY(BlueprintReadWrite)
+	bool bIsRotatingTowardsGrapplePoint;
+
+	UPROPERTY(BlueprintReadWrite)
+	bool bIsGrappling;
 
 };
