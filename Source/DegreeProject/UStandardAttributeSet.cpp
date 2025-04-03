@@ -24,7 +24,7 @@ UStandardAttributeSet::UStandardAttributeSet() :
 
 	// Set default values for health attributes
     CurrentHealth.SetBaseValue(100.f);
-	CurrentHealth.SetCurrentValue(75.f);
+	CurrentHealth.SetCurrentValue(100.f);
 
 	// Set default values for max health attributes
 	MaxHealth.SetBaseValue(100.f);
