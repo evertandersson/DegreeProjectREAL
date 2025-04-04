@@ -368,7 +368,7 @@ void ADegreeProjectCharacter::OnSwordHit(UPrimitiveComponent* OverlappedComponen
 {
 	if (OverlappedComponent == SwordHitbox && OtherActor && OtherActor != this)
 	{
-		btest = true;
+		bHitTarget = true;
 		UE_LOG(LogTemp, Warning, TEXT("Hit: %s"), *OtherActor->GetName());
 		if (HitCameraShake)
 		{
@@ -399,6 +399,7 @@ void ADegreeProjectCharacter::OnSwordHit(UPrimitiveComponent* OverlappedComponen
 		// Destroy the actor after the VFX is spawned
 		//OtherActor->Destroy();
 	}
+	//bHitTarget = false;
 }
 
 
