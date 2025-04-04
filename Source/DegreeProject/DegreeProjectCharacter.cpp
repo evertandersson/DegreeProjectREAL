@@ -13,6 +13,8 @@
 #include "AbilitySystemComponent.h"
 #include "UStandardAttributeSet.h"
 #include "MyDashAbility.h"
+#include "NPC.h"
+#include "Damagable.h"
 
 #include "TimerManager.h"
 
@@ -379,7 +381,14 @@ void ADegreeProjectCharacter::OnSwordHit(UPrimitiveComponent* OverlappedComponen
 			}
 		}
 
+		IDamagable* DamageableActor = Cast<IDamagable>(OtherActor);
+		if (DamageableActor)
+		{
+			DamageableActor->TakeDamage(10.f); // CHANGE LATER TO THE ACTUAL DAMAGE OF THE PLAYER!
+		}
+
 		FVector ActorLoc = OtherActor->GetActorLocation(); 
+		
 		
 		if (ImpactVFX)
 		{
