@@ -18,6 +18,9 @@
 #include "Sound/SoundCue.h"
 #include "Components/SphereComponent.h"
 
+#include "GrapplingComponent.h"
+#include "MantleComponent.h"
+
 #include "UStandardAttributeSet.h"
 #include "DegreeProjectCharacter.generated.h"
 
@@ -171,6 +174,8 @@ protected:
 	int Damage;
 
 	int Health;
+
+	bool btest = false;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera Shake")
 	TSubclassOf<UCameraShakeBase> HitCameraShake;

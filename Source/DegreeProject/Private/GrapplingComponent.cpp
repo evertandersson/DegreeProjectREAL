@@ -3,6 +3,7 @@
 
 #include "GrapplingComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "DegreeProjectCharacter.h"
 #include "Kismet/KismetMathLibrary.h"
 
 // Sets default values for this component's properties

@@ -368,6 +368,7 @@ void ADegreeProjectCharacter::OnSwordHit(UPrimitiveComponent* OverlappedComponen
 {
 	if (OverlappedComponent == SwordHitbox && OtherActor && OtherActor != this)
 	{
+		btest = true;
 		UE_LOG(LogTemp, Warning, TEXT("Hit: %s"), *OtherActor->GetName());
 		if (HitCameraShake)
 		{
