@@ -175,8 +175,6 @@ protected:
 
 	int Health;
 
-	bool btest = false;
-
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera Shake")
 	TSubclassOf<UCameraShakeBase> HitCameraShake;
 			
@@ -321,6 +319,9 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Player)
 	bool bIsDashing = false;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Player)
+	bool bHitTarget = false;
 
 private:
 	UPROPERTY()
