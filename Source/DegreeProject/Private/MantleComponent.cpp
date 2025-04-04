@@ -3,6 +3,7 @@
 
 #include "MantleComponent.h"
 #include "Components/CapsuleComponent.h"
+#include "DegreeProjectCharacter.h"
 #include "Kismet/KismetSystemLibrary.h" 
 #include "Kismet/KismetMathLibrary.h"
 

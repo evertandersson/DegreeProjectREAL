@@ -4,8 +4,9 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
-#include "DegreeProjectCharacter.h"
 #include "GrapplingComponent.generated.h"
+
+class ADegreeProjectCharacter;
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class DEGREEPROJECT_API UGrapplingComponent : public UActorComponent
