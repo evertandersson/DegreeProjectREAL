@@ -11,6 +11,8 @@
 #include "GameplayTagContainer.h"
 #include <GameplayEffectTypes.h>
 
+#include "Blueprint/UserWidget.h"
+#include "Inventory/WeaponInventoryComponent.h"
 #include "Particles/ParticleSystem.h"
 #include "NiagaraSystem.h"
 #include "NiagaraFunctionLibrary.h"
@@ -24,6 +26,7 @@
 #include "UStandardAttributeSet.h"
 #include "DegreeProjectCharacter.generated.h"
 
+class UWeaponInventoryComponent;
 class USpringArmComponent;
 class UCameraComponent;
 class UInputMappingContext;
@@ -89,9 +92,10 @@ class ADegreeProjectCharacter : public ACharacter, public IAbilitySystemInterfac
 	UInputAction* PauseAction;
 
 	UPROPERTY(EditAnywhere, BlueprintReadonly, Category = Input, meta = (AllowPrivateAccess = "true"))
-	UInputAction* TurnAction;
+	UInputAction* SwitchWeapon;
 
-
+	UPROPERTY(EditAnywhere, BlueprintReadonly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction* PickUpWeapons;
 public:
 	ADegreeProjectCharacter();
 	
@@ -216,9 +220,19 @@ protected:
 	UPROPERTY(EditAnywhere);
 	bool bCanRegenStamina = true;
 private:
-	class UAIPerceptionStimuliSourceComponent* StimulusSource;
-	 
-	void SetupStimulusSource(); 
+	UPROPERTY(EditDefaultsOnly, Category = "UI")
+	TSubclassOf<UUserWidget> WeaponInventoryWidgetClass;
+
+	UPROPERTY(EditDefaultsOnly, Category = "UI")
+	TSubclassOf<UUserWidget> SlotWidgetClass;
+
+	UUserWidget* WeaponInventoryWidget;
+	UUserWidget* SlotWidget;
+
+	void TryPickupWeapon();
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Inventory", meta = (AllowPrivateAccess = "true"))
+	UWeaponInventoryComponent* WeaponInventory;
 
 	// Timer handle for stamina/mana regen
 
@@ -264,6 +278,9 @@ public:
 		UPrimitiveComponent* OtherComp, int32 OtherBodyIndex,
 		bool bFromSweep, const FHitResult& SweepResult);
 
+	UFUNCTION()
+	void SwitchToNextWeapon();
+
 	UPROPERTY(EditAnywhere, Category = "Explosion Attack")
 	float MaxExplosionRadius = 200.0f;
 
@@ -272,9 +289,6 @@ public:
 
 	UPROPERTY(EditAnywhere, Category = "Explosion Attack")
 	float ExplosionForce = 1500.0f;
-
-	UFUNCTION(BlueprintCallable)
-	void LineTrace();
 
 	UFUNCTION(BlueprintCallable)
 	void EnableHitbox();
@@ -363,7 +377,5 @@ private:
 	FTimerHandle StaminaRegenTimerHandle;
 	FTimerHandle DashTimerHandle;
 	FTimerHandle CoolDownTimerHandle;
-
-	void UpdateAnimationState(bool bIsAttackingAni);
 };
 
