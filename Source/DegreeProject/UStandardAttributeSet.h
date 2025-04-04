@@ -28,10 +28,6 @@ public:
 	void AddDefence(float Number);
 	void ResetDefance(float Number);
 
-	//static FGameplayAttribute GetCurrentHealthAttribute();
-	//static FGameplayAttribute GetMaxHealthAttribute();
-
-
 	// Health attributes:
 
 	// Declares the CurrentHealth attribute, making it readonly in blueprints and replicated to clients.
@@ -45,6 +41,17 @@ public:
 	FGameplayAttributeData MaxHealth;
 	// Macro that creates helper functions to get, set, and initialize MaxHealth.
 	ATTRIBUTE_ACCESSORS(UStandardAttributeSet, MaxHealth);
+
+	UPROPERTY(BlueprintReadOnly, Category = "Health", ReplicatedUsing = OnRep_CurrentAIHealth)
+	FGameplayAttributeData CurrentHealthAI;
+	// Macro that creates helper functions to get, set, and initialize CurrentHealth.
+	ATTRIBUTE_ACCESSORS(UStandardAttributeSet, CurrentHealthAI);
+
+	// Declares the MaxHealth attribute, making it readonly in blueprints and replicated to clients.
+	UPROPERTY(BlueprintReadOnly, Category = "Health", ReplicatedUsing = OnRep_MaxAIHealth)
+	FGameplayAttributeData MaxHealthAI;
+	// Macro that creates helper functions to get, set, and initialize MaxHealth.
+	ATTRIBUTE_ACCESSORS(UStandardAttributeSet, MaxHealthAI);
 
 	UPROPERTY(BlueprintReadOnly, Category = "Attributes")
 	FGameplayAttributeData CurrentMana;
@@ -90,6 +97,12 @@ protected:
 	// Function called on clients when MaxHealth hcanges to update the UI or perform logic.
 	UFUNCTION()
 	void OnRep_MaxHealth(const FGameplayAttributeData& OldMaxHealth);
+
+	UFUNCTION()
+	void OnRep_CurrentAIHealth(const FGameplayAttributeData& CurrentOldAIHealth);
+	UFUNCTION()
+	void OnRep_MaxAIHealth(const FGameplayAttributeData& MaxOldAIHealth);
+
 	UFUNCTION()
 	virtual void OnRep_CurrentMana(const FGameplayAttributeData& OldMana);
 	UFUNCTION()

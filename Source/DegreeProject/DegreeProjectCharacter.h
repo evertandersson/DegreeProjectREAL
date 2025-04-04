@@ -20,6 +20,9 @@
 #include "Sound/SoundCue.h"
 #include "Components/SphereComponent.h"
 
+#include "GrapplingComponent.h"
+#include "MantleComponent.h"
+
 #include "UStandardAttributeSet.h"
 #include "DegreeProjectCharacter.generated.h"
 
@@ -32,6 +35,8 @@ class UPauseMenuWidget;
 class UGameOverWidget;
 class UMyAbilitySystemComponent;
 class UAbilitySystemComponent;
+class UGrapplingComponent;
+class UMantleComponent;
 struct FInputActionValue;
 
 DECLARE_LOG_CATEGORY_EXTERN(LogTemplateCharacter, Log, All);
@@ -143,6 +148,12 @@ protected:
 	// Attribute Set that stores and manages health and other attributes for replication.
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Attributes", Replicated, meta = (AllowPrivateAccess = "true"))
 	UStandardAttributeSet* AttributeSet;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	UGrapplingComponent* GrapplingComponent;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	UMantleComponent* MantleComponent;
 
 
 	// Initializes the character's attributes when the game starts.
@@ -322,6 +333,9 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Player)
 	bool bIsDashing = false;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Player)
+	bool bHitTarget = false;
 
 private:
 	UPROPERTY()

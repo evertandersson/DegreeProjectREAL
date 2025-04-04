@@ -10,6 +10,8 @@
 UStandardAttributeSet::UStandardAttributeSet() :
 	CurrentHealth(100),
 	MaxHealth(100),
+	CurrentHealthAI(100),
+	MaxHealthAI(100),
 	Defence(4),
 	CurrentMana(100),
 	MaxMana(100),
@@ -19,8 +21,6 @@ UStandardAttributeSet::UStandardAttributeSet() :
 	Crit_Damage(60),
 	Damage(40)
 {
-	
-	
 
 	// Set default values for health attributes
     CurrentHealth.SetBaseValue(100.f);
@@ -29,6 +29,12 @@ UStandardAttributeSet::UStandardAttributeSet() :
 	// Set default values for max health attributes
 	MaxHealth.SetBaseValue(100.f);
 	MaxHealth.SetCurrentValue(100.f);
+
+	CurrentHealthAI.SetBaseValue(100.f);
+	CurrentHealthAI.SetCurrentValue(100.f);
+
+	MaxHealthAI.SetBaseValue(100.f);
+	MaxHealthAI.SetCurrentValue(100.f);
 
 	CurrentMana.SetBaseValue(100.f);
 	CurrentMana.SetCurrentValue(100.f);
@@ -50,9 +56,13 @@ void UStandardAttributeSet::AddHealth(float Amount)
 {
 	if (CurrentHealth.GetCurrentValue() < MaxHealth.GetCurrentValue())
     {
-		UE_LOG(LogTemp, Warning, TEXT("HEAL"));
 		CurrentHealth.SetCurrentValue(CurrentHealth.GetCurrentValue() + Amount);
-	}	
+	}
+
+	if (CurrentHealth.GetCurrentValue() + Amount > MaxHealth.GetCurrentValue())
+	{
+		CurrentHealth.SetCurrentValue(MaxHealth.GetCurrentValue());
+	}
 }
 
 void UStandardAttributeSet::RemoveHealth(float Amount)
@@ -70,18 +80,6 @@ void UStandardAttributeSet::ResetDefance(float Number)
 
 }
 
-//FGameplayAttribute UStandardAttributeSet::GetCurrentHealthAttribute()
-//{
-//	static FProperty* Property = FindFProperty<FProperty>(UStandardAttributeSet::StaticClass(), GET_MEMBER_NAME_CHECKED(UStandardAttributeSet, CurrentHealth));
-//	return FGameplayAttribute(Property);
-//}
-//
-//FGameplayAttribute UStandardAttributeSet::GetMaxHealthAttribute()
-//{
-//	static FProperty* Property = FindFProperty<FProperty>(UStandardAttributeSet::StaticClass(), GET_MEMBER_NAME_CHECKED(UStandardAttributeSet, MaxHealth));
-//	return FGameplayAttribute(Property);
-//}
-
 // Define which properties are replicated over the network
 void UStandardAttributeSet::GetLifetimeReplicatedProps(TArray <FLifetimeProperty>& OutLifetimeProps) const
 {
@@ -89,6 +87,8 @@ void UStandardAttributeSet::GetLifetimeReplicatedProps(TArray <FLifetimeProperty
 
 	DOREPLIFETIME_CONDITION_NOTIFY(UStandardAttributeSet, CurrentHealth, COND_None, REPNOTIFY_Always);
 	DOREPLIFETIME_CONDITION_NOTIFY(UStandardAttributeSet, MaxHealth, COND_None, REPNOTIFY_Always);
+	DOREPLIFETIME_CONDITION_NOTIFY(UStandardAttributeSet, CurrentHealthAI, COND_None, REPNOTIFY_Always);
+	DOREPLIFETIME_CONDITION_NOTIFY(UStandardAttributeSet, MaxHealthAI, COND_None, REPNOTIFY_Always);
 	DOREPLIFETIME_CONDITION_NOTIFY(UStandardAttributeSet, CurrentMana, COND_None, REPNOTIFY_Always);
 	DOREPLIFETIME_CONDITION_NOTIFY(UStandardAttributeSet, MaxMana, COND_None, REPNOTIFY_Always);
 	DOREPLIFETIME_CONDITION_NOTIFY(UStandardAttributeSet, CurrentStamina, COND_None, REPNOTIFY_Always);
@@ -108,6 +108,17 @@ void UStandardAttributeSet::OnRep_CurrentHealth(const FGameplayAttributeData& Ol
 void UStandardAttributeSet::OnRep_MaxHealth(const FGameplayAttributeData& OldHealthMax)
 {
 	GAMEPLAYATTRIBUTE_REPNOTIFY(UStandardAttributeSet, MaxHealth, OldHealthMax);
+}
+
+void UStandardAttributeSet::OnRep_CurrentAIHealth(const FGameplayAttributeData& CurrentOldAIHealth)
+{
+	GAMEPLAYATTRIBUTE_REPNOTIFY(UStandardAttributeSet, CurrentHealthAI, CurrentOldAIHealth)
+}
+
+void UStandardAttributeSet::OnRep_MaxAIHealth(const FGameplayAttributeData& MaxOldAIHealth)
+{
+	GAMEPLAYATTRIBUTE_REPNOTIFY(UStandardAttributeSet, MaxHealthAI, MaxOldAIHealth)
+
 }
 
 void UStandardAttributeSet::OnRep_CurrentMana(const FGameplayAttributeData& OldCurrentMana)
@@ -172,6 +183,12 @@ void UStandardAttributeSet::PreAttributeChange(const FGameplayAttribute& Attribu
 		const float MaxStaminaValue = MaxStamina.GetCurrentValue();
 		NewValue = FMath::Clamp(NewValue, 0.f, MaxStaminaValue);
 	}
+
+	if (Attribute == GetCurrentHealthAIAttribute())
+	{
+		const float MaxAIHealthValue = MaxHealthAI.GetCurrentValue();
+		NewValue = FMath::Clamp(NewValue, 0.0f, MaxAIHealthValue);
+	}
 }
 
 // Handles additional logic after a gameplay effect modifies an attribute
@@ -185,11 +202,18 @@ void UStandardAttributeSet::PostGameplayEffectExecute(const FGameplayEffectModCa
 		SetCurrentHealth(NewHealth);
 
 		ADegreeProjectCharacter* OwnerCharacter = Cast<ADegreeProjectCharacter>(GetOwningActor());
-		if (OwnerCharacter && NewHealth <= 0.0f)
+		if (NewHealth <= 0.0f)
 		{
 			UE_LOG(LogTemp, Warning, TEXT("Character should die now!"));
 			OwnerCharacter->HandleDeath();
 		}
+	}
+
+	if (Data.EvaluatedData.Attribute == GetCurrentHealthAIAttribute())
+	{
+		float NewAIHealth = FMath::Clamp(CurrentHealthAI.GetCurrentValue(), 0.0f, MaxHealthAI.GetCurrentValue());
+		SetCurrentHealthAI(NewAIHealth);
+		//kill AI
 	}
 
 	if (Data.EvaluatedData.Attribute == GetCurrentManaAttribute())
