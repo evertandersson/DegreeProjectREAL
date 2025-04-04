@@ -43,7 +43,7 @@ void AEnemySpawner::AddEnemyKilled(AActor* ActorToDespawn)
     // If we've killed all enemies for the round, start a new round
     if (EnemiesKilled >= TotalEnemiesThisRound)
     {
-        OnNewRoundBegin();
+        RoundEnded();
     }
 }
 
