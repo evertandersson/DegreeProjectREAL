@@ -22,25 +22,25 @@ public:
 	UEnemyStandardAttributeSet();
 
 
-	UPROPERTY(BlueprintReadOnly, Category = "Health", ReplicatedUsing = OnRep_CurrentHealth)
-	FGameplayAttributeData CurrentHealthAI;
-	// Macro that creates helper functions to get, set, and initialize CurrentHealth.
-	ATTRIBUTE_ACCESSORS(UEnemyStandardAttributeSet, CurrentHealthAI);
+	//UPROPERTY(BlueprintReadOnly, Category = "Health", ReplicatedUsing = OnRep_CurrentAIHealth)
+	//FGameplayAttributeData CurrentHealthAI;
+	//// Macro that creates helper functions to get, set, and initialize CurrentHealth.
+	//ATTRIBUTE_ACCESSORS(UEnemyStandardAttributeSet, CurrentHealthAI);
 
-	// Declares the MaxHealth attribute, making it readonly in blueprints and replicated to clients.
-	UPROPERTY(BlueprintReadOnly, Category = "Health", ReplicatedUsing = OnRep_MaxHealth)
-	FGameplayAttributeData MaxHealthAI;
-	// Macro that creates helper functions to get, set, and initialize MaxHealth.
-	ATTRIBUTE_ACCESSORS(UEnemyStandardAttributeSet, MaxHealthAI);
+	//// Declares the MaxHealth attribute, making it readonly in blueprints and replicated to clients.
+	//UPROPERTY(BlueprintReadOnly, Category = "Health", ReplicatedUsing = OnRep_MaxAIHealth)
+	//FGameplayAttributeData MaxHealthAI;
+	//// Macro that creates helper functions to get, set, and initialize MaxHealth.
+	//ATTRIBUTE_ACCESSORS(UEnemyStandardAttributeSet, MaxHealthAI);
 
 protected:
 
+	/*UFUNCTION()
+	void OnRep_CurrentAIHealth(const FGameplayAttributeData& CurrentOldHealth);
 	UFUNCTION()
-	void OnRep_CurrentHealth(const FGameplayAttributeData& OldCurrentHealth);
-	UFUNCTION()
-	void OnRep_MaxHealth(const FGameplayAttributeData& OldMaxHealth);
+	void OnRep_MaxAIHealth(const FGameplayAttributeData& MaxOldHealth);
 
 	virtual void PreAttributeChange(const FGameplayAttribute& Attribute, float& NewValue) override;
-	virtual void PostGameplayEffectExecute(const FGameplayEffectModCallbackData& Data) override;
+	virtual void PostGameplayEffectExecute(const FGameplayEffectModCallbackData& Data) override;*/
 
 };
