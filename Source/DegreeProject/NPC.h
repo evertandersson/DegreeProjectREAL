@@ -6,12 +6,13 @@
 
 #include "BehaviorTree/BehaviorTree.h"
 #include "GameFramework/Character.h"
+#include "Damagable.h"
 
 #include "Animation/AnimMontage.h"
 #include "NPC.generated.h"
 
 UCLASS()
-class DEGREEPROJECT_API ANPC : public ACharacter
+class DEGREEPROJECT_API ANPC : public ACharacter, public IDamagable
 {
 	GENERATED_BODY()
 
@@ -24,6 +25,18 @@ public:
 
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+
+	UFUNCTION()
+	void TakeDamage(float DamageAmount) override;  // Implement the function
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void OnDeath();
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+	float Health;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+	float MaxHealth;
 
 protected:
 

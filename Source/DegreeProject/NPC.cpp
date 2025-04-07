@@ -9,6 +9,9 @@ ANPC::ANPC()
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
+	MaxHealth = 40.f;
+	Health = MaxHealth;
+
 }
 
 // Called when the game starts or when spawned
@@ -30,6 +33,17 @@ void ANPC::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
+}
+
+void ANPC::TakeDamage(float DamageAmount)
+{
+	// Apply damage logic (e.g., reduce health)
+	Health -= DamageAmount;
+
+	if (Health <= 0)
+	{
+		OnDeath();
+	}
 }
 
 
