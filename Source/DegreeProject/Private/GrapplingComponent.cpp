@@ -16,25 +16,6 @@ UGrapplingComponent::UGrapplingComponent()
 	bIsGrappling = false;
 }
 
-
-// Called when the game starts
-void UGrapplingComponent::BeginPlay()
-{
-	Super::BeginPlay();
-
-	// ...
-	
-}
-
-
-// Called every frame
-void UGrapplingComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
-{
-	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-
-	// ...
-}
-
 void UGrapplingComponent::LaunchTowardsGrapplePoint(ADegreeProjectCharacter* Player)
 {
 	UCharacterMovementComponent* CharacterMovement = Player->GetCharacterMovement();
