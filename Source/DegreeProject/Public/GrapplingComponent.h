@@ -4,8 +4,9 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
-#include "DegreeProjectCharacter.h"
 #include "GrapplingComponent.generated.h"
+
+class ADegreeProjectCharacter;
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class DEGREEPROJECT_API UGrapplingComponent : public UActorComponent
@@ -28,6 +29,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void ResetValues();
 
+	UFUNCTION(BlueprintCallable)
+	bool ShouldSetNewEndPoint();
+
 	UPROPERTY(BlueprintReadWrite)
 	FVector GrapplePoint;
 
@@ -42,5 +46,11 @@ public:
 
 	UPROPERTY(BlueprintReadWrite)
 	bool bIsGrappling;
+
+	UPROPERTY(BlueprintReadWrite)
+	bool bIsAiming;
+
+	UPROPERTY(BlueprintReadWrite)
+	bool bHasAvailableGrapplingPoint;
 
 };

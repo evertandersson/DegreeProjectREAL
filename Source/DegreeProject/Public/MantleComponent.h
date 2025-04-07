@@ -3,7 +3,6 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "DegreeProjectCharacter.h"
 #include "Components/ActorComponent.h"
 #include "MantleComponent.generated.h"
 
@@ -15,6 +14,8 @@ enum class Enum_MantleType : uint8
 	Mantle1M UMETA(DisplayName = "Mantle1M"),
 	Mantle2M UMETA(DisplayName = "Mantle2M")
 };
+
+class ADegreeProjectCharacter;
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class DEGREEPROJECT_API UMantleComponent : public UActorComponent
