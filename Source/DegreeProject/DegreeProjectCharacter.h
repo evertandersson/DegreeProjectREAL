@@ -180,6 +180,9 @@ protected:
 
 	int Health;
 
+	UPROPERTY(EditDefaultsOnly, Category = "Abilities")
+	TSubclassOf<UGameplayEffect> DamageEffectClass;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera Shake")
 	TSubclassOf<UCameraShakeBase> HitCameraShake;
 			

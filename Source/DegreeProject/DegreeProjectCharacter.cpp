@@ -241,23 +241,32 @@ void ADegreeProjectCharacter::TakeDamage_Implementation(float DamageAmount)
 {
 	if (bIsDead || DamageAmount <= 0.0f) return;
 
-	static ConstructorHelpers::FClassFinder<UGameplayEffect> DamageEffect(TEXT("/Game/Ablities/Combat/GE_Damage"));
-
-	if (DamageEffect.Succeeded())
+	if (!DamageEffectClass)
 	{
-		TSubclassOf<UGameplayEffect> DamageEffectClass = DamageEffect.Class;
-		FGameplayEffectSpecHandle EffectSpecHandle = AbilitySystemComponent->MakeOutgoingSpec(DamageEffectClass, 1.0f, AbilitySystemComponent->MakeEffectContext());
-		EffectSpecHandle.Data->SetSetByCallerMagnitude(FGameplayTag::RequestGameplayTag(FName("Effect.Damage")), DamageAmount);
-		AbilitySystemComponent->ApplyGameplayEffectSpecToSelf(*EffectSpecHandle.Data.Get());
+		UE_LOG(LogTemp, Error, TEXT("DamageEffectClass is not assigned! Assign it in the Editor."));
+		return;
 	}
+
+	FGameplayEffectSpecHandle EffectSpecHandle = AbilitySystemComponent->MakeOutgoingSpec(
+		DamageEffectClass,
+		1.0f,
+		AbilitySystemComponent->MakeEffectContext()
+	);
+
+	EffectSpecHandle.Data->SetSetByCallerMagnitude(
+		FGameplayTag::RequestGameplayTag(FName("Effect.Damage")),
+		DamageAmount
+	);
+
+	AbilitySystemComponent->ApplyGameplayEffectSpecToSelf(*EffectSpecHandle.Data.Get());
 
 	if (AttributeSet->CurrentHealth.GetCurrentValue() <= 0.0f && !bIsDead)
 	{
 		AttributeSet->CurrentHealth.SetCurrentValue(FMath::Max(0.0f, AttributeSet->CurrentHealth.GetCurrentValue()));
-
 		HandleDeath();
 	}
 }
+
 
 void ADegreeProjectCharacter::HandleDeath()
 {
