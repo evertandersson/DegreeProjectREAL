@@ -25,12 +25,14 @@ APickup::APickup()
 	PickUpBox->SetWorldScale3D(FVector(1.0f, 1.0f, 1.0f));
 	PickUpBox->OnComponentBeginOverlap.AddDynamic(this, &APickup::OnPlayerInteraction);
 
+	RotationRate = FRotator(0.0f, 90.0f, 0.0F);
 }
 
 // Called when the game starts or when spawned
 void APickup::BeginPlay()
 {
 	Super::BeginPlay();
+	
 
 }
 
@@ -38,6 +40,12 @@ void APickup::BeginPlay()
 void APickup::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+	AddActorLocalRotation(RotationRate * DeltaTime);
+
+	float hight = 0.2 * FMath::Sin(GetWorld()->GetTimeSeconds());
+	FVector pickupPosition = PickUpRoot->GetRelativeLocation();
+	FVector Movement = FVector(pickupPosition.X, pickupPosition.Y, hight + pickupPosition.Z);
+	PickUpRoot->SetRelativeLocation(Movement);
 
 }
 
@@ -45,8 +53,8 @@ void APickup::OnPlayerInteraction(UPrimitiveComponent* OverlappedComp, AActor* O
 	int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResults)
 {
 	if (!OtherActor->ActorHasTag("Player")) return;
-
-	if (pickupTypes == PickupType::HEALTH)
+   
+	if(pickupTypes == PickupType::HEALTH)
 	{
 
 		ADegreeProjectCharacter* Player = Cast<ADegreeProjectCharacter>(OtherActor);
@@ -59,13 +67,13 @@ void APickup::OnPlayerInteraction(UPrimitiveComponent* OverlappedComp, AActor* O
 		if (AttributeSet->CurrentHealth.GetCurrentValue() < AttributeSet->MaxHealth.GetCurrentValue())
 		{
 
-			AttributeSet->AddHealth(10.f);
+			AttributeSet->AddHealth(20.f);
 			Destroy();
 			UE_LOG(LogTemp, Warning, TEXT("HEAL"));
 		}
 	}
 
-	else if (pickupTypes == PickupType::POWERUPS)
+	if (pickupTypes == PickupType::POWERUPS)
 	{
 		ADegreeProjectCharacter* Player = Cast<ADegreeProjectCharacter>(OtherActor);
 		AttributeSets = Player->GetAttributeSet();
