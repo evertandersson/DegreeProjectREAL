@@ -34,16 +34,19 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void AddEnemyKilled(AActor* ActorToDespawn);
 
+	UFUNCTION(BlueprintImplementableEvent)
+	void RoundEnded();
+
+	// Called when a new round begins
+	UFUNCTION(BlueprintCallable)
+	void OnNewRoundBegin();
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	float Radius;
 
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
-
-	// Called when a new round begins
-	UFUNCTION()
-	void OnNewRoundBegin();
 
 private:
 	// Timer handle for spawning enemies

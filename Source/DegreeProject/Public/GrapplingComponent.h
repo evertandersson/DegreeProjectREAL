@@ -29,6 +29,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void ResetValues();
 
+	UFUNCTION(BlueprintCallable)
+	bool ShouldSetNewEndPoint();
+
 	UPROPERTY(BlueprintReadWrite)
 	FVector GrapplePoint;
 
@@ -43,5 +46,11 @@ public:
 
 	UPROPERTY(BlueprintReadWrite)
 	bool bIsGrappling;
+
+	UPROPERTY(BlueprintReadWrite)
+	bool bIsAiming;
+
+	UPROPERTY(BlueprintReadWrite)
+	bool bHasAvailableGrapplingPoint;
 
 };

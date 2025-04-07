@@ -15,6 +15,8 @@ UGrapplingComponent::UGrapplingComponent()
 	bCanGrapple = true;
 	bIsRotatingTowardsGrapplePoint = false;
 	bIsGrappling = false;
+	bIsAiming = false;
+	bHasAvailableGrapplingPoint = false;
 }
 
 void UGrapplingComponent::LaunchTowardsGrapplePoint(ADegreeProjectCharacter* Player)
@@ -64,5 +66,10 @@ void UGrapplingComponent::ResetValues()
 	bIsRotatingTowardsGrapplePoint = false;
 	bCanGrapple = true;
 	bIsGrappling = false;
+}
+
+bool UGrapplingComponent::ShouldSetNewEndPoint()
+{
+	return bIsAiming && !bIsGrappling && !bIsRotatingTowardsGrapplePoint;
 }
 
