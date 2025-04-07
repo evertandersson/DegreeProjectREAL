@@ -18,5 +18,8 @@ class DEGREEPROJECT_API IDamagable
 	GENERATED_BODY()
 
 public:
-	virtual void TakeDamage(float DamageAmount) = 0;
+	// Declare function with BlueprintNativeEvent to allow C++ and Blueprint overrides
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Health")
+	void TakeDamage(float DamageAmount);
+
 };
