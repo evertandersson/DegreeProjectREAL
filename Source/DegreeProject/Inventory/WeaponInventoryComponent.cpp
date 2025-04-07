@@ -64,7 +64,27 @@ void UWeaponInventoryComponent::EquipWeapon(int32 SlotIndex)
 		// Debug on-screen message
 		FString DebugMessage = FString::Printf(TEXT("Equipped Weapon at Index: %d"), EquippedWeaponIndex);
 		GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Yellow, DebugMessage);
+
+		for (AWeaponBase* Weapon : WeaponSlots)
+		{
+			if (Weapon && Weapon != EquippedWeapon)
+			{
+				Weapon->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
+				Weapon->SetActorHiddenInGame(true);
+			}
+		}
+
+		if (AActor* OwnerActor = GetOwner())
+		{
+			USkeletalMeshComponent* Mesh = OwnerActor->FindComponentByClass<USkeletalMeshComponent>();
+			if (Mesh)
+			{
+				EquippedWeapon->AttachToComponent(Mesh, FAttachmentTransformRules::SnapToTargetIncludingScale, TEXT("FirstHandSocket"));
+				EquippedWeapon->SetActorHiddenInGame(false);
+			}
+		}
 	}
+
 	else
 	{
 		UE_LOG(LogTemp, Error, TEXT("Invalid Equip Index: %d"), SlotIndex);
@@ -90,6 +110,8 @@ void UWeaponInventoryComponent::SwitchWeapon(int32 Direction)
 	{
 		NewIndex = WeaponSlots.Num() - 1; //To the last weapon
 	}
+
+	EquipWeapon(NewIndex);
 
 	UE_LOG(LogTemp, Warning, TEXT("Switching weapon: OldIndex = %d, NewIndex = %d"), EquippedWeaponIndex, NewIndex);
 

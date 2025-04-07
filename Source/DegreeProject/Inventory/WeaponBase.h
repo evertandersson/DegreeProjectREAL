@@ -20,6 +20,9 @@ protected:
 	virtual void BeginPlay() override;
 
 public:	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Inventory")
+	UTexture2D* InventoryImage;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
 	FString WeaponName;
 
