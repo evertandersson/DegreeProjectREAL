@@ -61,17 +61,15 @@ void UStandardAttributeSet::AddHealth(float Amount)
 	if (CurrentHealth.GetCurrentValue() < MaxHealth.GetCurrentValue())
     {
 		CurrentHealth.SetCurrentValue(CurrentHealth.GetCurrentValue() + Amount);
-		
-
-		if (CurrentHealth.GetCurrentValue() + Amount > MaxHealth.GetCurrentValue())
-		{
-			CurrentHealth.SetCurrentValue(MaxHealth.GetCurrentValue());
-			UE_LOG(LogTemp, Warning, TEXT("HP %f"), CurrentHealth.GetCurrentValue());
-		}
-
+	
 		UE_LOG(LogTemp, Warning, TEXT("HP %f"), CurrentHealth.GetCurrentValue());
 	}
 
+	if (CurrentHealth.GetCurrentValue() > MaxHealth.GetCurrentValue())
+	{
+		CurrentHealth.SetCurrentValue(MaxHealth.GetCurrentValue());
+		UE_LOG(LogTemp, Warning, TEXT("HP %f"), CurrentHealth.GetCurrentValue());
+	}
 	
 }
 
