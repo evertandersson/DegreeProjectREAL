@@ -19,6 +19,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "Sound/SoundCue.h"
 #include "Components/SphereComponent.h"
+#include "Damagable.h"
 
 #include "GrapplingComponent.h"
 #include "MantleComponent.h"
@@ -50,7 +51,7 @@ enum class EGASAbilityInputID : uint8
 };
 
 UCLASS(config=Game)
-class ADegreeProjectCharacter : public ACharacter, public IAbilitySystemInterface
+class ADegreeProjectCharacter : public ACharacter, public IAbilitySystemInterface, public IDamagable
 {
 	GENERATED_BODY()
 
@@ -109,8 +110,8 @@ public:
 	UFUNCTION(BlueprintImplementableEvent, Category = "Health")
 	void OnHealthChanged(float DeltaValue, const FGameplayTagContainer& EventTags);
 
-	UFUNCTION(BlueprintCallable, Category = "Health")
-	void TakeDamage(float DamageAmount);
+	// Implement the interface function correctly
+	virtual void TakeDamage_Implementation(float DamageAmount) override;
 
 	void HandleDeath();
 	

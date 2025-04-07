@@ -35,7 +35,7 @@ void ANPC::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 
 }
 
-void ANPC::TakeDamage(float DamageAmount)
+void ANPC::TakeDamage_Implementation(float DamageAmount)
 {
 	// Apply damage logic (e.g., reduce health)
 	Health -= DamageAmount;

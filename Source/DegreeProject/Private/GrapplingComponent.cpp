@@ -56,6 +56,8 @@ void UGrapplingComponent::RotateTowardsGrapplePoint(ADegreeProjectCharacter* Pla
 	FVector PlayerLocation = Player->GetActorLocation();
 	FRotator LookAt = UKismetMathLibrary::FindLookAtRotation(PlayerLocation, GrapplePoint);
 
+	LookAt.Pitch = FMath::Clamp(LookAt.Pitch, 0.f, 20.f);
+
 	FRotator InterpTo = FMath::RInterpTo(Player->GetActorRotation(), LookAt, Delta, InterpSpeed);
 	Player->SetActorRotation(InterpTo);
 }
