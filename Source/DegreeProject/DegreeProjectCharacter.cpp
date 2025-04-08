@@ -165,22 +165,14 @@ void ADegreeProjectCharacter::BeginPlay()
 		UE_LOG(LogTemp, Error, TEXT("Camera shake class is not assigned in the Blueprint."));
 	}
 
-	//if (WeaponInventoryWidgetClass)
-	//{
-	//	WeaponInventoryWidget = CreateWidget<UUserWidget>(GetWorld(), WeaponInventoryWidgetClass);
-	//	if (WeaponInventoryWidget)
-	//	{
-	//		WeaponInventoryWidget->AddToViewport();
-	//	}
-	//}
-	//f (SlotWidgetClass)
-	//
-	//	SlotWidget = CreateWidget<UUserWidget>(GetWorld(), SlotWidgetClass);
-	//	if (SlotWidget)
-	//	{
-	//		SlotWidget->AddToViewport();
-	//	}
-	//
+	if (WeaponInventoryWidgetClass)
+	{
+		WeaponInventoryWidget = CreateWidget<UUserWidget>(GetWorld(), WeaponInventoryWidgetClass);
+		if (WeaponInventoryWidget)
+		{
+			WeaponInventoryWidget->AddToViewport();
+		}
+	}
 
 	DisableHitbox();
 }

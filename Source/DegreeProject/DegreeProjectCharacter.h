@@ -225,11 +225,7 @@ private:
 	UPROPERTY(EditDefaultsOnly, Category = "UI")
 	TSubclassOf<UUserWidget> WeaponInventoryWidgetClass;
 
-	UPROPERTY(EditDefaultsOnly, Category = "UI")
-	TSubclassOf<UUserWidget> SlotWidgetClass;
-
 	UUserWidget* WeaponInventoryWidget;
-	UUserWidget* SlotWidget;
 
 	void TryPickupWeapon();
 
