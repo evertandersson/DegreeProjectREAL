@@ -7,7 +7,10 @@
 ANPC::ANPC()
 {
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.bCanEverTick = false;
+
+	// Initialize the Attribute Set component for managing health and other attributes
+	AttributeSet = CreateDefaultSubobject<UStandardAttributeSet>(TEXT("AttributeSet"));
 
 	MaxHealth = 40.f;
 	Health = MaxHealth;
@@ -35,15 +38,9 @@ void ANPC::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 
 }
 
-void ANPC::TakeDamage_Implementation(float DamageAmount)
+void ANPC::TakeDamage_Implementation(UAbilitySystemComponent* AbilitySystem)
 {
-	// Apply damage logic (e.g., reduce health)
-	Health -= DamageAmount;
 
-	if (Health <= 0)
-	{
-		OnDeath();
-	}
 }
 
 

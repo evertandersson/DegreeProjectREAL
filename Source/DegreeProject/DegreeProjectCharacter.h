@@ -111,9 +111,9 @@ public:
 	void OnHealthChanged(float DeltaValue, const FGameplayTagContainer& EventTags);
 
 	// Implement the interface function correctly
-	virtual void TakeDamage_Implementation(float DamageAmount) override;
+	virtual void TakeDamage_Implementation(UAbilitySystemComponent* AbilitySystem) override;
 
-	void HandleDeath();
+	void HandleDeath_Implementation();
 	
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attributes")

@@ -11,8 +11,6 @@
 UStandardAttributeSet::UStandardAttributeSet() :
 	CurrentHealth(100),
 	MaxHealth(100),
-	CurrentHealthAI(100),
-	MaxHealthAI(100),
 	Defence(4),
 	CurrentMana(100),
 	MaxMana(100),
@@ -30,12 +28,6 @@ UStandardAttributeSet::UStandardAttributeSet() :
 	// Set default values for max health attributes
 	MaxHealth.SetBaseValue(100.f);
 	MaxHealth.SetCurrentValue(100.f);
-
-	CurrentHealthAI.SetBaseValue(100.f);
-	CurrentHealthAI.SetCurrentValue(100.f);
-
-	MaxHealthAI.SetBaseValue(100.f);
-	MaxHealthAI.SetCurrentValue(100.f);
 
 	CurrentMana.SetBaseValue(100.f);
 	CurrentMana.SetCurrentValue(100.f);
@@ -123,15 +115,6 @@ void UStandardAttributeSet::OnRep_MaxHealth(const FGameplayAttributeData& OldHea
 {
 	GAMEPLAYATTRIBUTE_REPNOTIFY(UStandardAttributeSet, MaxHealth, OldHealthMax);
 }
-void UStandardAttributeSet::OnRep_CurrentAIHealth(const FGameplayAttributeData& CurrentOldAIHealth)
-{
-	GAMEPLAYATTRIBUTE_REPNOTIFY(UStandardAttributeSet, CurrentHealthAI, CurrentOldAIHealth)
-}
-void UStandardAttributeSet::OnRep_MaxAIHealth(const FGameplayAttributeData& MaxOldAIHealth)
-{
-	GAMEPLAYATTRIBUTE_REPNOTIFY(UStandardAttributeSet, MaxHealthAI, MaxOldAIHealth)
-
-}
 void UStandardAttributeSet::OnRep_CurrentMana(const FGameplayAttributeData& OldCurrentMana)
 {
 	GAMEPLAYATTRIBUTE_REPNOTIFY(UStandardAttributeSet, CurrentMana, OldCurrentMana);
@@ -191,12 +174,6 @@ void UStandardAttributeSet::PreAttributeChange(const FGameplayAttribute& Attribu
 		const float MaxStaminaValue = MaxStamina.GetCurrentValue();
 		NewValue = FMath::Clamp(NewValue, 0.f, MaxStaminaValue);
 	}
-
-	if (Attribute == GetCurrentHealthAIAttribute())
-	{
-		const float MaxAIHealthValue = MaxHealthAI.GetCurrentValue();
-		NewValue = FMath::Clamp(NewValue, 0.0f, MaxAIHealthValue);
-	}
 }
 #pragma endregion
 
@@ -212,18 +189,10 @@ void UStandardAttributeSet::PostGameplayEffectExecute(const FGameplayEffectModCa
 		float NewHealth = FMath::Clamp(CurrentHealth.GetCurrentValue(), 0.0f, MaxHealth.GetCurrentValue());
 		SetCurrentHealth(NewHealth);
 
-		ADegreeProjectCharacter* OwnerCharacter = Cast<ADegreeProjectCharacter>(GetOwningActor());
 		if (NewHealth <= 0.0f)
 		{
-			UE_LOG(LogTemp, Warning, TEXT("Character should die now!"));
-			OwnerCharacter->HandleDeath();
+			IDamagable::Execute_HandleDeath(GetOwningActor());
 		}
-	}
-
-	if (Data.EvaluatedData.Attribute == GetCurrentHealthAIAttribute())
-	{
-		float NewAIHealth = FMath::Clamp(CurrentHealthAI.GetCurrentValue(), 0.0f, MaxHealthAI.GetCurrentValue());
-		SetCurrentHealthAI(NewAIHealth);
 	}
 
 	if (Data.EvaluatedData.Attribute == GetCurrentManaAttribute())
