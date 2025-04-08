@@ -4,11 +4,9 @@
 
 #include "CoreMinimal.h"
 
-#include "BehaviorTree/BehaviorTree.h"
 #include "GameFramework/Character.h"
 #include "Damagable.h"
-
-#include "Animation/AnimMontage.h"
+#include "UStandardAttributeSet.h"
 #include "NPC.generated.h"
 
 UCLASS()
@@ -26,10 +24,10 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
-	virtual void TakeDamage_Implementation(float DamageAmount) override;
+	virtual void TakeDamage_Implementation(UAbilitySystemComponent* AbilitySystem) override;
 
 	UFUNCTION(BlueprintImplementableEvent)
-	void OnDeath();
+	void HandleDeath_Implementation();
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 	float Health;
@@ -41,4 +39,8 @@ protected:
 
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+
+	// Attribute Set that stores and manages health and other attributes for replication.
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Attributes", meta = (AllowPrivateAccess = "true"))
+	UStandardAttributeSet* AttributeSet;
 };

@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "UObject/Interface.h"
+#include "AbilitySystemComponent.h"
 #include "Damagable.generated.h"
 
 // This class does not need to be modified.
@@ -20,6 +21,9 @@ class DEGREEPROJECT_API IDamagable
 public:
 	// Declare function with BlueprintNativeEvent to allow C++ and Blueprint overrides
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Health")
-	void TakeDamage(float DamageAmount);
+	void TakeDamage(UAbilitySystemComponent* AbilitySystem);
+
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Health")
+	void HandleDeath();
 
 };
