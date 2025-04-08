@@ -73,5 +73,4 @@ private:
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Pickup")
 	FRotator RotationRate;
-
 };

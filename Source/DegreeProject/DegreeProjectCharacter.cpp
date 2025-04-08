@@ -14,7 +14,6 @@
 #include "UStandardAttributeSet.h"
 #include "MyDashAbility.h"
 #include "NPC.h"
-#include "Damagable.h"
 
 #include "TimerManager.h"
 
@@ -239,31 +238,26 @@ UStandardAttributeSet* ADegreeProjectCharacter::GetAttributeSet()
 	return AttributeSet;
 }
 
-void ADegreeProjectCharacter::TakeDamage(float DamageAmount)
+void ADegreeProjectCharacter::TakeDamage_Implementation(float DamageAmount)
 {
 	if (bIsDead || DamageAmount <= 0.0f) return;
 
 	static ConstructorHelpers::FClassFinder<UGameplayEffect> DamageEffect(TEXT("/Game/Ablities/Combat/GE_Damage"));
 
-	if(DamageEffect.Succeeded())
+	if (DamageEffect.Succeeded())
 	{
 		TSubclassOf<UGameplayEffect> DamageEffectClass = DamageEffect.Class;
 		FGameplayEffectSpecHandle EffectSpecHandle = AbilitySystemComponent->MakeOutgoingSpec(DamageEffectClass, 1.0f, AbilitySystemComponent->MakeEffectContext());
 		EffectSpecHandle.Data->SetSetByCallerMagnitude(FGameplayTag::RequestGameplayTag(FName("Effect.Damage")), DamageAmount);
 		AbilitySystemComponent->ApplyGameplayEffectSpecToSelf(*EffectSpecHandle.Data.Get());
 	}
+
 	if (AttributeSet->CurrentHealth.GetCurrentValue() <= 0.0f && !bIsDead)
 	{
 		AttributeSet->CurrentHealth.SetCurrentValue(FMath::Max(0.0f, AttributeSet->CurrentHealth.GetCurrentValue()));
 
 		HandleDeath();
 	}
-
-	/*if (AttributeSet)
-	{
-		AttributeSet->RemoveHealth(DamageAmount);
-	}
-	*/
 }
 
 void ADegreeProjectCharacter::HandleDeath()
@@ -400,14 +394,9 @@ void ADegreeProjectCharacter::OnSwordHit(UPrimitiveComponent* OverlappedComponen
 			}
 		}
 
-		IDamagable* DamageableActor = Cast<IDamagable>(OtherActor);
-		if (DamageableActor)
-		{
-			DamageableActor->TakeDamage(10.f); // CHANGE LATER TO THE ACTUAL DAMAGE OF THE PLAYER!
-		}
+		IDamagable::Execute_TakeDamage(OtherActor, 10.f); // CHANGE LATER TO THE ACTUAL DAMAGE OF THE PLAYER!
 
 		FVector ActorLoc = OtherActor->GetActorLocation(); 
-		
 		
 		if (ImpactVFX)
 		{

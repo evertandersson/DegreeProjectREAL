@@ -29,10 +29,19 @@ public:
 	UFUNCTION(BlueprintCallable)
 	float MantleTrace(ADegreeProjectCharacter* Player, float Length);
 
+	UFUNCTION()
+	bool IsObstacleInFront(ADegreeProjectCharacter* Player);
+
+	UFUNCTION()
+	float DetermineMantleHeight(ADegreeProjectCharacter* Player, const FHitResult& HitResult, float MaxAngle);
+
 	UPROPERTY(BlueprintReadWrite)
 	FVector MantleHeight;
 
 	UPROPERTY(BlueprintReadWrite)
 	Enum_MantleType MantleType;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+	bool bIsClimbing;
 
 };
