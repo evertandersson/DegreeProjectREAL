@@ -41,11 +41,13 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void OnNewRoundBegin();
 
+	UFUNCTION(BlueprintImplementableEvent)
+	void GetGameManager();
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	float Radius;
 
 protected:
-	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
 private:

@@ -21,6 +21,8 @@ void AEnemySpawner::BeginPlay()
 
     PoolSubsystem = GetWorld()->GetSubsystem<UPoolSubsystem>();
 
+    GetGameManager();
+
     OnNewRoundBegin();
 }
 
