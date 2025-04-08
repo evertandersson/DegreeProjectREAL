@@ -9,7 +9,7 @@
 
 void UMainMenuWidget::StartGame()
 {
-	UGameplayStatics::OpenLevel(this, FName("ThirdPersonMap"));
+	UGameplayStatics::OpenLevel(this, FName("MainMap"));
 }
 
 void UMainMenuWidget::QuitGame()
