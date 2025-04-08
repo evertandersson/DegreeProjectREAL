@@ -20,3 +20,8 @@ void AWeaponBase::BeginPlay()
 	
 }
 
+UTexture2D* AWeaponBase::GetWeaponIcon() const
+{
+	return WeaponIcon;  // WeaponIcon would be a UTexture2D* variable in your weapon class
+}
+

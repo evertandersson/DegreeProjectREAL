@@ -21,7 +21,7 @@ protected:
 
 public:	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Inventory")
-	UTexture2D* InventoryImage;
+	UTexture2D* WeaponIcon;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
 	FString WeaponName;
@@ -32,4 +32,6 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
 	USkeletalMeshComponent* WeaponMesh;
 
+	UFUNCTION(BlueprintCallable, Category = "UI")
+	UTexture2D* GetWeaponIcon() const;
 };

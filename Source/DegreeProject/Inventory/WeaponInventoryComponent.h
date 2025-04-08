@@ -1,5 +1,3 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #pragma once
 
 #include "CoreMinimal.h"
@@ -10,19 +8,19 @@
 class AWeaponBase;
 
 UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
-class DEGREEPROJECT_API UWeaponInventoryComponent  : public UActorComponent
+class DEGREEPROJECT_API UWeaponInventoryComponent : public UActorComponent
 {
 	GENERATED_BODY()
-	
-public:	
+
+public:
 	// Sets default values for this actor's properties
-	UWeaponInventoryComponent ();
+	UWeaponInventoryComponent();
 
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-private: 
+private:
 	UPROPERTY(VisibleAnywhere)
 	TArray<AWeaponBase*> WeaponSlots;
 
@@ -32,12 +30,26 @@ private:
 	UPROPERTY(VisibleAnywhere)
 	int32 EquippedWeaponIndex;
 
-public:	
+	UPROPERTY()
+	UUserWidget* SlotWidget;
+
+	UPROPERTY(EditDefaultsOnly, Category = "UI")
+	TSubclassOf<UUserWidget> SlotWidgetClass;
+
+public:
+	UPROPERTY(BlueprintReadWrite, Category = "UI")
+	UUserWidget* WeaponSlotWidget;
+
+	UFUNCTION(BlueprintCallable, Category = "UI")
+	void SetWeaponSlotWidget(UUserWidget* InWidget)
+	{
+		WeaponSlotWidget = InWidget;
+	}
+
+	void EquipWeapon(int32 SlotIndex);
 	void AddWeapon(AWeaponBase* NewWeapon);
 	void RemoveWeapon(AWeaponBase* Weapon);
-	void EquipWeapon(int32 SlotIndex);
 	void SwitchWeapon(int32 Direction);
 
 	AWeaponBase* GetEquippedWeapon() const { return EquippedWeapon; }
-
 };

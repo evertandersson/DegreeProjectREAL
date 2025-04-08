@@ -1,6 +1,8 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 #include "Inventory/WeaponInventoryComponent.h"
 #include "Kismet/KismetSystemLibrary.h"
+#include "Inventory/UI_WeaponSlot.h"
+#include "Blueprint/UserWidget.h"
 #include "Inventory/WeaponBase.h"
 
 // Sets default values
@@ -14,6 +16,20 @@ UWeaponInventoryComponent ::UWeaponInventoryComponent ()
 void UWeaponInventoryComponent ::BeginPlay()
 {
 	Super::BeginPlay();
+
+	if (SlotWidgetClass)
+	{
+		SlotWidget = CreateWidget<UUserWidget>(GetWorld(), SlotWidgetClass);
+		if (SlotWidget)
+		{
+			UUI_WeaponSlot* WeaponSlot = Cast<UUI_WeaponSlot>(SlotWidget);
+			if (WeaponSlot)
+			{
+				WeaponSlotWidget = WeaponSlot;
+				WeaponSlotWidget->AddToViewport(1);
+			}
+		}
+	}
 }
 
 void UWeaponInventoryComponent::AddWeapon(AWeaponBase* NewWeapon)
@@ -81,6 +97,15 @@ void UWeaponInventoryComponent::EquipWeapon(int32 SlotIndex)
 			{
 				EquippedWeapon->AttachToComponent(Mesh, FAttachmentTransformRules::SnapToTargetIncludingScale, TEXT("FirstHandSocket"));
 				EquippedWeapon->SetActorHiddenInGame(false);
+			}
+		}
+		if (WeaponSlotWidget)
+		{
+			UUI_WeaponSlot* WeaponSlot = Cast<UUI_WeaponSlot>(WeaponSlotWidget);
+			if (WeaponSlot)
+			{
+				UTexture2D* WeaponIcon = EquippedWeapon->GetWeaponIcon();
+				WeaponSlot->UpdateWeaponIcon(WeaponIcon);
 			}
 		}
 	}

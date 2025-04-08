@@ -174,15 +174,6 @@ void ADegreeProjectCharacter::BeginPlay()
 		}
 	}
 
-	if (SlotWidgetClass)
-	{
-		SlotWidget = CreateWidget<UUserWidget>(GetWorld(), SlotWidgetClass);
-		if (SlotWidget)
-		{
-			SlotWidget->AddToViewport(1);
-		}
-	}
-
 	DisableHitbox();
 }
 
