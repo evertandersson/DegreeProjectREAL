@@ -375,7 +375,11 @@ void ADegreeProjectCharacter::OnSwordHit(UPrimitiveComponent* OverlappedComponen
 			}
 		}
 
-		IDamagable::Execute_TakeDamage(OtherActor, AbilitySystemComponent); // CHANGE LATER TO THE ACTUAL DAMAGE OF THE PLAYER!
+		if (!EnemiesHit.Contains(OtherActor))
+		{
+			IDamagable::Execute_TakeDamage(OtherActor, AbilitySystemComponent);
+			EnemiesHit.Add(OtherActor);
+		}
 
 		FVector ActorLoc = OtherActor->GetActorLocation(); 
 		
