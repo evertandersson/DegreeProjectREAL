@@ -38,6 +38,7 @@ class UMyAbilitySystemComponent;
 class UAbilitySystemComponent;
 class UGrapplingComponent;
 class UMantleComponent;
+class ANPC;
 struct FInputActionValue;
 
 DECLARE_LOG_CATEGORY_EXTERN(LogTemplateCharacter, Log, All);
@@ -224,11 +225,7 @@ private:
 	UPROPERTY(EditDefaultsOnly, Category = "UI")
 	TSubclassOf<UUserWidget> WeaponInventoryWidgetClass;
 
-	UPROPERTY(EditDefaultsOnly, Category = "UI")
-	TSubclassOf<UUserWidget> SlotWidgetClass;
-
 	UUserWidget* WeaponInventoryWidget;
-	UUserWidget* SlotWidget;
 
 	void TryPickupWeapon();
 
@@ -256,6 +253,7 @@ private:
 	void StartUtilityRegen();
 	void RegenerateUtility();
 
+
 public:
 	/** Returns CameraBoom subobject **/
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
@@ -264,6 +262,9 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void EndAttack();
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+	TArray<AActor*> EnemiesHit;
 
 	UFUNCTION(BlueprintCallable)
 	void ExplosionAttack();
