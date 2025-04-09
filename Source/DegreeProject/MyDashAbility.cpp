@@ -11,15 +11,15 @@ void UMyDashAbility::ActivateAbility(const FGameplayAbilitySpecHandle Handle, co
 
 	if (ADegreeProjectCharacter* Character = Cast<ADegreeProjectCharacter>(ActorInfo->AvatarActor.Get()))
 	{
+		FTimerHandle DashTimerHandle;
 		Character->Dash();
 
 		UAbilitySystemComponent* ASC = ActorInfo->AbilitySystemComponent.Get();
-		if (ASC)
+		if (ASC && Character->GetVelocity().X >= 0.1f && Character->bCanDash)
 		{
 			ASC->ApplyModToAttribute(UStandardAttributeSet::GetCurrentStaminaAttribute(), EGameplayModOp::Additive, -20.f);
 		}
 
-		FTimerHandle DashTimerHandle;
 		Character->GetWorldTimerManager().SetTimer(DashTimerHandle, FTimerDelegate::CreateLambda([this, Handle, ActorInfo, ActivationInfo, Character]()
 			{
 				if (Character)

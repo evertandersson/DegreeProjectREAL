@@ -339,6 +339,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Player)
 	bool bHitTarget = false;
 
+	UPROPERTY(EditAnywhere, Category = Player)
+	bool bCanDash;
+
 private:
 	UPROPERTY()
 	USphereComponent* ExplosionHitbox;
@@ -351,9 +354,6 @@ private:
 
 	// Function to handle changes in health attributes
 	void HandleHealthChanged(const FOnAttributeChangeData& Data);
-
-	UPROPERTY(EditAnywhere, Category = Player)
-	bool bCanDash;
 
 	UPROPERTY(EditAnywhere, Category = Player)
 	float DashBreakFriction;
