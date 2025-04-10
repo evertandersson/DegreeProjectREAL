@@ -1,6 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "GameManagers/EnemySpawner.h"
+#include "NavigationSystem.h"
 
 
 // Sets default values
@@ -20,6 +21,8 @@ void AEnemySpawner::BeginPlay()
 	Super::BeginPlay();
 
     PoolSubsystem = GetWorld()->GetSubsystem<UPoolSubsystem>();
+
+    GetGameManager();
 
     OnNewRoundBegin();
 }
@@ -106,10 +109,30 @@ void AEnemySpawner::SpawnEnemy()
         float RadAngle = FMath::DegreesToRadians(Angle);
         float X = CircleCenter.X + Radius * FMath::Cos(RadAngle);
         float Y = CircleCenter.Y + Radius * FMath::Sin(RadAngle);
-        float Z = 1500.f;
+        //float Z = CircleCenter.Z;
+        float Z = CircleCenter.Z + 700.f;
 
         FVector SpawnLocation = FVector(X, Y, Z);
+        FVector DesiredLocation = FVector(X, Y, Z);
         FRotator SpawnRotation = FRotator::ZeroRotator;
+
+        
+        FNavLocation ProjectedLocation;
+        UNavigationSystemV1* NavSys = FNavigationSystem::GetCurrent<UNavigationSystemV1>(GetWorld());
+
+        // Try to project the desired spawn location to the nearest valid point on the NavMesh in ther map
+        // The extent defines the search box size of 1000 units
+        if (NavSys && NavSys->ProjectPointToNavigation(DesiredLocation, ProjectedLocation, FVector(1000, 1000, 1000)))
+        {
+            SpawnLocation = ProjectedLocation.Location;
+            DrawDebugSphere(GetWorld(), SpawnLocation, 50.f, 12, FColor::Green, false, 5.f);
+        }
+        else
+        {
+            SpawnLocation = DesiredLocation;
+            UE_LOG(LogTemp, Error, TEXT("Spawn location is not on the NavMesh! Using original location."));
+            DrawDebugSphere(GetWorld(), DesiredLocation, 50.f, 12, FColor::Red, false, 5.f);
+        }
 
         if (PoolSubsystem)
         {
@@ -131,7 +154,6 @@ void AEnemySpawner::SpawnEnemy()
                 SpawnedEnemiesPerType.Add(NPCClass, AlreadySpawnedCount + 1);
             }
         }
-
         // Increment the spawn count for this NPC type
         SpawnedEnemiesPerType.Add(NPCClass, AlreadySpawnedCount + 1);
         

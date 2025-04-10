@@ -165,22 +165,14 @@ void ADegreeProjectCharacter::BeginPlay()
 		UE_LOG(LogTemp, Error, TEXT("Camera shake class is not assigned in the Blueprint."));
 	}
 
-	//if (WeaponInventoryWidgetClass)
-	//{
-	//	WeaponInventoryWidget = CreateWidget<UUserWidget>(GetWorld(), WeaponInventoryWidgetClass);
-	//	if (WeaponInventoryWidget)
-	//	{
-	//		WeaponInventoryWidget->AddToViewport();
-	//	}
-	//}
-	//f (SlotWidgetClass)
-	//
-	//	SlotWidget = CreateWidget<UUserWidget>(GetWorld(), SlotWidgetClass);
-	//	if (SlotWidget)
-	//	{
-	//		SlotWidget->AddToViewport();
-	//	}
-	//
+	if (WeaponInventoryWidgetClass)
+	{
+		WeaponInventoryWidget = CreateWidget<UUserWidget>(GetWorld(), WeaponInventoryWidgetClass);
+		if (WeaponInventoryWidget)
+		{
+			WeaponInventoryWidget->AddToViewport();
+		}
+	}
 
 	DisableHitbox();
 }
@@ -237,29 +229,11 @@ UStandardAttributeSet* ADegreeProjectCharacter::GetAttributeSet()
 	return AttributeSet;
 }
 
-void ADegreeProjectCharacter::TakeDamage_Implementation(float DamageAmount)
+void ADegreeProjectCharacter::TakeDamage_Implementation(UAbilitySystemComponent* AbilitySystem)
 {
-	if (bIsDead || DamageAmount <= 0.0f) return;
-
-	static ConstructorHelpers::FClassFinder<UGameplayEffect> DamageEffect(TEXT("/Game/Ablities/Combat/GE_Damage"));
-
-	if (DamageEffect.Succeeded())
-	{
-		TSubclassOf<UGameplayEffect> DamageEffectClass = DamageEffect.Class;
-		FGameplayEffectSpecHandle EffectSpecHandle = AbilitySystemComponent->MakeOutgoingSpec(DamageEffectClass, 1.0f, AbilitySystemComponent->MakeEffectContext());
-		EffectSpecHandle.Data->SetSetByCallerMagnitude(FGameplayTag::RequestGameplayTag(FName("Effect.Damage")), DamageAmount);
-		AbilitySystemComponent->ApplyGameplayEffectSpecToSelf(*EffectSpecHandle.Data.Get());
-	}
-
-	if (AttributeSet->CurrentHealth.GetCurrentValue() <= 0.0f && !bIsDead)
-	{
-		AttributeSet->CurrentHealth.SetCurrentValue(FMath::Max(0.0f, AttributeSet->CurrentHealth.GetCurrentValue()));
-
-		HandleDeath();
-	}
 }
 
-void ADegreeProjectCharacter::HandleDeath()
+void ADegreeProjectCharacter::HandleDeath_Implementation()
 {
 	bIsDead = true;
 
@@ -393,7 +367,11 @@ void ADegreeProjectCharacter::OnSwordHit(UPrimitiveComponent* OverlappedComponen
 			}
 		}
 
-		IDamagable::Execute_TakeDamage(OtherActor, 10.f); // CHANGE LATER TO THE ACTUAL DAMAGE OF THE PLAYER!
+		if (!EnemiesHit.Contains(OtherActor))
+		{
+			IDamagable::Execute_TakeDamage(OtherActor, AbilitySystemComponent);
+			EnemiesHit.Add(OtherActor);
+		}
 
 		FVector ActorLoc = OtherActor->GetActorLocation(); 
 		
@@ -839,6 +817,11 @@ void ADegreeProjectCharacter::SwitchToNextWeapon()
 {
 	if (WeaponInventory)
 	{
+		if (EquipItemSFX)
+		{
+			AudioComponent->SetSound(EquipItemSFX);
+			AudioComponent->Play();
+		}
 		WeaponInventory->SwitchWeapon(1);
 	}
 }

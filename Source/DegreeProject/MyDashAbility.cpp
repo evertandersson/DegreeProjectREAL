@@ -11,26 +11,34 @@ void UMyDashAbility::ActivateAbility(const FGameplayAbilitySpecHandle Handle, co
 
 	if (ADegreeProjectCharacter* Character = Cast<ADegreeProjectCharacter>(ActorInfo->AvatarActor.Get()))
 	{
-		Character->Dash();
-
 		UAbilitySystemComponent* ASC = ActorInfo->AbilitySystemComponent.Get();
-		if (ASC)
+
+		// Check if character can dash and is moving
+		if (Character->bCanDash && Character->GetVelocity().Size() > 0.1f)
 		{
-			ASC->ApplyModToAttribute(UStandardAttributeSet::GetCurrentStaminaAttribute(), EGameplayModOp::Additive, -20.f);
-		}
-
-		FTimerHandle DashTimerHandle;
-		Character->GetWorldTimerManager().SetTimer(DashTimerHandle, FTimerDelegate::CreateLambda([this, Handle, ActorInfo, ActivationInfo, Character]()
+			if (ASC)
 			{
-				if (Character)
+				ASC->ApplyModToAttribute(UStandardAttributeSet::GetCurrentStaminaAttribute(), EGameplayModOp::Additive, -20.f);
+			}
+
+			Character->Dash();
+
+			FTimerHandle DashTimerHandle;
+			Character->GetWorldTimerManager().SetTimer(DashTimerHandle, FTimerDelegate::CreateLambda([this, Handle, ActorInfo, ActivationInfo, Character]()
 				{
-					Character->StopDash();
-				}
+					if (Character)
+					{
+						Character->StopDash();
+					}
+					EndAbility(Handle, ActorInfo, ActivationInfo, true, false);
 
-				EndAbility(Handle, ActorInfo, ActivationInfo, true, false);
-			}), Character->DashDuration, false);
+				}), Character->DashDuration, false);
+		}
+		else
+		{
+			// Optional: fail activation if not allowed to dash or not moving
+			EndAbility(Handle, ActorInfo, ActivationInfo, true, false);
+		}
 	}
-
-	//EndAbility(Handle, ActorInfo, ActivationInfo, true, false);
 	
 }

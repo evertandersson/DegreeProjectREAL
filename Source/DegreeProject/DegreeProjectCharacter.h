@@ -38,6 +38,7 @@ class UMyAbilitySystemComponent;
 class UAbilitySystemComponent;
 class UGrapplingComponent;
 class UMantleComponent;
+class ANPC;
 struct FInputActionValue;
 
 DECLARE_LOG_CATEGORY_EXTERN(LogTemplateCharacter, Log, All);
@@ -111,9 +112,9 @@ public:
 	void OnHealthChanged(float DeltaValue, const FGameplayTagContainer& EventTags);
 
 	// Implement the interface function correctly
-	virtual void TakeDamage_Implementation(float DamageAmount) override;
+	virtual void TakeDamage_Implementation(UAbilitySystemComponent* AbilitySystem) override;
 
-	void HandleDeath();
+	void HandleDeath_Implementation();
 	
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attributes")
@@ -211,6 +212,10 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Jump|SFX")
 	USoundCue* JumpSFX;
 
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Inventory|SFX")
+	USoundCue* EquipItemSFX;
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Audio")
 	UAudioComponent* AudioComponent;
 
@@ -224,11 +229,7 @@ private:
 	UPROPERTY(EditDefaultsOnly, Category = "UI")
 	TSubclassOf<UUserWidget> WeaponInventoryWidgetClass;
 
-	UPROPERTY(EditDefaultsOnly, Category = "UI")
-	TSubclassOf<UUserWidget> SlotWidgetClass;
-
 	UUserWidget* WeaponInventoryWidget;
-	UUserWidget* SlotWidget;
 
 	void TryPickupWeapon();
 
@@ -256,6 +257,7 @@ private:
 	void StartUtilityRegen();
 	void RegenerateUtility();
 
+
 public:
 	/** Returns CameraBoom subobject **/
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
@@ -264,6 +266,9 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void EndAttack();
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+	TArray<AActor*> EnemiesHit;
 
 	UFUNCTION(BlueprintCallable)
 	void ExplosionAttack();
@@ -338,6 +343,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Player)
 	bool bHitTarget = false;
 
+	UPROPERTY(EditAnywhere, Category = Player)
+	bool bCanDash;
+
 private:
 	UPROPERTY()
 	USphereComponent* ExplosionHitbox;
@@ -350,9 +358,6 @@ private:
 
 	// Function to handle changes in health attributes
 	void HandleHealthChanged(const FOnAttributeChangeData& Data);
-
-	UPROPERTY(EditAnywhere, Category = Player)
-	bool bCanDash;
 
 	UPROPERTY(EditAnywhere, Category = Player)
 	float DashBreakFriction;
