@@ -823,5 +823,6 @@ void ADegreeProjectCharacter::SwitchToNextWeapon()
 			AudioComponent->Play();
 		}
 		WeaponInventory->SwitchWeapon(1);
+
 	}
 }
