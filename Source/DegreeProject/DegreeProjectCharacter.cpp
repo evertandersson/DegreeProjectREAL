@@ -817,6 +817,11 @@ void ADegreeProjectCharacter::SwitchToNextWeapon()
 {
 	if (WeaponInventory)
 	{
+		if (EquipItemSFX)
+		{
+			AudioComponent->SetSound(EquipItemSFX);
+			AudioComponent->Play();
+		}
 		WeaponInventory->SwitchWeapon(1);
 	}
 }
