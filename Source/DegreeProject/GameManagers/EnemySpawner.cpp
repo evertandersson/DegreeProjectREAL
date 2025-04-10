@@ -109,7 +109,8 @@ void AEnemySpawner::SpawnEnemy()
         float RadAngle = FMath::DegreesToRadians(Angle);
         float X = CircleCenter.X + Radius * FMath::Cos(RadAngle);
         float Y = CircleCenter.Y + Radius * FMath::Sin(RadAngle);
-        float Z = CircleCenter.Z + 50.f;
+        //float Z = CircleCenter.Z;
+        float Z = CircleCenter.Z + 700.f;
 
         FVector SpawnLocation = FVector(X, Y, Z);
         FVector DesiredLocation = FVector(X, Y, Z);
