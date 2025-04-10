@@ -92,7 +92,7 @@ void AEnemySpawner::SpawnEnemy()
     // Get the next enemy class and spawn count from the array
     const TPair<TSubclassOf<ANPC>, int32>& Pair = EnemyDataArray[SpawnCounter];
     TSubclassOf<ANPC> NPCClass = Pair.Key;
-    int32 SpawnCount = Pair.Value;
+    SpawnCount = Pair.Value;
 
     // Check if we have already spawned all the enemies for this type
     int32 AlreadySpawnedCount = SpawnedEnemiesPerType.Contains(NPCClass) ? SpawnedEnemiesPerType[NPCClass] : 0;
