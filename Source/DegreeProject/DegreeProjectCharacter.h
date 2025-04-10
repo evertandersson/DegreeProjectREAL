@@ -212,6 +212,10 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Jump|SFX")
 	USoundCue* JumpSFX;
 
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Inventory|SFX")
+	USoundCue* EquipItemSFX;
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Audio")
 	UAudioComponent* AudioComponent;
 
