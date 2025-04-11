@@ -786,7 +786,11 @@ void ADegreeProjectCharacter::OnExplosionOverlap(UPrimitiveComponent* Overlapped
 {
 	if (!OtherActor || OtherActor == this) return;
 
-	IDamagable::Execute_TakeDamage(OtherActor, AbilitySystemComponent);
+	if (!EnemiesHit.Contains(OtherActor))
+	{
+		IDamagable::Execute_TakeDamage(OtherActor, AbilitySystemComponent);
+		EnemiesHit.Add(OtherActor);
+	}
 }
 
 void ADegreeProjectCharacter::SwitchToNextWeapon()
