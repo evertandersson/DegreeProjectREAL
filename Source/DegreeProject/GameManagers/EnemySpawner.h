@@ -27,8 +27,14 @@ public:
 	int CurrentRound;
 
 	// Number of enemies killed in the current round
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 	int EnemiesKilled;
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+	int32 SpawnCount;
+
+	// Counter to keep track of the number of different enemy types being spawned
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+	int SpawnCounter;
 
 	// Function to call when an enemy is killed
 	UFUNCTION(BlueprintCallable)
@@ -54,8 +60,7 @@ private:
 	// Timer handle for spawning enemies
 	FTimerHandle SpawnTimerHandle;
 
-	// Counter to keep track of the number of different enemy types being spawned
-	int SpawnCounter;
+	
 
 	TArray<TPair<TSubclassOf<ANPC>, int32>> EnemyDataArray;
 

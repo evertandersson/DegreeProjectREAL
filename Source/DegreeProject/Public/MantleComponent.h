@@ -27,13 +27,13 @@ public:
 	UMantleComponent();
 
 	UFUNCTION(BlueprintCallable)
-	float MantleTrace(ADegreeProjectCharacter* Player, float Length);
+	float MantleTrace(ADegreeProjectCharacter* Player, float Length, bool bFromGrapple);
 
 	UFUNCTION()
 	bool IsObstacleInFront(ADegreeProjectCharacter* Player);
 
 	UFUNCTION()
-	float DetermineMantleHeight(ADegreeProjectCharacter* Player, const FHitResult& HitResult, float MaxAngle);
+	float DetermineMantleHeight(ADegreeProjectCharacter* Player, const FHitResult& HitResult, float MaxAngle, bool bFromGrapple);
 
 	UPROPERTY(BlueprintReadWrite)
 	FVector MantleHeight;
