@@ -9,7 +9,7 @@
 
 void UMainMenuWidget::StartGame()
 {
-	UGameplayStatics::OpenLevel(this, FName("MainMap"));
+	UGameplayStatics::OpenLevel(this, FName("Main"));
 }
 
 void UMainMenuWidget::QuitGame()
