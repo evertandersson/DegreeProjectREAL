@@ -192,8 +192,8 @@ protected:
 	UPROPERTY(VisibleAnywhere)
 	class UStaticMeshComponent* SwordMesh;
 
-	UPROPERTY(EditAnywhere)
-	class UAnimSequence* AttackAnimation;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat|Anims")
+	TArray<UAnimMontage*> CombatAnims;
 
 	UFUNCTION()
 	void OnSwordHit(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,

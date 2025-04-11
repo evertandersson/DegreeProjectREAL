@@ -714,7 +714,7 @@ void ADegreeProjectCharacter::ExplosionAttack()
 		UE_LOG(LogTemp, Warning, TEXT("ExplosionHitbox Created at: %s"), *ExplosionHitbox->GetComponentLocation().ToString());
 
 		// Extend the time before the hitbox is destroyed (increase this time for visibility)
-		float HitboxLifeTime = 1.0f;  // Keep the hitbox alive for 1 second
+		float HitboxLifeTime = 0.2f;  // Keep the hitbox alive for 0.2f second
 		GetWorldTimerManager().SetTimer(DestroyHitboxTimerHandle, this, &ADegreeProjectCharacter::DestroyExplosionHitbox, HitboxLifeTime, false);
 
 		// Optional: Start expanding the hitbox to see it grow
@@ -786,31 +786,11 @@ void ADegreeProjectCharacter::OnExplosionOverlap(UPrimitiveComponent* Overlapped
 {
 	if (!OtherActor || OtherActor == this) return;
 
-	UE_LOG(LogTemp, Warning, TEXT("Explosion Overlapped: %s"), *OtherActor->GetName());
-
-	FVector ExplosionOrigin = ExplosionHitbox->GetComponentLocation();
-	FVector KnockbackDirection = OtherActor->GetActorLocation() - ExplosionOrigin;
-	KnockbackDirection.Z = 0; // Prevent vertical movement
-	KnockbackDirection.Normalize();
-
-	float KnockbackStrength = 1000.0f; // Increase knockback force
-
-	UE_LOG(LogTemp, Warning, TEXT("KnockbackDirection: %s"), *KnockbackDirection.ToString());
-
-	// If the enemy is a Character, launch it
-	ACharacter* EnemyCharacter = Cast<ACharacter>(OtherActor);
-	if (EnemyCharacter)
+	if (!EnemiesHit.Contains(OtherActor))
 	{
-		EnemyCharacter->LaunchCharacter(KnockbackDirection * KnockbackStrength, false, false);
-		return;
+		IDamagable::Execute_TakeDamage(OtherActor, AbilitySystemComponent);
+		EnemiesHit.Add(OtherActor);
 	}
-
-	// If it's not a Character, use AddActorWorldOffset
-	OtherActor->SetActorEnableCollision(false);
-	OtherActor->AddActorWorldOffset(KnockbackDirection * KnockbackStrength, true);
-	OtherActor->SetActorEnableCollision(true);
-
-	UE_LOG(LogTemp, Warning, TEXT("%s moved to: %s"), *OtherActor->GetName(), *OtherActor->GetActorLocation().ToString());
 }
 
 void ADegreeProjectCharacter::SwitchToNextWeapon()
@@ -823,5 +803,6 @@ void ADegreeProjectCharacter::SwitchToNextWeapon()
 			AudioComponent->Play();
 		}
 		WeaponInventory->SwitchWeapon(1);
+
 	}
 }
