@@ -70,15 +70,8 @@ float UMantleComponent::DetermineMantleHeight(ADegreeProjectCharacter* Player, c
 {
     UMeshComponent* MeshComponent = Player->GetMesh();
     FVector HeadLocation = MeshComponent->GetSocketLocation("head");
-    FVector CalfLocation; 
-    if (bFromGrapple)
-    {
-		CalfLocation = MeshComponent->GetSocketLocation("foot_l");
-    }
-    else 
-    {
-        CalfLocation = MeshComponent->GetSocketLocation("calf_l");
-    }
+
+    FVector CalfLocation = bFromGrapple ? MeshComponent->GetSocketLocation("foot_l") : CalfLocation = MeshComponent->GetSocketLocation("calf_l");
 
     float ImpactAngle = UKismetMathLibrary::DegAcos(UKismetMathLibrary::Dot_VectorVector(HitResult.ImpactNormal, FVector(0, 0, 1.f)));
 
