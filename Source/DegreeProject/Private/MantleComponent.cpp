@@ -15,7 +15,7 @@ UMantleComponent::UMantleComponent()
     bIsClimbing = false;
 }
 
-float UMantleComponent::MantleTrace(ADegreeProjectCharacter* Player, float Length)
+float UMantleComponent::MantleTrace(ADegreeProjectCharacter* Player, float Length, bool bFromGrapple)
 {
     if (!Player) return 0.0f;
 
@@ -51,7 +51,7 @@ float UMantleComponent::MantleTrace(ADegreeProjectCharacter* Player, float Lengt
         return 0.0f;
     }
 
-    return DetermineMantleHeight(Player, HitResult, MaxMantleAngle);
+    return DetermineMantleHeight(Player, HitResult, MaxMantleAngle, bFromGrapple);
 }
 
 bool UMantleComponent::IsObstacleInFront(ADegreeProjectCharacter* Player)
@@ -66,11 +66,19 @@ bool UMantleComponent::IsObstacleInFront(ADegreeProjectCharacter* Player)
         false, { Player }, EDrawDebugTrace::None, HitResult, true);
 }
 
-float UMantleComponent::DetermineMantleHeight(ADegreeProjectCharacter* Player, const FHitResult& HitResult, float MaxAngle)
+float UMantleComponent::DetermineMantleHeight(ADegreeProjectCharacter* Player, const FHitResult& HitResult, float MaxAngle, bool bFromGrapple)
 {
     UMeshComponent* MeshComponent = Player->GetMesh();
     FVector HeadLocation = MeshComponent->GetSocketLocation("head");
-    FVector CalfLocation = MeshComponent->GetSocketLocation("calf_l");
+    FVector CalfLocation; 
+    if (bFromGrapple)
+    {
+		CalfLocation = MeshComponent->GetSocketLocation("foot_l");
+    }
+    else 
+    {
+        CalfLocation = MeshComponent->GetSocketLocation("calf_l");
+    }
 
     float ImpactAngle = UKismetMathLibrary::DegAcos(UKismetMathLibrary::Dot_VectorVector(HitResult.ImpactNormal, FVector(0, 0, 1.f)));
 
