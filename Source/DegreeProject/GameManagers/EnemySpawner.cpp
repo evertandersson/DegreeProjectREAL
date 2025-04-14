@@ -15,7 +15,6 @@ AEnemySpawner::AEnemySpawner()
     Radius = 2000.f;
 }
 
-
 void AEnemySpawner::BeginPlay()
 {
 	Super::BeginPlay();
@@ -110,7 +109,7 @@ void AEnemySpawner::SpawnEnemy()
         float X = CircleCenter.X + Radius * FMath::Cos(RadAngle);
         float Y = CircleCenter.Y + Radius * FMath::Sin(RadAngle);
         //float Z = CircleCenter.Z;
-        float Z = CircleCenter.Z + 700.f;
+        float Z = CircleCenter.Z + 950.f;                    
 
         FVector SpawnLocation = FVector(X, Y, Z);
         FVector DesiredLocation = FVector(X, Y, Z);
@@ -120,8 +119,6 @@ void AEnemySpawner::SpawnEnemy()
         FNavLocation ProjectedLocation;
         UNavigationSystemV1* NavSys = FNavigationSystem::GetCurrent<UNavigationSystemV1>(GetWorld());
 
-        // Try to project the desired spawn location to the nearest valid point on the NavMesh in ther map
-        // The extent defines the search box size of 1000 units
         if (NavSys && NavSys->ProjectPointToNavigation(DesiredLocation, ProjectedLocation, FVector(1000, 1000, 1000)))
         {
             SpawnLocation = ProjectedLocation.Location;
