@@ -53,6 +53,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	float Radius;
 
+
 protected:
 	virtual void BeginPlay() override;
 
