@@ -558,7 +558,7 @@ void ADegreeProjectCharacter::Jump()
 	if (JumpSFX)
 	{
 		AudioComponent->SetSound(JumpSFX);
-		AudioComponent->Play(0.3f);
+		AudioComponent->Play();
 	}
 	Super::Jump();
 }
