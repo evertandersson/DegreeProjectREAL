@@ -181,6 +181,45 @@ void ADegreeProjectCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 	RegenerateAttributes(DeltaTime);
+	SetGroundPos();
+}
+
+void ADegreeProjectCharacter::SetGroundPos()
+{
+	FVector StartLocation = GetActorLocation();
+	FVector EndLocation = StartLocation - FVector(0, 0, 500); // 500 units down
+
+	FHitResult HitResult;
+
+	// Define what object types to trace against (e.g., WorldStatic)
+	TArray<TEnumAsByte<EObjectTypeQuery>> ObjectTypes;
+	ObjectTypes.Add(UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_WorldStatic));
+
+	// Actors to ignore
+	TArray<AActor*> ActorsToIgnore;
+	ActorsToIgnore.Add(this);
+
+	bool bHit = UKismetSystemLibrary::LineTraceSingleForObjects(
+		GetWorld(),
+		StartLocation,
+		EndLocation,
+		ObjectTypes,
+		false,
+		ActorsToIgnore,
+		EDrawDebugTrace::None, // Change to ForDuration or Persistent if debugging
+		HitResult,
+		true
+	);
+
+	if (bHit)
+	{
+		GroundPos = HitResult.Location; 
+	}
+}
+
+FVector ADegreeProjectCharacter::GetGroundPos_Implementation()
+{
+	return GroundPos;
 }
 
 void ADegreeProjectCharacter::PossessedBy(AController* NewController)
@@ -245,6 +284,8 @@ void ADegreeProjectCharacter::HandleDeath_Implementation()
 
 	GetWorld()->GetTimerManager().SetTimer(DeathTimerHandle, this, &ADegreeProjectCharacter::DestroyCharacter, 0.5f, false);
 }
+
+
 
 void ADegreeProjectCharacter::DestroyCharacter()
 {
