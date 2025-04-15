@@ -20,6 +20,7 @@
 #include "Sound/SoundCue.h"
 #include "Components/SphereComponent.h"
 #include "Damagable.h"
+#include "IHasGroundPos.h"
 
 #include "GrapplingComponent.h"
 #include "MantleComponent.h"
@@ -52,7 +53,7 @@ enum class EGASAbilityInputID : uint8
 };
 
 UCLASS(config=Game)
-class ADegreeProjectCharacter : public ACharacter, public IAbilitySystemInterface, public IDamagable
+class ADegreeProjectCharacter : public ACharacter, public IAbilitySystemInterface, public IDamagable, public IIHasGroundPos
 {
 	GENERATED_BODY()
 
@@ -115,7 +116,10 @@ public:
 	virtual void TakeDamage_Implementation(UAbilitySystemComponent* AbilitySystem) override;
 
 	void HandleDeath_Implementation();
-	
+
+	FVector GetGroundPos_Implementation();
+	void SetGroundPos();
+	FVector GroundPos;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attributes")
 	int MaxMana = 100;
