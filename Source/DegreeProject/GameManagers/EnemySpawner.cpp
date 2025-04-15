@@ -88,6 +88,7 @@ void AEnemySpawner::SpawnEnemy()
         return;
     }
 
+
     // Get the next enemy class and spawn count from the array
     const TPair<TSubclassOf<ANPC>, int32>& Pair = EnemyDataArray[SpawnCounter];
     TSubclassOf<ANPC> NPCClass = Pair.Key;
@@ -109,17 +110,32 @@ void AEnemySpawner::SpawnEnemy()
         float X = CircleCenter.X + Radius * FMath::Cos(RadAngle);
         float Y = CircleCenter.Y + Radius * FMath::Sin(RadAngle);
         //float Z = CircleCenter.Z;
-        float Z = CircleCenter.Z + 950.f;                    
+        float Z = CircleCenter.Z + 350;                    
+
+        FHitResult Hit;
+        FVector Start = FVector(X, Y, CircleCenter.Z + 1000.f);
+        FVector End = FVector(X, Y, CircleCenter.Z - 1000.f);
+
+        FCollisionQueryParams CollisionParams;
+        CollisionParams.bTraceComplex = true;
 
         FVector SpawnLocation = FVector(X, Y, Z);
         FVector DesiredLocation = FVector(X, Y, Z);
         FRotator SpawnRotation = FRotator::ZeroRotator;
-
-        
+       
         FNavLocation ProjectedLocation;
         UNavigationSystemV1* NavSys = FNavigationSystem::GetCurrent<UNavigationSystemV1>(GetWorld());
 
-        if (NavSys && NavSys->ProjectPointToNavigation(DesiredLocation, ProjectedLocation, FVector(1000, 1000, 1000)))
+        if (GetWorld()->LineTraceSingleByChannel(Hit, Start, End, ECC_Visibility, CollisionParams))
+        {
+            DesiredLocation.Z = Hit.Location.Z + 500.f;
+        }
+        else
+        {
+            UE_LOG(LogTemp, Error, TEXT("Line trace failed, using default Z"));
+        }
+
+        if (NavSys && NavSys->ProjectPointToNavigation(DesiredLocation, ProjectedLocation, FVector(500, 500, 500)))
         {
             SpawnLocation = ProjectedLocation.Location;
             DrawDebugSphere(GetWorld(), SpawnLocation, 50.f, 12, FColor::Green, false, 5.f);
@@ -148,7 +164,7 @@ void AEnemySpawner::SpawnEnemy()
                 }
 
                 // Increment the spawn count for this NPC type
-                SpawnedEnemiesPerType.Add(NPCClass, AlreadySpawnedCount + 1);
+               // SpawnedEnemiesPerType.Add(NPCClass, AlreadySpawnedCount + 1);
             }
         }
         // Increment the spawn count for this NPC type
