@@ -92,8 +92,7 @@ void APickup::OnPlayerInteraction(UPrimitiveComponent* OverlappedComp, AActor* O
 
 void APickup::ResetDefense()
 {
-	AttributeSets->Defence.SetCurrentValue(AttributeSets->Defence.GetCurrentValue() - 3);
-	UE_LOG(LogTemp, Warning, TEXT("REMOVED DEFENSE"));
+	AttributeSets->ResetDefance(3);
 }
 
 void APickup::OnPickup(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* otherComp,

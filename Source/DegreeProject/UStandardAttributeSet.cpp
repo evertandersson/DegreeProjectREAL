@@ -77,7 +77,8 @@ void UStandardAttributeSet::AddDefence(float Number)
 
 void UStandardAttributeSet::ResetDefance(float Number)
 {
-
+    Defence.SetCurrentValue(Defence.GetCurrentValue() - Number);
+	UE_LOG(LogTemp, Warning, TEXT("REMOVED DEFENSE"));
 }
 #pragma endregion
 
