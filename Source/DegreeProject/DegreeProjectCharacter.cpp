@@ -300,7 +300,7 @@ void ADegreeProjectCharacter::HandleDeath_Implementation()
 void ADegreeProjectCharacter::DestroyCharacter()
 {
 	ToggleGameOver();
-	Destroy();
+	//Destroy();
 }
 
 void ADegreeProjectCharacter::TogglePauseMenu()
