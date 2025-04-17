@@ -332,7 +332,7 @@ void ADegreeProjectCharacter::TogglePauseMenu()
 			PauseMenuInstance->AddToViewport();
 			PlayerController->SetPause(true);
 			PlayerController->SetShowMouseCursor(true);
-			//PlayerController->SetInputMode(FInputModeUIOnly());
+			PlayerController->SetInputMode(FInputModeUIOnly());
 		}
 	}
 }
