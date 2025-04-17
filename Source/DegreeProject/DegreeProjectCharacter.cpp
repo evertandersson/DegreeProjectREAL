@@ -279,10 +279,20 @@ void ADegreeProjectCharacter::HandleDeath_Implementation()
 	if (UCharacterMovementComponent* MovementComponent = GetCharacterMovement())
 	{
 		MovementComponent->DisableMovement();
+
 	}
 	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	GetCapsuleComponent()->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
 
-	GetWorld()->GetTimerManager().SetTimer(DeathTimerHandle, this, &ADegreeProjectCharacter::DestroyCharacter, 0.5f, false);
+	GetMesh()->SetCollisionProfileName(TEXT("Ragdoll"));
+	GetMesh()->SetAllBodiesSimulatePhysics(true);
+	GetMesh()->SetSimulatePhysics(true);
+	GetMesh()->WakeAllRigidBodies();
+	GetMesh()->bBlendPhysics = true;
+
+	GetMesh()->DetachFromComponent(FDetachmentTransformRules::KeepWorldTransform);
+
+	GetWorld()->GetTimerManager().SetTimer(DeathTimerHandle, this, &ADegreeProjectCharacter::DestroyCharacter, 2.f, false);
 }
 
 
@@ -322,7 +332,7 @@ void ADegreeProjectCharacter::TogglePauseMenu()
 			PauseMenuInstance->AddToViewport();
 			PlayerController->SetPause(true);
 			PlayerController->SetShowMouseCursor(true);
-			//PlayerController->SetInputMode(FInputModeUIOnly());
+			PlayerController->SetInputMode(FInputModeUIOnly());
 		}
 	}
 }
