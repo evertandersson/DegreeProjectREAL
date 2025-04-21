@@ -25,7 +25,7 @@ void AFlyingEnemiesAIController::Tick(float DeltaTime)
 		AFlyingEnemy* Enemy = Cast<AFlyingEnemy>(GetPawn());
 		if (Enemy)
 		{
-			Enemy->MoveToTarget(PlayerActor);
+			
 		}
 	}
 

@@ -14,7 +14,7 @@ AFlyingEnemy::AFlyingEnemy()
 	PrimaryActorTick.bCanEverTick = true;
 
 	GetCharacterMovement()->DefaultLandMovementMode = MOVE_Flying;
-	GetCharacterMovement()->SetMovementMode(MOVE_Flying);
+	GetCharacterMovement()->MovementMode = MOVE_Flying;
 
 }
 
@@ -22,33 +22,44 @@ AFlyingEnemy::AFlyingEnemy()
 void AFlyingEnemy::BeginPlay()
 {
 	Super::BeginPlay();
-	NavSys = FNavigationSystem::GetCurrent<UNavigationSystemV1>(GetWorld());
-	
+	TargetActor = UGameplayStatics::GetPlayerPawn(GetWorld(), 0);
 }
 
 // Called every frame
 void AFlyingEnemy::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+	if (TargetActor)
+	{
+		MoveToTarget();
+		FaceTarget(DeltaTime);
+	}
 
 }
 
-void AFlyingEnemy::MoveToTarget(AActor* TargetActor)
+void AFlyingEnemy::FaceTarget(float DeltaTime)
 {
 	if (!TargetActor) return;
 
-	AAIController* AIController = Cast<AAIController>(GetController());
-	if (AIController)
-	{
-		AIController->MoveToActor(TargetActor, 100.0f, true, true, true, 0, true);
-		CurrentTarget = TargetActor;
-	}
+	FVector Direction = TargetActor->GetActorLocation() - GetActorLocation();
+	FRotator LookAtRotaton = FRotationMatrix::MakeFromX(Direction).Rotator();
+
+	FRotator TargetRotation(0.f, LookAtRotaton.Yaw, 0.f);
+
+	FRotator NewRotation = FMath::RInterpTo(GetActorRotation(), TargetRotation, DeltaTime, 5.f);
+	SetActorRotation(NewRotation);
 }
 
-// Called to bind functionality to input
-void AFlyingEnemy::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
+void AFlyingEnemy::MoveToTarget()
 {
-	Super::SetupPlayerInputComponent(PlayerInputComponent);
+	if (!TargetActor) return;
 
+	FVector Direction = (TargetActor->GetActorLocation() - GetActorLocation()).GetSafeNormal();
+	FVector NewLocation = GetActorLocation() + Direction * MovementSpeed * GetWorld()->GetDeltaSeconds();
+	SetActorLocation(NewLocation);
 }
+
+
+
+
 
