@@ -22,16 +22,18 @@ protected:
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
+    void FaceTarget(float DeltaTime);
 
-	UFUNCTION(BlueprintCallable)
-	void MoveToTarget(AActor* TargetActor);
+	UPROPERTY(EditAnywhere, Category = "AI")
+	float MovementSpeed = 200.f;
 
+	UPROPERTY(EditAnywhere, Category = "AI")
+	float AcceptanceRadius = 100.f;
 
-	// Called to bind functionality to input
-	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI")
+	AActor* TargetActor;
 
-private:
-	class UNavigationSystemV1* NavSys;
-	AActor* CurrentTarget;
+	void MoveToTarget();
+	
 
 };
