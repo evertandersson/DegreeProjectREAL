@@ -4,10 +4,11 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "NPC.h"
 #include "FlyingEnemy.generated.h"
 
 UCLASS()
-class DEGREEPROJECT_API AFlyingEnemy : public ACharacter
+class DEGREEPROJECT_API AFlyingEnemy : public ANPC
 {
 	GENERATED_BODY()
 
@@ -25,7 +26,7 @@ public:
     void FaceTarget(float DeltaTime);
 
 	UPROPERTY(EditAnywhere, Category = "AI")
-	float MovementSpeed = 200.f;
+	float MovementSpeed = 400.f;
 
 	UPROPERTY(EditAnywhere, Category = "AI")
 	float AcceptanceRadius = 100.f;
