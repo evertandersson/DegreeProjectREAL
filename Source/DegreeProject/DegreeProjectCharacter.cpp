@@ -217,6 +217,11 @@ void ADegreeProjectCharacter::SetGroundPos()
 	}
 }
 
+void ADegreeProjectCharacter::ToggleCanJump_Implementation(bool CanJump)
+{
+	bCanJump = CanJump;
+}
+
 FVector ADegreeProjectCharacter::GetGroundPos_Implementation()
 {
 	return GroundPos;

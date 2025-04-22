@@ -23,4 +23,7 @@ class DEGREEPROJECT_API IIHasGroundPos : public IInterface
 public:
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
 	FVector GetGroundPos();
+
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
+	void ToggleCanJump(bool CanJump);
 };
