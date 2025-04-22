@@ -121,6 +121,8 @@ public:
 	void SetGroundPos();
 	FVector GroundPos;
 
+	void ToggleCanJump_Implementation(bool CanJump);
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attributes")
 	int MaxMana = 100;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attributes")
