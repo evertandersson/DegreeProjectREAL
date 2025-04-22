@@ -441,7 +441,6 @@ void ADegreeProjectCharacter::OnSwordHit(UPrimitiveComponent* OverlappedComponen
 		//	UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), NiagaraDashVFX, ActorLoc, FRotator::ZeroRotator);
 		//}
 
-		// Destroy the actor after the VFX is spawned
 		//OtherActor->Destroy();
 	}
 	//bHitTarget = false;
@@ -796,14 +795,13 @@ void ADegreeProjectCharacter::ExpandExplosionHitbox()
 		// Gradually expand the hitbox
 		if (CurrentRadius < MaxExplosionRadius)
 		{
-			// Smoothly expand the hitbox radius over time
+			// Expand the hitbox radius over time
 			float NewRadius = FMath::Lerp(CurrentRadius, MaxExplosionRadius, 0.2f);
 			ExplosionHitbox->SetSphereRadius(NewRadius);
 
-			// Keep the collision enabled while expanding
 			ExplosionHitbox->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 
-			// Debug: Drawing the expanding hitbox for visualization
+			// Drawing the expanding hitbox 
 			DrawDebugSphere(GetWorld(), ExplosionHitbox->GetComponentLocation(), NewRadius, 12, FColor::Red, false, 0.1f, 0, 2.0f);
 
 			// Continue expanding the hitbox
@@ -812,7 +810,7 @@ void ADegreeProjectCharacter::ExpandExplosionHitbox()
 		else
 		{
 			// Once max radius is reached, disable collision
-			ExplosionHitbox->SetCollisionEnabled(ECollisionEnabled::NoCollision); // Disable collision
+			ExplosionHitbox->SetCollisionEnabled(ECollisionEnabled::NoCollision); 
 
 			// Destroy the hitbox after a short delay
 			GetWorldTimerManager().SetTimerForNextTick([this]() {
