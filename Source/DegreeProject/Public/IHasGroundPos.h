@@ -29,4 +29,7 @@ public:
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
 	void IsInStorm(bool bEnable);
+
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
+	void LaunchCharacterInDirection(FVector Direction, bool bIsStorm);
 };
