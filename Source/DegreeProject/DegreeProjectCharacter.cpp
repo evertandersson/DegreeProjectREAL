@@ -222,6 +222,10 @@ void ADegreeProjectCharacter::ToggleCanJump_Implementation(bool CanJump)
 	bCanJump = CanJump;
 }
 
+void ADegreeProjectCharacter::IsInStorm_Implementation(bool bEnable)
+{
+}
+
 FVector ADegreeProjectCharacter::GetGroundPos_Implementation()
 {
 	return GroundPos;

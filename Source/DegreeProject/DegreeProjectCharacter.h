@@ -99,6 +99,7 @@ class ADegreeProjectCharacter : public ACharacter, public IAbilitySystemInterfac
 
 	UPROPERTY(EditAnywhere, BlueprintReadonly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* PickUpWeapons;
+
 public:
 	ADegreeProjectCharacter();
 	
@@ -122,6 +123,8 @@ public:
 	FVector GroundPos;
 
 	void ToggleCanJump_Implementation(bool CanJump);
+
+	virtual void IsInStorm_Implementation(bool bEnable) override;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attributes")
 	int MaxMana = 100;
