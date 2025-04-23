@@ -232,6 +232,9 @@ void ADegreeProjectCharacter::LaunchCharacterInDirection_Implementation(FVector 
 
 	if (!bIsStorm)
 	{
+		AbilitySystemComponent->TryActivateAbilitiesByTag(CancelAttacks);
+
+		GetMesh()->GetAnimInstance()->StopAllMontages(0.2f);
 		if (Direction.Size() < 100.f)
 		{
 			Direction = Direction.GetSafeNormal() * 100.f;
