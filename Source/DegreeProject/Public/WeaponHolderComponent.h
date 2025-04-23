@@ -4,11 +4,13 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
+//#include "GameFramework/Character.h"
 #include "Sound/SoundCue.h"
 #include "Components/SphereComponent.h"
+#include "AbilitySystemInterface.h"
 #include "WeaponHolderComponent.generated.h"
 
-class ADegreeProjectCharacter;
+class ACharacter;
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class DEGREEPROJECT_API UWeaponHolderComponent : public UActorComponent
@@ -24,7 +26,7 @@ protected:
 	virtual void BeginPlay() override;
 
 	UPROPERTY()
-	ADegreeProjectCharacter* PlayerCharacter;
+	class ACharacter* PlayerCharacter;
 
 public:	
 	UFUNCTION()

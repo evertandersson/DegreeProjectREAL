@@ -5,6 +5,7 @@
 #include "Damagable.h"
 #include "Kismet/GameplayStatics.h"
 #include "TimerManager.h"
+#include "DegreeProjectCharacter.h"
 #include "Engine/World.h"
 
 // Sets default values for this component's properties
@@ -68,7 +69,11 @@ void UWeaponHolderComponent::OnExplosionOverlap(UPrimitiveComponent* OverlappedC
 
 	if (!EnemiesHit.Contains(OtherActor))
 	{
-		IDamagable::Execute_TakeDamage(OtherActor, PlayerCharacter->GetAbilitySystemComponent());
+		if (IAbilitySystemInterface* ASCInterface = Cast<IAbilitySystemInterface>(PlayerCharacter))
+		{
+			UAbilitySystemComponent* ASC = ASCInterface->GetAbilitySystemComponent();
+			IDamagable::Execute_TakeDamage(OtherActor, ASC);
+		}
 		EnemiesHit.Add(OtherActor);
 	}
 }
