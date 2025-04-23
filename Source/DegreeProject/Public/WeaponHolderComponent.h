@@ -5,7 +5,10 @@
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
 #include "Sound/SoundCue.h"
+#include "Components/SphereComponent.h"
 #include "WeaponHolderComponent.generated.h"
+
+class ADegreeProjectCharacter;
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class DEGREEPROJECT_API UWeaponHolderComponent : public UActorComponent
@@ -20,15 +23,41 @@ protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
 
+	UPROPERTY()
+	ADegreeProjectCharacter* PlayerCharacter;
+
 public:	
 	UFUNCTION()
 	void OnSwordHit(AActor* ThisActor, AActor* OtherActor, UAbilitySystemComponent* AbilitySystemComponent);
 
 	UFUNCTION()
-	void OnExplosionHit(AActor* OtherActor, UAbilitySystemComponent* AbilitySystemComponent);
+	void OnExplosionOverlap(UPrimitiveComponent* OverlappedComponent,
+		AActor* OtherActor,
+		UPrimitiveComponent* OtherComp,
+		int32 OtherBodyIndex,
+		bool bFromSweep,
+		const FHitResult& SweepResult);
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 	TArray<AActor*> EnemiesHit;
+
+	UFUNCTION(BlueprintCallable)
+	void ExplosionAttack();
+
+	UFUNCTION(BlueprintCallable)
+	void DestroyExplosionHitbox();
+
+	UFUNCTION()
+	void ExpandExplosionHitbox();
+
+	UPROPERTY(EditAnywhere, Category = "Explosion Attack")
+	float MaxExplosionRadius = 200.0f;
+
+	UPROPERTY(EditAnywhere, Category = "Explosion Attack")
+	float ExpansionTime = 0.5f;
+
+	UPROPERTY(EditAnywhere, Category = "Explosion Attack")
+	float ExplosionForce = 1500.0f;
 
 protected:
 	UPROPERTY(EditAnywhere, Category = "Combat|VFX")
@@ -42,4 +71,9 @@ protected:
 
 	UPROPERTY(EditAnywhere, Category = "Camera Shake")
 	TSubclassOf<UCameraShakeBase> HitCameraShake;
+
+	UPROPERTY()
+	USphereComponent* ExplosionHitbox;
+
+	FTimerHandle DestroyHitboxTimerHandle;
 };
