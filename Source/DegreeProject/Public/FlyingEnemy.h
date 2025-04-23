@@ -34,7 +34,14 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI")
 	AActor* TargetActor;
 
+	UFUNCTION(BlueprintCallable, Category = "AI")
 	void MoveToTarget();
-	
 
+	UPROPERTY(BlueprintReadWrite,EditAnywhere, Category = "AI")
+	bool IsDead;
+
+	/*UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Health")
+	void HandleDeath();
+	
+	virtual void HandleDeath_Implementation() override;*/
 };

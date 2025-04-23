@@ -23,6 +23,7 @@ void AFlyingEnemy::BeginPlay()
 {
 	Super::BeginPlay();
 	TargetActor = UGameplayStatics::GetPlayerPawn(GetWorld(), 0);
+	IsDead = false;
 }
 
 // Called every frame
@@ -33,6 +34,11 @@ void AFlyingEnemy::Tick(float DeltaTime)
 	{
 		MoveToTarget();
 		FaceTarget(DeltaTime);
+	}
+
+	if (IsDead)
+	{
+		MovementSpeed = 0.0f;
 	}
 
 }
@@ -57,8 +63,8 @@ void AFlyingEnemy::MoveToTarget()
 	FVector Direction = (TargetActor->GetActorLocation() - GetActorLocation()).GetSafeNormal();
 	FVector NewLocation = GetActorLocation() + Direction * MovementSpeed * GetWorld()->GetDeltaSeconds();
 	SetActorLocation(NewLocation);
+	MovementSpeed = 400.0f;
 }
-
 
 
 
