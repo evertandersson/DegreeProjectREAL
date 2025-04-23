@@ -126,6 +126,8 @@ public:
 
 	virtual void IsInStorm_Implementation(bool bEnable) override;
 
+	void LaunchCharacterInDirection_Implementation(FVector Direction, bool bIsStorm);
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attributes")
 	int MaxMana = 100;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attributes")

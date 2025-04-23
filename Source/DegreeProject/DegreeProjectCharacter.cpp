@@ -226,6 +226,31 @@ void ADegreeProjectCharacter::IsInStorm_Implementation(bool bEnable)
 {
 }
 
+void ADegreeProjectCharacter::LaunchCharacterInDirection_Implementation(FVector Direction, bool bIsStorm)
+{
+	bool bOverrideXY = !bIsStorm;
+
+	if (!bIsStorm)
+	{
+		if (Direction.Size() < 100.f)
+		{
+			Direction = Direction.GetSafeNormal() * 100.f;
+		}
+		GetCharacterMovement()->SetMovementMode(MOVE_Falling);
+	}
+	
+	if (!Direction.IsNearlyZero())
+	{
+		LaunchCharacter(Direction, bOverrideXY, false);
+	}
+	
+	if (bIsStorm)
+	{
+		float SpinPower = GetActorRotation().Yaw + (Direction.Z * 0.2f);
+		SetActorRotation(FRotator(GetActorRotation().Pitch, SpinPower, GetActorRotation().Roll));
+	}
+}
+
 FVector ADegreeProjectCharacter::GetGroundPos_Implementation()
 {
 	return GroundPos;
