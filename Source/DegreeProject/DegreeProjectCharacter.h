@@ -126,6 +126,8 @@ public:
 
 	virtual void IsInStorm_Implementation(bool bEnable) override;
 
+	void LaunchCharacterInDirection_Implementation(FVector Direction, bool bIsStorm);
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attributes")
 	int MaxMana = 100;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attributes")
@@ -150,6 +152,12 @@ public:
 	TSubclassOf<class UGameplayEffect> DefaultEffect;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Abilities")
 	TArray<TSubclassOf<class UGameplayAbility>> DefaultAbilities;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	FGameplayTagContainer CancelAttacks;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	FGameplayTagContainer CancelAttacksDuration;
+
 
 protected:
 	// Ability System Component that manages attributes and effects.
