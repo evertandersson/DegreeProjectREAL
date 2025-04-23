@@ -11,7 +11,6 @@
 
 #include "MyAbilitySystemComponent.h"
 #include "AbilitySystemComponent.h"
-#include "UStandardAttributeSet.h"
 #include "MyDashAbility.h"
 #include "NPC.h"
 
@@ -45,7 +44,6 @@
 #include "InputActionValue.h"
 #include "Perception/AIPerceptionStimuliSourceComponent.h"
 #include "Perception/AISenseConfig_Sight.h"
-#include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
@@ -114,6 +112,9 @@ ADegreeProjectCharacter::ADegreeProjectCharacter()
 	// Initialize Mantle Component
 	MantleComponent = CreateDefaultSubobject<UMantleComponent>(TEXT("MantleComponent"));
 
+	// Initialize Weapon Holder Component
+	WeaponHolderComponent = CreateDefaultSubobject<UWeaponHolderComponent>(TEXT("WeaponHolderComponent"));
+
 	// Initialize the Attribute Set component for managing health and other attributes
 	AttributeSet = CreateDefaultSubobject<UStandardAttributeSet>(TEXT("AttributeSet"));
 
@@ -159,11 +160,6 @@ void ADegreeProjectCharacter::BeginPlay()
 
 	bCanDash = true;
 	bCanJump = true;
-
-	if (!HitCameraShake)
-	{
-		UE_LOG(LogTemp, Error, TEXT("Camera shake class is not assigned in the Blueprint."));
-	}
 
 	if (WeaponInventoryWidgetClass)
 	{
@@ -228,19 +224,27 @@ void ADegreeProjectCharacter::IsInStorm_Implementation(bool bEnable)
 
 void ADegreeProjectCharacter::LaunchCharacterInDirection_Implementation(FVector Direction, bool bIsStorm)
 {
-	bool bOverrideXY = !bIsStorm;
+	if (GetMesh()->GetAnimInstance()->IsAnyMontagePlaying())
+	{
+		GetMesh()->GlobalAnimRateScale = 1.0f;
+		GetMesh()->GetAnimInstance()->StopAllMontages(0.2f);
+	}
 
-	if (!bIsStorm)
+	if (bIsStorm)
+	{
+		AbilitySystemComponent->TryActivateAbilitiesByTag(CancelAttacksDuration);
+	}
+	else
 	{
 		AbilitySystemComponent->TryActivateAbilitiesByTag(CancelAttacks);
-
-		GetMesh()->GetAnimInstance()->StopAllMontages(0.2f);
 		if (Direction.Size() < 100.f)
 		{
 			Direction = Direction.GetSafeNormal() * 100.f;
 		}
 		GetCharacterMovement()->SetMovementMode(MOVE_Falling);
 	}
+
+	bool bOverrideXY = !bIsStorm;
 	
 	if (!Direction.IsNearlyZero())
 	{
@@ -251,6 +255,62 @@ void ADegreeProjectCharacter::LaunchCharacterInDirection_Implementation(FVector 
 	{
 		float SpinPower = GetActorRotation().Yaw + (Direction.Z * 0.2f);
 		SetActorRotation(FRotator(GetActorRotation().Pitch, SpinPower, GetActorRotation().Roll));
+	}
+}
+
+void ADegreeProjectCharacter::SetRotationBeforeRoll_Implementation()
+{
+	FVector LastInput = GetCharacterMovement()->GetLastInputVector();
+
+	if (LastInput == FVector::ZeroVector)
+		return;
+
+	FRotator TargetRotation = UKismetMathLibrary::MakeRotFromX(LastInput);
+
+	SetActorRotation(TargetRotation);
+}
+
+void ADegreeProjectCharacter::ConfirmGrappleHit_Implementation()
+{
+	ToggleIsAirbourne();
+	CanDisableGrappleDelay();
+	GrapplingComponent->SetConfirmGrappleValues();
+
+	FTransform ParticleTransform = FTransform(	
+		FRotator::ZeroRotator,		
+		GrapplingComponent->GrapplePoint,								
+		FVector(0.8f, 0.8f, 0.8f));
+
+	UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), 
+		GrapplingComponent->p_GrappleHitImpact, 
+		ParticleTransform,
+		true,
+		EPSCPoolMethod::AutoRelease,
+		true);
+
+	GetCharacterMovement()->Velocity = FVector(
+		GetCharacterMovement()->Velocity.X,
+		GetCharacterMovement()->Velocity.Y,
+		0.0f);
+
+	LaunchCharacter(FVector(0, 0, 500.0f), false, false);
+}
+
+void ADegreeProjectCharacter::LaunchGrappleHook_Implementation() { }
+
+void ADegreeProjectCharacter::StandStillForGrappleHook_Implementation(bool bEndAbility)
+{
+	if (bEndAbility)
+	{
+		GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking);
+		return;
+	}
+
+	GrapplingComponent->bIsRotatingTowardsGrapplePoint = true;
+
+	if (!GetCharacterMovement()->IsFalling())
+	{
+		GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_None);
 	}
 }
 
@@ -444,44 +504,8 @@ void ADegreeProjectCharacter::OnSwordHit(UPrimitiveComponent* OverlappedComponen
 {
 	if (OverlappedComponent == SwordHitbox && OtherActor && OtherActor != this)
 	{
-		bHitTarget = true;
-		UE_LOG(LogTemp, Warning, TEXT("Hit: %s"), *OtherActor->GetName());
-		if (HitCameraShake)
-		{
-			APlayerController* PlayerController = GetWorld()->GetFirstPlayerController();
-			if (PlayerController)
-			{
-				PlayerController->ClientStartCameraShake(HitCameraShake);
-			}
-		}
-
-		if (!EnemiesHit.Contains(OtherActor))
-		{
-			IDamagable::Execute_TakeDamage(OtherActor, AbilitySystemComponent);
-			EnemiesHit.Add(OtherActor);
-		}
-
-		FVector ActorLoc = OtherActor->GetActorLocation(); 
-		
-		if (ImpactVFX)
-		{
-			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ImpactVFX, ActorLoc, FRotator::ZeroRotator);
-		}
-
-		if (SoundCue)
-		{
-			UGameplayStatics::PlaySoundAtLocation(this, SoundCue, GetActorLocation());
-		}
-
-		//if (NiagaraDashVFX)
-		//{
-		//	UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), NiagaraDashVFX, ActorLoc, FRotator::ZeroRotator);
-		//}
-
-		// Destroy the actor after the VFX is spawned
-		//OtherActor->Destroy();
+		WeaponHolderComponent->OnSwordHit(this, OtherActor, AbilitySystemComponent);
 	}
-	//bHitTarget = false;
 }
 
 
@@ -557,6 +581,8 @@ void ADegreeProjectCharacter::TryPickupWeapon()
 		AWeaponPickUp* Pickup = Cast<AWeaponPickUp>(Actor);
 		if (Pickup)
 		{
+			float PickUpPlayRate = 3;
+			PlayAnimMontage(PickUpAnim, PickUpPlayRate);
 			UE_LOG(LogTemp, Warning, TEXT("Found weapon pickup, attempting to pick up."));
 			Pickup->PickupWeapon();
 			return;
@@ -833,14 +859,13 @@ void ADegreeProjectCharacter::ExpandExplosionHitbox()
 		// Gradually expand the hitbox
 		if (CurrentRadius < MaxExplosionRadius)
 		{
-			// Smoothly expand the hitbox radius over time
+			// Expand the hitbox radius over time
 			float NewRadius = FMath::Lerp(CurrentRadius, MaxExplosionRadius, 0.2f);
 			ExplosionHitbox->SetSphereRadius(NewRadius);
 
-			// Keep the collision enabled while expanding
 			ExplosionHitbox->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 
-			// Debug: Drawing the expanding hitbox for visualization
+			// Drawing the expanding hitbox 
 			DrawDebugSphere(GetWorld(), ExplosionHitbox->GetComponentLocation(), NewRadius, 12, FColor::Red, false, 0.1f, 0, 2.0f);
 
 			// Continue expanding the hitbox
@@ -849,7 +874,7 @@ void ADegreeProjectCharacter::ExpandExplosionHitbox()
 		else
 		{
 			// Once max radius is reached, disable collision
-			ExplosionHitbox->SetCollisionEnabled(ECollisionEnabled::NoCollision); // Disable collision
+			ExplosionHitbox->SetCollisionEnabled(ECollisionEnabled::NoCollision); 
 
 			// Destroy the hitbox after a short delay
 			GetWorldTimerManager().SetTimerForNextTick([this]() {
@@ -874,11 +899,7 @@ void ADegreeProjectCharacter::OnExplosionOverlap(UPrimitiveComponent* Overlapped
 {
 	if (!OtherActor || OtherActor == this) return;
 
-	if (!EnemiesHit.Contains(OtherActor))
-	{
-		IDamagable::Execute_TakeDamage(OtherActor, AbilitySystemComponent);
-		EnemiesHit.Add(OtherActor);
-	}
+	WeaponHolderComponent->OnExplosionHit(OtherActor, AbilitySystemComponent);
 }
 
 void ADegreeProjectCharacter::SwitchToNextWeapon()

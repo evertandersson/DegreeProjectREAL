@@ -32,4 +32,16 @@ public:
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
 	void LaunchCharacterInDirection(FVector Direction, bool bIsStorm);
+
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
+	void SetRotationBeforeRoll();
+
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
+	void ConfirmGrappleHit();
+
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
+	void LaunchGrappleHook();
+
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
+	void StandStillForGrappleHook(bool bEndAbility);
 };

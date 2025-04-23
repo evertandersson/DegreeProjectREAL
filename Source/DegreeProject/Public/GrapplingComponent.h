@@ -29,8 +29,14 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void ResetValues();
 
+	UFUNCTION()
+	void SetConfirmGrappleValues();
+
 	UFUNCTION(BlueprintCallable)
 	bool ShouldSetNewEndPoint();
+
+	UPROPERTY(EditDefaultsOnly)
+	UParticleSystem* p_GrappleHitImpact;
 
 	UPROPERTY(BlueprintReadWrite)
 	FVector GrapplePoint;
@@ -41,16 +47,19 @@ public:
 	UPROPERTY(BlueprintReadWrite)
 	bool bCanGrapple;
 
-	UPROPERTY(BlueprintReadWrite)
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 	bool bIsRotatingTowardsGrapplePoint;
 
-	UPROPERTY(BlueprintReadWrite)
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 	bool bIsGrappling;
 
 	UPROPERTY(BlueprintReadWrite)
 	bool bIsAiming;
 
-	UPROPERTY(BlueprintReadWrite)
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 	bool bHasAvailableGrapplingPoint;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	bool bIsLaunchingGrapple;
 
 };
