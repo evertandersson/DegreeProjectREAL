@@ -262,6 +262,44 @@ void ADegreeProjectCharacter::LaunchCharacterInDirection_Implementation(FVector 
 	}
 }
 
+void ADegreeProjectCharacter::SetRotationBeforeRoll_Implementation()
+{
+	FVector LastInput = GetCharacterMovement()->GetLastInputVector();
+
+	if (LastInput == FVector::ZeroVector)
+		return;
+
+	FRotator TargetRotation = UKismetMathLibrary::MakeRotFromX(LastInput);
+
+	SetActorRotation(TargetRotation);
+}
+
+void ADegreeProjectCharacter::ConfirmGrappleHit_Implementation()
+{
+	ToggleIsAirbourne();
+	CanDisableGrappleDelay();
+	GrapplingComponent->SetConfirmGrappleValues();
+
+	FTransform ParticleTransform = FTransform(	
+		FRotator::ZeroRotator,		
+		GrapplingComponent->GrapplePoint,								
+		FVector(0.8f, 0.8f, 0.8f));
+
+	UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), 
+		GrapplingComponent->p_GrappleHitImpact, 
+		ParticleTransform,
+		true,
+		EPSCPoolMethod::AutoRelease,
+		true);
+
+	GetCharacterMovement()->Velocity = FVector(
+		GetCharacterMovement()->Velocity.X,
+		GetCharacterMovement()->Velocity.Y,
+		0.0f);
+
+	LaunchCharacter(FVector(0, 0, 500.0f), false, false);
+}
+
 FVector ADegreeProjectCharacter::GetGroundPos_Implementation()
 {
 	return GroundPos;

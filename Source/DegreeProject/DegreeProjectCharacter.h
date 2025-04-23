@@ -113,6 +113,8 @@ public:
 	UFUNCTION(BlueprintImplementableEvent, Category = "Health")
 	void OnHealthChanged(float DeltaValue, const FGameplayTagContainer& EventTags);
 
+#pragma region Interface Functions
+
 	// Implement the interface function correctly
 	virtual void TakeDamage_Implementation(UAbilitySystemComponent* AbilitySystem) override;
 
@@ -127,6 +129,18 @@ public:
 	virtual void IsInStorm_Implementation(bool bEnable) override;
 
 	void LaunchCharacterInDirection_Implementation(FVector Direction, bool bIsStorm);
+
+	void SetRotationBeforeRoll_Implementation();
+
+	void ConfirmGrappleHit_Implementation();
+
+#pragma endregion
+
+	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent)
+	void ToggleIsAirbourne();
+
+	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent)
+	void CanDisableGrappleDelay();
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attributes")
 	int MaxMana = 100;
