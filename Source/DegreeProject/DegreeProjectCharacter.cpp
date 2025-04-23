@@ -556,6 +556,8 @@ void ADegreeProjectCharacter::TryPickupWeapon()
 		AWeaponPickUp* Pickup = Cast<AWeaponPickUp>(Actor);
 		if (Pickup)
 		{
+			float PickUpPlayRate = 3;
+			PlayAnimMontage(PickUpAnim, PickUpPlayRate);
 			UE_LOG(LogTemp, Warning, TEXT("Found weapon pickup, attempting to pick up."));
 			Pickup->PickupWeapon();
 			return;
