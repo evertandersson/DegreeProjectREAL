@@ -41,16 +41,16 @@ public:
 	UPROPERTY(BlueprintReadWrite)
 	bool bCanGrapple;
 
-	UPROPERTY(BlueprintReadWrite)
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 	bool bIsRotatingTowardsGrapplePoint;
 
-	UPROPERTY(BlueprintReadWrite)
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 	bool bIsGrappling;
 
 	UPROPERTY(BlueprintReadWrite)
 	bool bIsAiming;
 
-	UPROPERTY(BlueprintReadWrite)
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 	bool bHasAvailableGrapplingPoint;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)

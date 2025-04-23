@@ -64,7 +64,7 @@ class ADegreeProjectCharacter : public ACharacter, public IAbilitySystemInterfac
 	/** Follow camera */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	UCameraComponent* FollowCamera;
-	
+
 	/** MappingContext */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputMappingContext* DefaultMappingContext;
@@ -102,7 +102,7 @@ class ADegreeProjectCharacter : public ACharacter, public IAbilitySystemInterfac
 
 public:
 	ADegreeProjectCharacter();
-	
+
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaTime) override;
 
@@ -200,7 +200,7 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera Shake")
 	TSubclassOf<UCameraShakeBase> HitCameraShake;
-			
+
 	void StartAttack(const FInputActionValue& Value);
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Combat")
@@ -211,6 +211,9 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat|Anims")
 	TArray<UAnimMontage*> CombatAnims;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "PickUp|Anims")
+	class UAnimMontage* PickUpAnim;
 
 	UFUNCTION()
 	void OnSwordHit(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
