@@ -219,24 +219,16 @@ protected:
 
 	int Health;
 
-	void StartAttack(const FInputActionValue& Value);
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Combat")
-	UCapsuleComponent* SwordHitbox;
-
-	UPROPERTY(VisibleAnywhere)
-	class UStaticMeshComponent* SwordMesh;
-
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat|Anims")
 	TArray<UAnimMontage*> CombatAnims;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "PickUp|Anims")
 	class UAnimMontage* PickUpAnim;
 
-	UFUNCTION()
-	void OnSwordHit(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
-		UPrimitiveComponent* OtherComp, int32 OtherBodyIndex,
-		bool bFromSweep, const FHitResult& SweepResult);
+	//UFUNCTION()
+	//void OnSwordHit(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
+	//	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex,
+	//	bool bFromSweep, const FHitResult& SweepResult);
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Dash|VFX")
 	UNiagaraSystem* NiagaraDashVFX;
@@ -296,17 +288,9 @@ public:
 	/** Returns FollowCamera subobject **/
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
 
-	UFUNCTION(BlueprintCallable)
-	void EndAttack();
-
 	UFUNCTION()
 	void SwitchToNextWeapon();
 
-	UFUNCTION(BlueprintCallable)
-	void EnableHitbox();
-
-	UFUNCTION(BlueprintCallable)
-	void DisableHitbox();
 
 	void TogglePauseMenu();
 	void ToggleGameOver();
@@ -320,9 +304,6 @@ public:
 	UPauseMenuWidget* PauseMenuInstance;
 	UPROPERTY()
 	UGameOverWidget* GameOverInstance;
-
-	UPROPERTY(BlueprintReadWrite, VisibleAnywhere)
-	bool bIsAttacking;
 	
 	UPROPERTY(BlueprintReadWrite, VisibleAnywhere)
 	bool bIsHoldingAttack;
