@@ -52,7 +52,7 @@ void AFlyingEnemy::FaceTarget(float DeltaTime)
 
 void AFlyingEnemy::MoveToTarget()
 {
-	if (!TargetActor) return;
+	if (!TargetActor || Health <= 0) return;
 
 	FVector Direction = (TargetActor->GetActorLocation() - GetActorLocation()).GetSafeNormal();
 	FVector NewLocation = GetActorLocation() + Direction * MovementSpeed * GetWorld()->GetDeltaSeconds();
