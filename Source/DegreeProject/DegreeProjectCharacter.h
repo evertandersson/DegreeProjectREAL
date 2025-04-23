@@ -17,13 +17,13 @@
 #include "NiagaraSystem.h"
 #include "NiagaraFunctionLibrary.h"
 #include "Kismet/GameplayStatics.h"
-#include "Sound/SoundCue.h"
 #include "Components/SphereComponent.h"
 #include "Damagable.h"
 #include "IHasGroundPos.h"
 
 #include "GrapplingComponent.h"
 #include "MantleComponent.h"
+#include "WeaponHolderComponent.h"
 
 #include "UStandardAttributeSet.h"
 #include "DegreeProjectCharacter.generated.h"
@@ -192,6 +192,9 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	UMantleComponent* MantleComponent;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	UWeaponHolderComponent* WeaponHolderComponent;
+
 
 	// Initializes the character's attributes when the game starts.
 	void InitializeAttributes();
@@ -216,9 +219,6 @@ protected:
 
 	int Health;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera Shake")
-	TSubclassOf<UCameraShakeBase> HitCameraShake;
-
 	void StartAttack(const FInputActionValue& Value);
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Combat")
@@ -238,14 +238,8 @@ protected:
 		UPrimitiveComponent* OtherComp, int32 OtherBodyIndex,
 		bool bFromSweep, const FHitResult& SweepResult);
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat|VFX")
-	UParticleSystem* ImpactVFX;
-
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Dash|VFX")
 	UNiagaraSystem* NiagaraDashVFX;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat|SFX")
-	USoundCue* SoundCue;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Jump|SFX")
 	USoundCue* JumpSFX;
@@ -304,9 +298,6 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void EndAttack();
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
-	TArray<AActor*> EnemiesHit;
 
 	UFUNCTION(BlueprintCallable)
 	void ExplosionAttack();
@@ -377,9 +368,6 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Player)
 	bool bIsDashing = false;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Player)
-	bool bHitTarget = false;
 
 	UPROPERTY(EditAnywhere, Category = Player)
 	bool bCanDash;
