@@ -155,6 +155,8 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	FGameplayTagContainer CancelAttacks;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	FGameplayTagContainer CancelAttacksDuration;
 
 
 protected:

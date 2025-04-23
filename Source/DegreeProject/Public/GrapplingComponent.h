@@ -53,4 +53,7 @@ public:
 	UPROPERTY(BlueprintReadWrite)
 	bool bHasAvailableGrapplingPoint;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	bool bIsLaunchingGrapple;
+
 };

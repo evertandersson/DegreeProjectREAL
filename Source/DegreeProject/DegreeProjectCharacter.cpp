@@ -228,19 +228,27 @@ void ADegreeProjectCharacter::IsInStorm_Implementation(bool bEnable)
 
 void ADegreeProjectCharacter::LaunchCharacterInDirection_Implementation(FVector Direction, bool bIsStorm)
 {
-	bool bOverrideXY = !bIsStorm;
+	if (GetMesh()->GetAnimInstance()->IsAnyMontagePlaying())
+	{
+		GetMesh()->GlobalAnimRateScale = 1.0f;
+		GetMesh()->GetAnimInstance()->StopAllMontages(0.2f);
+	}
 
-	if (!bIsStorm)
+	if (bIsStorm)
+	{
+		AbilitySystemComponent->TryActivateAbilitiesByTag(CancelAttacksDuration);
+	}
+	else
 	{
 		AbilitySystemComponent->TryActivateAbilitiesByTag(CancelAttacks);
-
-		GetMesh()->GetAnimInstance()->StopAllMontages(0.2f);
 		if (Direction.Size() < 100.f)
 		{
 			Direction = Direction.GetSafeNormal() * 100.f;
 		}
 		GetCharacterMovement()->SetMovementMode(MOVE_Falling);
 	}
+
+	bool bOverrideXY = !bIsStorm;
 	
 	if (!Direction.IsNearlyZero())
 	{
