@@ -26,4 +26,7 @@ public:
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
 	void ToggleCanJump(bool CanJump);
+
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
+	void IsInStorm(bool bEnable);
 };

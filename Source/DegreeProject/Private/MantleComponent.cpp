@@ -12,6 +12,7 @@ UMantleComponent::UMantleComponent()
 {
 	PrimaryComponentTick.bCanEverTick = false;
 
+    bCanClimb = true;
     bIsClimbing = false;
 }
 
