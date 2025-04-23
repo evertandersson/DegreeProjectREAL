@@ -70,6 +70,15 @@ void UGrapplingComponent::ResetValues()
 	bIsGrappling = false;
 }
 
+void UGrapplingComponent::SetConfirmGrappleValues()
+{
+	bCanGrapple = false;
+	bIsGrappling = true;
+	bIsRotatingTowardsGrapplePoint = false;
+}
+
+
+
 bool UGrapplingComponent::ShouldSetNewEndPoint()
 {
 	return bIsAiming && !bIsGrappling && !bIsRotatingTowardsGrapplePoint;

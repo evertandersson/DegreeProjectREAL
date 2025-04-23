@@ -29,8 +29,14 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void ResetValues();
 
+	UFUNCTION()
+	void SetConfirmGrappleValues();
+
 	UFUNCTION(BlueprintCallable)
 	bool ShouldSetNewEndPoint();
+
+	UPROPERTY(EditDefaultsOnly)
+	UParticleSystem* p_GrappleHitImpact;
 
 	UPROPERTY(BlueprintReadWrite)
 	FVector GrapplePoint;
