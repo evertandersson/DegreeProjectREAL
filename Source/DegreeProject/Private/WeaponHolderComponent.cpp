@@ -6,6 +6,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "TimerManager.h"
 #include "DegreeProjectCharacter.h"
+#include "Components/SphereComponent.h"
 #include "Engine/World.h"
 
 // Sets default values for this component's properties
@@ -24,11 +25,23 @@ void UWeaponHolderComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
-	PlayerCharacter = Cast<ADegreeProjectCharacter>(GetOwner());
+	ADegreeProjectCharacter* PlayerRef = Cast<ADegreeProjectCharacter>(GetOwner());
+	PlayerCharacter = PlayerRef;
+
+	SwordHitbox = PlayerRef->SwordHitbox;
+
+	// Bind the overlap event
+	SwordHitbox->OnComponentBeginOverlap.AddDynamic(this, &UWeaponHolderComponent::OnSwordHit);
+
+	DisableHitbox();
 }
 
-void UWeaponHolderComponent::OnSwordHit(AActor* ThisActor, AActor* OtherActor, UAbilitySystemComponent* AbilitySystemComponent)
+void UWeaponHolderComponent::OnSwordHit(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
+	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex,
+	bool bFromSweep, const FHitResult& SweepResult)
 {
+	if (!OtherActor || OtherActor->IsA<ADegreeProjectCharacter>()) return;
+
 	bHitTarget = true;
 	if (HitCameraShake)
 	{
@@ -41,7 +54,11 @@ void UWeaponHolderComponent::OnSwordHit(AActor* ThisActor, AActor* OtherActor, U
 
 	if (!EnemiesHit.Contains(OtherActor))
 	{
-		IDamagable::Execute_TakeDamage(OtherActor, AbilitySystemComponent);
+		if (IAbilitySystemInterface* ASCInterface = Cast<IAbilitySystemInterface>(PlayerCharacter))
+		{
+			UAbilitySystemComponent* ASC = ASCInterface->GetAbilitySystemComponent();
+			IDamagable::Execute_TakeDamage(OtherActor, ASC);
+		}
 		EnemiesHit.Add(OtherActor);
 	}
 
@@ -54,7 +71,7 @@ void UWeaponHolderComponent::OnSwordHit(AActor* ThisActor, AActor* OtherActor, U
 
 	if (SoundCue)
 	{
-		UGameplayStatics::PlaySoundAtLocation(this, SoundCue, ThisActor->GetActorLocation());
+		UGameplayStatics::PlaySoundAtLocation(this, SoundCue, PlayerCharacter->GetActorLocation());
 	}
 }
 
@@ -172,4 +189,16 @@ void UWeaponHolderComponent::ExpandExplosionHitbox()
 			});
 		}
 	}
+}
+
+void UWeaponHolderComponent::EnableHitbox()
+{
+	SwordHitbox->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+	UE_LOG(LogTemp, Warning, TEXT("Hitbox Enabled!"));
+}
+
+void UWeaponHolderComponent::DisableHitbox()
+{
+	SwordHitbox->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	UE_LOG(LogTemp, Warning, TEXT("Hitbox Disabled!"));
 }

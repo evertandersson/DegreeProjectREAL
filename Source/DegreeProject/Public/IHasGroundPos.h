@@ -4,7 +4,10 @@
 
 #include "CoreMinimal.h"
 #include "UObject/Interface.h"
+#include "Components/CapsuleComponent.h"
 #include "IHasGroundPos.generated.h"
+
+class UWeaponHolderComponent;
 
 // This class does not need to be modified.
 UINTERFACE(MinimalAPI)
@@ -44,4 +47,7 @@ public:
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
 	void StandStillForGrappleHook(bool bEndAbility);
+
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
+	UWeaponHolderComponent* GetWeaponHolderComponent();
 };

@@ -98,9 +98,6 @@ ADegreeProjectCharacter::ADegreeProjectCharacter()
 	SwordHitbox->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
 	SwordHitbox->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Overlap);
 
-	// Bind the overlap event
-	SwordHitbox->OnComponentBeginOverlap.AddDynamic(this, &ADegreeProjectCharacter::OnSwordHit);
-
 	// Initialize the Ability System Component and enable replication
 	AbilitySystemComponent = CreateDefaultSubobject<UAbilitySystemComponent>(TEXT("AbilitySystemComponent"));
 	AbilitySystemComponent->SetIsReplicated(true);
@@ -169,8 +166,6 @@ void ADegreeProjectCharacter::BeginPlay()
 			WeaponInventoryWidget->AddToViewport();
 		}
 	}
-
-	DisableHitbox();
 }
 
 void ADegreeProjectCharacter::Tick(float DeltaTime)
@@ -312,6 +307,11 @@ void ADegreeProjectCharacter::StandStillForGrappleHook_Implementation(bool bEndA
 	{
 		GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_None);
 	}
+}
+
+UWeaponHolderComponent* ADegreeProjectCharacter::GetWeaponHolderComponent_Implementation()
+{
+	return WeaponHolderComponent;
 }
 
 FVector ADegreeProjectCharacter::GetGroundPos_Implementation()
@@ -497,18 +497,6 @@ void ADegreeProjectCharacter::GetLifetimeReplicatedProps(TArray<FLifetimePropert
 //////////////////////////////////////////////////////////////////////////
 // Input
 
-void ADegreeProjectCharacter::OnSwordHit(UPrimitiveComponent* OverlappedComponent,
-	AActor* OtherActor, UPrimitiveComponent* OtherComp,
-	int32 OtherBodyIndex, bool bFromSweep,
-	const FHitResult& SweepResult)
-{
-	if (OverlappedComponent == SwordHitbox && OtherActor && OtherActor != this)
-	{
-		WeaponHolderComponent->OnSwordHit(this, OtherActor, AbilitySystemComponent);
-	}
-}
-
-
 void ADegreeProjectCharacter::NotifyControllerChanged()
 {
 	Super::NotifyControllerChanged();
@@ -541,9 +529,6 @@ void ADegreeProjectCharacter::SetupPlayerInputComponent(UInputComponent* PlayerI
 		// Rolling
 		EnhancedInputComponent->BindAction(RollAction, ETriggerEvent::Started, this, &ADegreeProjectCharacter::Roll);
 		EnhancedInputComponent->BindAction(RollAction, ETriggerEvent::Completed, this, &ADegreeProjectCharacter::StopRolling);
-
-		// Attacking
-		EnhancedInputComponent->BindAction(AttackAction, ETriggerEvent::Triggered, this, &ADegreeProjectCharacter::StartAttack);
 
 		EnhancedInputComponent->BindAction(PauseAction, ETriggerEvent::Triggered, this, &ADegreeProjectCharacter::TogglePauseMenu);
 
@@ -637,33 +622,6 @@ void ADegreeProjectCharacter::Roll(const FInputActionValue& Value)
 void ADegreeProjectCharacter::StopRolling(const FInputActionValue& Value)
 {
 	bPressedRoll = false;
-}
-
-void ADegreeProjectCharacter::StartAttack(const FInputActionValue& Value)
-{
-	if (!bIsAttacking) // Check if not already attacking
-	{
-		bIsAttacking = true;
-
-		//GetMesh()->SetAnimationMode(EAnimationMode::AnimationBlueprint);
-		//UpdateAnimationState(true);
-
-		UE_LOG(LogTemp, Warning, TEXT("Attack Started!"));
-
-		//EnableHitbox(); // Enable the hitbox when the attack starts
-	}
-}
-
-void ADegreeProjectCharacter::EnableHitbox()
-{
-	SwordHitbox->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
-	UE_LOG(LogTemp, Warning, TEXT("Hitbox Enabled!"));
-}
-
-void ADegreeProjectCharacter::DisableHitbox()
-{
-	SwordHitbox->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-	UE_LOG(LogTemp, Warning, TEXT("Hitbox Disabled!"));
 }
 
 void ADegreeProjectCharacter::Jump()
@@ -788,12 +746,6 @@ void ADegreeProjectCharacter::RegenerateUtility()
 
 	float NewMana = FMath::FInterpTo(AttributeSet->GetCurrentMana(),AttributeSet->GetMaxMana(), GetWorld()->GetDeltaSeconds(), 1.f);
 	AttributeSet->SetCurrentMana(FMath::CeilToInt(NewMana));
-}
-
-void ADegreeProjectCharacter::EndAttack()
-{
-	bIsAttacking = false;
-	UE_LOG(LogTemp, Warning, TEXT("Attack Ended!"));
 }
 
 void ADegreeProjectCharacter::SwitchToNextWeapon()

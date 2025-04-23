@@ -4,13 +4,13 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
-//#include "GameFramework/Character.h"
 #include "Sound/SoundCue.h"
-#include "Components/SphereComponent.h"
 #include "AbilitySystemInterface.h"
 #include "WeaponHolderComponent.generated.h"
 
 class ACharacter;
+class UCapsuleComponent;
+class USphereComponent;
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class DEGREEPROJECT_API UWeaponHolderComponent : public UActorComponent
@@ -30,7 +30,9 @@ protected:
 
 public:	
 	UFUNCTION()
-	void OnSwordHit(AActor* ThisActor, AActor* OtherActor, UAbilitySystemComponent* AbilitySystemComponent);
+	void OnSwordHit(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
+		UPrimitiveComponent* OtherComp, int32 OtherBodyIndex,
+		bool bFromSweep, const FHitResult& SweepResult);
 
 	UFUNCTION()
 	void OnExplosionOverlap(UPrimitiveComponent* OverlappedComponent,
@@ -61,6 +63,12 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Explosion Attack")
 	float ExplosionForce = 1500.0f;
 
+	UFUNCTION(BlueprintCallable)
+	void EnableHitbox();
+
+	UFUNCTION(BlueprintCallable)
+	void DisableHitbox();
+
 protected:
 	UPROPERTY(EditAnywhere, Category = "Combat|VFX")
 	UParticleSystem* ImpactVFX;
@@ -78,4 +86,7 @@ protected:
 	USphereComponent* ExplosionHitbox;
 
 	FTimerHandle DestroyHitboxTimerHandle;
+
+	UPROPERTY()
+	UCapsuleComponent* SwordHitbox;
 };
