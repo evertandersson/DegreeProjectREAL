@@ -99,6 +99,7 @@ class ADegreeProjectCharacter : public ACharacter, public IAbilitySystemInterfac
 
 	UPROPERTY(EditAnywhere, BlueprintReadonly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* PickUpWeapons;
+
 public:
 	ADegreeProjectCharacter();
 	
@@ -120,6 +121,12 @@ public:
 	FVector GetGroundPos_Implementation();
 	void SetGroundPos();
 	FVector GroundPos;
+
+	void ToggleCanJump_Implementation(bool CanJump);
+
+	virtual void IsInStorm_Implementation(bool bEnable) override;
+
+	void LaunchCharacterInDirection_Implementation(FVector Direction, bool bIsStorm);
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attributes")
 	int MaxMana = 100;
@@ -145,6 +152,10 @@ public:
 	TSubclassOf<class UGameplayEffect> DefaultEffect;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Abilities")
 	TArray<TSubclassOf<class UGameplayAbility>> DefaultAbilities;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	FGameplayTagContainer CancelAttacks;
+
 
 protected:
 	// Ability System Component that manages attributes and effects.
