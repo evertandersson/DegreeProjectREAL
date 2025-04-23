@@ -38,4 +38,10 @@ public:
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
 	void ConfirmGrappleHit();
+
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
+	void LaunchGrappleHook();
+
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
+	void StandStillForGrappleHook(bool bEndAbility);
 };

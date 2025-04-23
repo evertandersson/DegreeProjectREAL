@@ -134,6 +134,10 @@ public:
 
 	void ConfirmGrappleHit_Implementation();
 
+	void LaunchGrappleHook_Implementation();
+
+	void StandStillForGrappleHook_Implementation(bool bEndAbility);
+
 #pragma endregion
 
 	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent)

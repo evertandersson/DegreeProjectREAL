@@ -300,6 +300,24 @@ void ADegreeProjectCharacter::ConfirmGrappleHit_Implementation()
 	LaunchCharacter(FVector(0, 0, 500.0f), false, false);
 }
 
+void ADegreeProjectCharacter::LaunchGrappleHook_Implementation() { }
+
+void ADegreeProjectCharacter::StandStillForGrappleHook_Implementation(bool bEndAbility)
+{
+	if (bEndAbility)
+	{
+		GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking);
+		return;
+	}
+
+	GrapplingComponent->bIsRotatingTowardsGrapplePoint = true;
+
+	if (!GetCharacterMovement()->IsFalling())
+	{
+		GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_None);
+	}
+}
+
 FVector ADegreeProjectCharacter::GetGroundPos_Implementation()
 {
 	return GroundPos;
