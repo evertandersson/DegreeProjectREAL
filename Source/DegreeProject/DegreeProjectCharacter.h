@@ -300,13 +300,7 @@ public:
 	void EndAttack();
 
 	UFUNCTION(BlueprintCallable)
-	void ExplosionAttack();
-
-	UFUNCTION(BlueprintCallable)
 	void DestroyExplosionHitbox();
-
-	UFUNCTION()
-	void ExpandExplosionHitbox();
 
 	UFUNCTION()
 	void OnExplosionOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
@@ -315,15 +309,6 @@ public:
 
 	UFUNCTION()
 	void SwitchToNextWeapon();
-
-	UPROPERTY(EditAnywhere, Category = "Explosion Attack")
-	float MaxExplosionRadius = 200.0f;
-
-	UPROPERTY(EditAnywhere, Category = "Explosion Attack")
-	float ExpansionTime = 0.5f;
-
-	UPROPERTY(EditAnywhere, Category = "Explosion Attack")
-	float ExplosionForce = 1500.0f;
 
 	UFUNCTION(BlueprintCallable)
 	void EnableHitbox();
@@ -373,13 +358,6 @@ public:
 	bool bCanDash;
 
 private:
-	UPROPERTY()
-	USphereComponent* ExplosionHitbox;
-
-	FTimerHandle DestroyHitboxTimerHandle;
-
-	FVector InitialLocation;  // Stores the location before attack starts
-	FTimerHandle AttackTimer;
 	// Function to handle attribute changes
 
 	// Function to handle changes in health attributes

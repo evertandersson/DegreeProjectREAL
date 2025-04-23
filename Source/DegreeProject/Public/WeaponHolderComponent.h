@@ -5,6 +5,8 @@
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
 #include "Sound/SoundCue.h"
+#include "Components/SphereComponent.h"
+#include "DegreeProjectCharacter.h"
 #include "WeaponHolderComponent.generated.h"
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
@@ -27,8 +29,23 @@ public:
 	UFUNCTION()
 	void OnExplosionHit(AActor* OtherActor, UAbilitySystemComponent* AbilitySystemComponent);
 
+	UFUNCTION(BlueprintCallable)
+	void ExplosionAttack(ACharacter* ThisActor);
+
+	UFUNCTION()
+	void ExpandExplosionHitbox();
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 	TArray<AActor*> EnemiesHit;
+
+	UPROPERTY(EditAnywhere, Category = "Explosion Attack")
+	float MaxExplosionRadius = 200.0f;
+
+	UPROPERTY(EditAnywhere, Category = "Explosion Attack")
+	float ExpansionTime = 0.5f;
+
+	UPROPERTY(EditAnywhere, Category = "Explosion Attack")
+	float ExplosionForce = 1500.0f;
 
 protected:
 	UPROPERTY(EditAnywhere, Category = "Combat|VFX")
@@ -42,4 +59,13 @@ protected:
 
 	UPROPERTY(EditAnywhere, Category = "Camera Shake")
 	TSubclassOf<UCameraShakeBase> HitCameraShake;
+
+private:
+	UPROPERTY()
+	USphereComponent* ExplosionHitbox;
+
+	FTimerHandle DestroyHitboxTimerHandle;
+
+	FVector InitialLocation;  // Stores the location before attack starts
+	FTimerHandle AttackTimer;
 };
