@@ -6,7 +6,6 @@
 #include "Kismet/GameplayStatics.h"
 #include "TimerManager.h"
 #include "DegreeProjectCharacter.h"
-#include "Components/CapsuleComponent.h"
 #include "Engine/World.h"
 
 // Sets default values for this component's properties
@@ -25,28 +24,10 @@ void UWeaponHolderComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
-	PlayerCharacter = Cast<ACharacter>(GetOwner());
-
-	SwordMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Sword Mesh"));
-	SwordMesh->SetupAttachment(PlayerCharacter->GetMesh(), FName("FirstHandSocket"));
-
-	SwordHitbox = CreateDefaultSubobject<UCapsuleComponent>(TEXT("SwordHitbox"));
-	SwordHitbox->SetupAttachment(SwordMesh);  // Make sure it's attached to the sword mesh properly
-	SwordHitbox->SetRelativeLocation(FVector(0, 0, 0));  // Adjust based on the sword's position
-	SwordHitbox->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
-	SwordHitbox->SetCollisionObjectType(ECollisionChannel::ECC_WorldDynamic);
-	SwordHitbox->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
-	SwordHitbox->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Overlap);
-
-	// Bind the overlap event
-	SwordHitbox->OnComponentBeginOverlap.AddDynamic(this, &UWeaponHolderComponent::OnSwordHit);
-
-	DisableHitbox();
+	PlayerCharacter = Cast<ADegreeProjectCharacter>(GetOwner());
 }
 
-void UWeaponHolderComponent::OnSwordHit(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
-	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex,
-	bool bFromSweep, const FHitResult& SweepResult)
+void UWeaponHolderComponent::OnSwordHit(AActor* ThisActor, AActor* OtherActor, UAbilitySystemComponent* AbilitySystemComponent)
 {
 	bHitTarget = true;
 	if (HitCameraShake)
@@ -60,11 +41,7 @@ void UWeaponHolderComponent::OnSwordHit(UPrimitiveComponent* OverlappedComponent
 
 	if (!EnemiesHit.Contains(OtherActor))
 	{
-		if (IAbilitySystemInterface* ASCInterface = Cast<IAbilitySystemInterface>(PlayerCharacter))
-		{
-			UAbilitySystemComponent* ASC = ASCInterface->GetAbilitySystemComponent();
-			IDamagable::Execute_TakeDamage(OtherActor, ASC);
-		}
+		IDamagable::Execute_TakeDamage(OtherActor, AbilitySystemComponent);
 		EnemiesHit.Add(OtherActor);
 	}
 
@@ -77,7 +54,7 @@ void UWeaponHolderComponent::OnSwordHit(UPrimitiveComponent* OverlappedComponent
 
 	if (SoundCue)
 	{
-		UGameplayStatics::PlaySoundAtLocation(this, SoundCue, PlayerCharacter->GetActorLocation());
+		UGameplayStatics::PlaySoundAtLocation(this, SoundCue, ThisActor->GetActorLocation());
 	}
 }
 
@@ -195,17 +172,4 @@ void UWeaponHolderComponent::ExpandExplosionHitbox()
 			});
 		}
 	}
-}
-
-
-void UWeaponHolderComponent::EnableHitbox()
-{
-	SwordHitbox->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
-	UE_LOG(LogTemp, Warning, TEXT("Hitbox Enabled!"));
-}
-
-void UWeaponHolderComponent::DisableHitbox()
-{
-	SwordHitbox->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-	UE_LOG(LogTemp, Warning, TEXT("Hitbox Disabled!"));
 }
