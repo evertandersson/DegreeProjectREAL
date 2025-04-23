@@ -37,8 +37,11 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "AI")
 	void MoveToTarget();
 
-	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Health")
+	UPROPERTY(BlueprintReadWrite,EditAnywhere, Category = "AI")
+	bool IsDead;
+
+	/*UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Health")
 	void HandleDeath();
 	
-	virtual void HandleDeath_Implementation() override;
+	virtual void HandleDeath_Implementation() override;*/
 };
