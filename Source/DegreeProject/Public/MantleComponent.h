@@ -44,4 +44,6 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 	bool bIsClimbing;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+	bool bCanClimb;
 };

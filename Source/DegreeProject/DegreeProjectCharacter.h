@@ -17,13 +17,13 @@
 #include "NiagaraSystem.h"
 #include "NiagaraFunctionLibrary.h"
 #include "Kismet/GameplayStatics.h"
-#include "Sound/SoundCue.h"
 #include "Components/SphereComponent.h"
 #include "Damagable.h"
 #include "IHasGroundPos.h"
 
 #include "GrapplingComponent.h"
 #include "MantleComponent.h"
+#include "WeaponHolderComponent.h"
 
 #include "UStandardAttributeSet.h"
 #include "DegreeProjectCharacter.generated.h"
@@ -64,7 +64,7 @@ class ADegreeProjectCharacter : public ACharacter, public IAbilitySystemInterfac
 	/** Follow camera */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	UCameraComponent* FollowCamera;
-	
+
 	/** MappingContext */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputMappingContext* DefaultMappingContext;
@@ -99,9 +99,10 @@ class ADegreeProjectCharacter : public ACharacter, public IAbilitySystemInterfac
 
 	UPROPERTY(EditAnywhere, BlueprintReadonly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* PickUpWeapons;
+
 public:
 	ADegreeProjectCharacter();
-	
+
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaTime) override;
 
@@ -111,6 +112,8 @@ public:
 	// Blueprint event to handle health changes and update the UI
 	UFUNCTION(BlueprintImplementableEvent, Category = "Health")
 	void OnHealthChanged(float DeltaValue, const FGameplayTagContainer& EventTags);
+
+#pragma region Interface Functions
 
 	// Implement the interface function correctly
 	virtual void TakeDamage_Implementation(UAbilitySystemComponent* AbilitySystem) override;
@@ -122,6 +125,28 @@ public:
 	FVector GroundPos;
 
 	void ToggleCanJump_Implementation(bool CanJump);
+
+	virtual void IsInStorm_Implementation(bool bEnable) override;
+
+	void LaunchCharacterInDirection_Implementation(FVector Direction, bool bIsStorm);
+
+	void SetRotationBeforeRoll_Implementation();
+
+	void ConfirmGrappleHit_Implementation();
+
+	void LaunchGrappleHook_Implementation();
+
+	void StandStillForGrappleHook_Implementation(bool bEndAbility);
+
+	UWeaponHolderComponent* GetWeaponHolderComponent_Implementation();
+
+#pragma endregion
+
+	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent)
+	void ToggleIsAirbourne();
+
+	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent)
+	void CanDisableGrappleDelay();
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attributes")
 	int MaxMana = 100;
@@ -148,6 +173,15 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Abilities")
 	TArray<TSubclassOf<class UGameplayAbility>> DefaultAbilities;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	FGameplayTagContainer CancelAttacks;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	FGameplayTagContainer CancelAttacksDuration;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Combat")
+	UCapsuleComponent* SwordHitbox;
+
+
 protected:
 	// Ability System Component that manages attributes and effects.
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Abilities", Replicated, meta = (AllowPrivateAccess = "true"))
@@ -162,6 +196,9 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	UMantleComponent* MantleComponent;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	UWeaponHolderComponent* WeaponHolderComponent;
 
 
 	// Initializes the character's attributes when the game starts.
@@ -187,33 +224,17 @@ protected:
 
 	int Health;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera Shake")
-	TSubclassOf<UCameraShakeBase> HitCameraShake;
-			
-	void StartAttack(const FInputActionValue& Value);
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Combat")
-	UCapsuleComponent* SwordHitbox;
-
 	UPROPERTY(VisibleAnywhere)
 	class UStaticMeshComponent* SwordMesh;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat|Anims")
 	TArray<UAnimMontage*> CombatAnims;
 
-	UFUNCTION()
-	void OnSwordHit(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
-		UPrimitiveComponent* OtherComp, int32 OtherBodyIndex,
-		bool bFromSweep, const FHitResult& SweepResult);
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat|VFX")
-	UParticleSystem* ImpactVFX;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "PickUp|Anims")
+	class UAnimMontage* PickUpAnim;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Dash|VFX")
 	UNiagaraSystem* NiagaraDashVFX;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat|SFX")
-	USoundCue* SoundCue;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Jump|SFX")
 	USoundCue* JumpSFX;
@@ -270,43 +291,8 @@ public:
 	/** Returns FollowCamera subobject **/
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
 
-	UFUNCTION(BlueprintCallable)
-	void EndAttack();
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
-	TArray<AActor*> EnemiesHit;
-
-	UFUNCTION(BlueprintCallable)
-	void ExplosionAttack();
-
-	UFUNCTION(BlueprintCallable)
-	void DestroyExplosionHitbox();
-
-	UFUNCTION()
-	void ExpandExplosionHitbox();
-
-	UFUNCTION()
-	void OnExplosionOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
-		UPrimitiveComponent* OtherComp, int32 OtherBodyIndex,
-		bool bFromSweep, const FHitResult& SweepResult);
-
 	UFUNCTION()
 	void SwitchToNextWeapon();
-
-	UPROPERTY(EditAnywhere, Category = "Explosion Attack")
-	float MaxExplosionRadius = 200.0f;
-
-	UPROPERTY(EditAnywhere, Category = "Explosion Attack")
-	float ExpansionTime = 0.5f;
-
-	UPROPERTY(EditAnywhere, Category = "Explosion Attack")
-	float ExplosionForce = 1500.0f;
-
-	UFUNCTION(BlueprintCallable)
-	void EnableHitbox();
-
-	UFUNCTION(BlueprintCallable)
-	void DisableHitbox();
 
 	void TogglePauseMenu();
 	void ToggleGameOver();
@@ -320,9 +306,6 @@ public:
 	UPauseMenuWidget* PauseMenuInstance;
 	UPROPERTY()
 	UGameOverWidget* GameOverInstance;
-
-	UPROPERTY(BlueprintReadWrite, VisibleAnywhere)
-	bool bIsAttacking;
 	
 	UPROPERTY(BlueprintReadWrite, VisibleAnywhere)
 	bool bIsHoldingAttack;
@@ -346,20 +329,11 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Player)
 	bool bIsDashing = false;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Player)
-	bool bHitTarget = false;
-
 	UPROPERTY(EditAnywhere, Category = Player)
 	bool bCanDash;
 
 private:
-	UPROPERTY()
-	USphereComponent* ExplosionHitbox;
-
-	FTimerHandle DestroyHitboxTimerHandle;
-
 	FVector InitialLocation;  // Stores the location before attack starts
-	FTimerHandle AttackTimer;
 	// Function to handle attribute changes
 
 	// Function to handle changes in health attributes
