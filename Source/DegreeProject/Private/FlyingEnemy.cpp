@@ -41,19 +41,29 @@ void AFlyingEnemy::Tick(float DeltaTime)
 		MovementSpeed = 0.0f;
 	}
 
+	float DistanceToPlayer = FVector::Dist(GetActorLocation(), TargetActor->GetActorLocation());
+
+	if (DistanceToPlayer < AcceptanceRadius)
+	{
+
+	}
 }
 
 void AFlyingEnemy::FaceTarget(float DeltaTime)
 {
 	if (!TargetActor) return;
 
-	FVector Direction = TargetActor->GetActorLocation() - GetActorLocation();
-	FRotator LookAtRotaton = FRotationMatrix::MakeFromX(Direction).Rotator();
+	if (!IsDead)
+	{
+		FVector Direction = TargetActor->GetActorLocation() - GetActorLocation();
+		FRotator LookAtRotaton = FRotationMatrix::MakeFromX(Direction).Rotator();
 
-	FRotator TargetRotation(0.f, LookAtRotaton.Yaw, 0.f);
+		FRotator TargetRotation(0.f, LookAtRotaton.Yaw, 0.f);
 
-	FRotator NewRotation = FMath::RInterpTo(GetActorRotation(), TargetRotation, DeltaTime, 5.f);
-	SetActorRotation(NewRotation);
+		FRotator NewRotation = FMath::RInterpTo(GetActorRotation(), TargetRotation, DeltaTime, 5.f);
+		SetActorRotation(NewRotation);
+	}
+	
 }
 
 void AFlyingEnemy::MoveToTarget()

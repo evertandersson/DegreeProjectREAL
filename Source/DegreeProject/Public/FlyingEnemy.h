@@ -40,6 +40,9 @@ public:
 	UPROPERTY(BlueprintReadWrite,EditAnywhere, Category = "AI")
 	bool IsDead;
 
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "AI")
+	bool IsAttacking;
+
 	/*UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Health")
 	void HandleDeath();
 	
