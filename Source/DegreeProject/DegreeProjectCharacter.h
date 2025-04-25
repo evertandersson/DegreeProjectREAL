@@ -243,7 +243,7 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Inventory|SFX")
 	USoundCue* EquipItemSFX;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Audio")
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Audio")
 	UAudioComponent* AudioComponent;
 
 	virtual void NotifyControllerChanged() override;

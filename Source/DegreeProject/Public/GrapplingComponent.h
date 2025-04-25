@@ -7,6 +7,7 @@
 #include "GrapplingComponent.generated.h"
 
 class ADegreeProjectCharacter;
+class USoundCue;
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class DEGREEPROJECT_API UGrapplingComponent : public UActorComponent
@@ -37,6 +38,9 @@ public:
 
 	UPROPERTY(EditDefaultsOnly)
 	UParticleSystem* p_GrappleHitImpact;
+
+	UPROPERTY(EditDefaultsOnly)
+	USoundCue* p_GrappleHitSound;
 
 	UPROPERTY(BlueprintReadWrite)
 	FVector GrapplePoint;
