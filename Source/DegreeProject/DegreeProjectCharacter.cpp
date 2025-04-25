@@ -283,6 +283,13 @@ void ADegreeProjectCharacter::ConfirmGrappleHit_Implementation()
 		EPSCPoolMethod::AutoRelease,
 		true);
 
+	if (GrapplingComponent->p_GrappleHitSound)
+	{
+		UGameplayStatics::PlaySoundAtLocation(GetWorld(), 
+			GrapplingComponent->p_GrappleHitSound, 
+			ParticleTransform.GetLocation());
+	}
+
 	GetCharacterMovement()->Velocity = FVector(
 		GetCharacterMovement()->Velocity.X,
 		GetCharacterMovement()->Velocity.Y,
