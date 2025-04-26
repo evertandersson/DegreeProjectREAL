@@ -138,6 +138,8 @@ public:
 
 	void StandStillForGrappleHook_Implementation(bool bEndAbility);
 
+	UWeaponHolderComponent* GetWeaponHolderComponent_Implementation();
+
 #pragma endregion
 
 	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent)
@@ -175,6 +177,9 @@ public:
 	FGameplayTagContainer CancelAttacks;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	FGameplayTagContainer CancelAttacksDuration;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Combat")
+	UCapsuleComponent* SwordHitbox;
 
 
 protected:
@@ -219,11 +224,6 @@ protected:
 
 	int Health;
 
-	void StartAttack(const FInputActionValue& Value);
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Combat")
-	UCapsuleComponent* SwordHitbox;
-
 	UPROPERTY(VisibleAnywhere)
 	class UStaticMeshComponent* SwordMesh;
 
@@ -232,11 +232,6 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "PickUp|Anims")
 	class UAnimMontage* PickUpAnim;
-
-	UFUNCTION()
-	void OnSwordHit(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
-		UPrimitiveComponent* OtherComp, int32 OtherBodyIndex,
-		bool bFromSweep, const FHitResult& SweepResult);
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Dash|VFX")
 	UNiagaraSystem* NiagaraDashVFX;
@@ -296,40 +291,8 @@ public:
 	/** Returns FollowCamera subobject **/
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
 
-	UFUNCTION(BlueprintCallable)
-	void EndAttack();
-
-	UFUNCTION(BlueprintCallable)
-	void ExplosionAttack();
-
-	UFUNCTION(BlueprintCallable)
-	void DestroyExplosionHitbox();
-
-	UFUNCTION()
-	void ExpandExplosionHitbox();
-
-	UFUNCTION()
-	void OnExplosionOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
-		UPrimitiveComponent* OtherComp, int32 OtherBodyIndex,
-		bool bFromSweep, const FHitResult& SweepResult);
-
 	UFUNCTION()
 	void SwitchToNextWeapon();
-
-	UPROPERTY(EditAnywhere, Category = "Explosion Attack")
-	float MaxExplosionRadius = 200.0f;
-
-	UPROPERTY(EditAnywhere, Category = "Explosion Attack")
-	float ExpansionTime = 0.5f;
-
-	UPROPERTY(EditAnywhere, Category = "Explosion Attack")
-	float ExplosionForce = 1500.0f;
-
-	UFUNCTION(BlueprintCallable)
-	void EnableHitbox();
-
-	UFUNCTION(BlueprintCallable)
-	void DisableHitbox();
 
 	void TogglePauseMenu();
 	void ToggleGameOver();
@@ -343,9 +306,6 @@ public:
 	UPauseMenuWidget* PauseMenuInstance;
 	UPROPERTY()
 	UGameOverWidget* GameOverInstance;
-
-	UPROPERTY(BlueprintReadWrite, VisibleAnywhere)
-	bool bIsAttacking;
 	
 	UPROPERTY(BlueprintReadWrite, VisibleAnywhere)
 	bool bIsHoldingAttack;
@@ -373,13 +333,7 @@ public:
 	bool bCanDash;
 
 private:
-	UPROPERTY()
-	USphereComponent* ExplosionHitbox;
-
-	FTimerHandle DestroyHitboxTimerHandle;
-
 	FVector InitialLocation;  // Stores the location before attack starts
-	FTimerHandle AttackTimer;
 	// Function to handle attribute changes
 
 	// Function to handle changes in health attributes

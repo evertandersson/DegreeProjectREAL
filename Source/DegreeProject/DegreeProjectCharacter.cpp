@@ -98,9 +98,6 @@ ADegreeProjectCharacter::ADegreeProjectCharacter()
 	SwordHitbox->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
 	SwordHitbox->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Overlap);
 
-	// Bind the overlap event
-	SwordHitbox->OnComponentBeginOverlap.AddDynamic(this, &ADegreeProjectCharacter::OnSwordHit);
-
 	// Initialize the Ability System Component and enable replication
 	AbilitySystemComponent = CreateDefaultSubobject<UAbilitySystemComponent>(TEXT("AbilitySystemComponent"));
 	AbilitySystemComponent->SetIsReplicated(true);
@@ -169,8 +166,6 @@ void ADegreeProjectCharacter::BeginPlay()
 			WeaponInventoryWidget->AddToViewport();
 		}
 	}
-
-	DisableHitbox();
 }
 
 void ADegreeProjectCharacter::Tick(float DeltaTime)
@@ -312,6 +307,11 @@ void ADegreeProjectCharacter::StandStillForGrappleHook_Implementation(bool bEndA
 	{
 		GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_None);
 	}
+}
+
+UWeaponHolderComponent* ADegreeProjectCharacter::GetWeaponHolderComponent_Implementation()
+{
+	return WeaponHolderComponent;
 }
 
 FVector ADegreeProjectCharacter::GetGroundPos_Implementation()
@@ -497,18 +497,6 @@ void ADegreeProjectCharacter::GetLifetimeReplicatedProps(TArray<FLifetimePropert
 //////////////////////////////////////////////////////////////////////////
 // Input
 
-void ADegreeProjectCharacter::OnSwordHit(UPrimitiveComponent* OverlappedComponent,
-	AActor* OtherActor, UPrimitiveComponent* OtherComp,
-	int32 OtherBodyIndex, bool bFromSweep,
-	const FHitResult& SweepResult)
-{
-	if (OverlappedComponent == SwordHitbox && OtherActor && OtherActor != this)
-	{
-		WeaponHolderComponent->OnSwordHit(this, OtherActor, AbilitySystemComponent);
-	}
-}
-
-
 void ADegreeProjectCharacter::NotifyControllerChanged()
 {
 	Super::NotifyControllerChanged();
@@ -541,9 +529,6 @@ void ADegreeProjectCharacter::SetupPlayerInputComponent(UInputComponent* PlayerI
 		// Rolling
 		EnhancedInputComponent->BindAction(RollAction, ETriggerEvent::Started, this, &ADegreeProjectCharacter::Roll);
 		EnhancedInputComponent->BindAction(RollAction, ETriggerEvent::Completed, this, &ADegreeProjectCharacter::StopRolling);
-
-		// Attacking
-		EnhancedInputComponent->BindAction(AttackAction, ETriggerEvent::Triggered, this, &ADegreeProjectCharacter::StartAttack);
 
 		EnhancedInputComponent->BindAction(PauseAction, ETriggerEvent::Triggered, this, &ADegreeProjectCharacter::TogglePauseMenu);
 
@@ -637,33 +622,6 @@ void ADegreeProjectCharacter::Roll(const FInputActionValue& Value)
 void ADegreeProjectCharacter::StopRolling(const FInputActionValue& Value)
 {
 	bPressedRoll = false;
-}
-
-void ADegreeProjectCharacter::StartAttack(const FInputActionValue& Value)
-{
-	if (!bIsAttacking) // Check if not already attacking
-	{
-		bIsAttacking = true;
-
-		//GetMesh()->SetAnimationMode(EAnimationMode::AnimationBlueprint);
-		//UpdateAnimationState(true);
-
-		UE_LOG(LogTemp, Warning, TEXT("Attack Started!"));
-
-		//EnableHitbox(); // Enable the hitbox when the attack starts
-	}
-}
-
-void ADegreeProjectCharacter::EnableHitbox()
-{
-	SwordHitbox->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
-	UE_LOG(LogTemp, Warning, TEXT("Hitbox Enabled!"));
-}
-
-void ADegreeProjectCharacter::DisableHitbox()
-{
-	SwordHitbox->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-	UE_LOG(LogTemp, Warning, TEXT("Hitbox Disabled!"));
 }
 
 void ADegreeProjectCharacter::Jump()
@@ -788,118 +746,6 @@ void ADegreeProjectCharacter::RegenerateUtility()
 
 	float NewMana = FMath::FInterpTo(AttributeSet->GetCurrentMana(),AttributeSet->GetMaxMana(), GetWorld()->GetDeltaSeconds(), 1.f);
 	AttributeSet->SetCurrentMana(FMath::CeilToInt(NewMana));
-}
-
-void ADegreeProjectCharacter::EndAttack()
-{
-	bIsAttacking = false;
-	UE_LOG(LogTemp, Warning, TEXT("Attack Ended!"));
-}
-
-
-void ADegreeProjectCharacter::ExplosionAttack()
-{
-	FString SocketName = "EndSword_VFX";
-
-	if (!GetMesh()->DoesSocketExist(FName(SocketName)))
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Socket %s does not exist!"), *SocketName);
-		return;
-	}
-
-	FVector SpawnLocation = GetMesh()->GetSocketLocation(FName(SocketName));
-
-	// Create ExplosionHitbox if not created yet
-	if (!ExplosionHitbox)
-	{
-		ExplosionHitbox = NewObject<USphereComponent>(this);
-		ExplosionHitbox->InitSphereRadius(50.0f);  // Start small
-		ExplosionHitbox->SetCollisionEnabled(ECollisionEnabled::QueryOnly);  // Enable only query collision (no physics)
-		ExplosionHitbox->SetCollisionObjectType(ECC_WorldDynamic);
-		ExplosionHitbox->SetCollisionResponseToAllChannels(ECR_Ignore);
-		ExplosionHitbox->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);  // Only overlap with enemies
-		ExplosionHitbox->OnComponentBeginOverlap.AddDynamic(this, &ADegreeProjectCharacter::OnExplosionOverlap);
-
-		ExplosionHitbox->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepWorldTransform);
-		ExplosionHitbox->SetWorldLocation(SpawnLocation);
-		ExplosionHitbox->RegisterComponent();
-
-		// Debug log for creation
-		UE_LOG(LogTemp, Warning, TEXT("ExplosionHitbox Created at: %s"), *ExplosionHitbox->GetComponentLocation().ToString());
-
-		// Extend the time before the hitbox is destroyed (increase this time for visibility)
-		float HitboxLifeTime = 0.2f;  // Keep the hitbox alive for 0.2f second
-		GetWorldTimerManager().SetTimer(DestroyHitboxTimerHandle, this, &ADegreeProjectCharacter::DestroyExplosionHitbox, HitboxLifeTime, false);
-
-		// Optional: Start expanding the hitbox to see it grow
-		ExpandExplosionHitbox();
-	}
-}
-
-void ADegreeProjectCharacter::DestroyExplosionHitbox()
-{
-	if (ExplosionHitbox)
-	{
-		// Disable collision and destroy hitbox
-		ExplosionHitbox->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-		ExplosionHitbox->DestroyComponent();
-
-		// Log for confirmation
-		UE_LOG(LogTemp, Warning, TEXT("ExplosionHitbox destroyed after extended time"));
-		ExplosionHitbox = nullptr;  // Clear the reference to the hitbox
-	}
-}
-
-void ADegreeProjectCharacter::ExpandExplosionHitbox()
-{
-	if (ExplosionHitbox)
-	{
-		float CurrentRadius = ExplosionHitbox->GetUnscaledSphereRadius();
-
-		// Gradually expand the hitbox
-		if (CurrentRadius < MaxExplosionRadius)
-		{
-			// Expand the hitbox radius over time
-			float NewRadius = FMath::Lerp(CurrentRadius, MaxExplosionRadius, 0.2f);
-			ExplosionHitbox->SetSphereRadius(NewRadius);
-
-			ExplosionHitbox->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-
-			// Drawing the expanding hitbox 
-			DrawDebugSphere(GetWorld(), ExplosionHitbox->GetComponentLocation(), NewRadius, 12, FColor::Red, false, 0.1f, 0, 2.0f);
-
-			// Continue expanding the hitbox
-			GetWorldTimerManager().SetTimerForNextTick(this, &ADegreeProjectCharacter::ExpandExplosionHitbox);
-		}
-		else
-		{
-			// Once max radius is reached, disable collision
-			ExplosionHitbox->SetCollisionEnabled(ECollisionEnabled::NoCollision); 
-
-			// Destroy the hitbox after a short delay
-			GetWorldTimerManager().SetTimerForNextTick([this]() {
-				if (ExplosionHitbox)
-				{
-					// Ensure the hitbox is destroyed and the pointer is cleared
-					ExplosionHitbox->DestroyComponent();
-					ExplosionHitbox = nullptr; // Clear the pointer after destruction
-					UE_LOG(LogTemp, Warning, TEXT("ExplosionHitbox destroyed and pointer nullified"));
-				}
-				});
-		}
-	}
-}
-
-void ADegreeProjectCharacter::OnExplosionOverlap(UPrimitiveComponent* OverlappedComponent,
-	AActor* OtherActor,
-	UPrimitiveComponent* OtherComp,
-	int32 OtherBodyIndex,
-	bool bFromSweep,
-	const FHitResult& SweepResult)
-{
-	if (!OtherActor || OtherActor == this) return;
-
-	WeaponHolderComponent->OnExplosionHit(OtherActor, AbilitySystemComponent);
 }
 
 void ADegreeProjectCharacter::SwitchToNextWeapon()
