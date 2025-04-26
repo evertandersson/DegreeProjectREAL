@@ -248,7 +248,7 @@ void ADegreeProjectCharacter::LaunchCharacterInDirection_Implementation(FVector 
 	
 	if (bIsStorm)
 	{
-		float SpinPower = GetActorRotation().Yaw + (Direction.Z * 0.2f);
+		float SpinPower = GetActorRotation().Yaw + (Direction.Z * 0.15f);
 		SetActorRotation(FRotator(GetActorRotation().Pitch, SpinPower, GetActorRotation().Roll));
 	}
 }
@@ -282,6 +282,13 @@ void ADegreeProjectCharacter::ConfirmGrappleHit_Implementation()
 		true,
 		EPSCPoolMethod::AutoRelease,
 		true);
+
+	if (GrapplingComponent->p_GrappleHitSound)
+	{
+		UGameplayStatics::PlaySoundAtLocation(GetWorld(), 
+			GrapplingComponent->p_GrappleHitSound, 
+			ParticleTransform.GetLocation());
+	}
 
 	GetCharacterMovement()->Velocity = FVector(
 		GetCharacterMovement()->Velocity.X,
@@ -688,7 +695,7 @@ void ADegreeProjectCharacter::Dash()
 
 void ADegreeProjectCharacter::StopDash()
 {
-	if (bIsDashing)
+	if (bIsDashing) // guardclause?
 	{
 		bIsDashing = false;
 
@@ -750,7 +757,7 @@ void ADegreeProjectCharacter::RegenerateUtility()
 
 void ADegreeProjectCharacter::SwitchToNextWeapon()
 {
-	if (WeaponInventory)
+	if (WeaponInventory) // guard clause
 	{
 		if (EquipItemSFX)
 		{
