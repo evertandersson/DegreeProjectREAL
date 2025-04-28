@@ -218,6 +218,7 @@ protected:
 
 	/** Handle Jump */
 	virtual void Jump() override;
+	virtual void Landed(const FHitResult& Hit) override;
 
 	void DestroyCharacter();
 	int Damage;
@@ -238,7 +239,6 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Jump|SFX")
 	USoundCue* JumpSFX;
-
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Inventory|SFX")
 	USoundCue* EquipItemSFX;
@@ -312,6 +312,8 @@ public:
 
 	UPROPERTY(BlueprintReadWrite, VisibleAnywhere)
 	bool bCanJump;
+	UPROPERTY(BlueprintReadWrite, VisibleAnywhere)
+	bool bDidJump;
 
 	/** When true, player wants to roll */
 	UPROPERTY(BlueprintReadOnly, Category = Character)

@@ -118,6 +118,8 @@ ADegreeProjectCharacter::ADegreeProjectCharacter()
 	AudioComponent = CreateDefaultSubobject<UAudioComponent>(TEXT("AudioComponent"));
 	AudioComponent->bAutoActivate = false;
 	AudioComponent->SetupAttachment(RootComponent);
+
+	bDidJump = false;
 }
 
 
@@ -604,7 +606,7 @@ void ADegreeProjectCharacter::Move(const FInputActionValue& Value)
 
 		// add movement 
 		AddMovementInput(ForwardDirection, MovementVector.Y);
-		AddMovementInput(RightDirection, MovementVector.X);
+		AddMovementInput(RightDirection, MovementVector.X);		
 	}
 }
 
@@ -634,13 +636,22 @@ void ADegreeProjectCharacter::StopRolling(const FInputActionValue& Value)
 void ADegreeProjectCharacter::Jump()
 {
 	if (!bCanJump) return;
-	if (JumpSFX)
+
+	if (JumpSFX && JumpCurrentCount < JumpMaxCount)
 	{
 		AudioComponent->SetSound(JumpSFX);
 		AudioComponent->Play();
 	}
+
 	Super::Jump();
 }
+
+void ADegreeProjectCharacter::Landed(const FHitResult& Hit)
+{
+	Super::Landed(Hit);
+	bCanJump = true;
+}
+
 
 void ADegreeProjectCharacter::Dash()
 {
