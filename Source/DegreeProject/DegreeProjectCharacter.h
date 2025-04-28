@@ -218,6 +218,7 @@ protected:
 
 	/** Handle Jump */
 	virtual void Jump() override;
+	virtual void Landed(const FHitResult& Hit) override;
 
 	void DestroyCharacter();
 	int Damage;
@@ -312,6 +313,8 @@ public:
 
 	UPROPERTY(BlueprintReadWrite, VisibleAnywhere)
 	bool bCanJump;
+	UPROPERTY(BlueprintReadWrite, VisibleAnywhere)
+	bool bDidJump;
 
 	/** When true, player wants to roll */
 	UPROPERTY(BlueprintReadOnly, Category = Character)
