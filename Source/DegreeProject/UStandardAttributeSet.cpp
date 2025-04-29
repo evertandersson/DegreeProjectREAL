@@ -53,16 +53,12 @@ void UStandardAttributeSet::AddHealth(float Amount)
 	if (CurrentHealth.GetCurrentValue() < MaxHealth.GetCurrentValue())
     {
 		CurrentHealth.SetCurrentValue(CurrentHealth.GetCurrentValue() + Amount);
-	
-		UE_LOG(LogTemp, Warning, TEXT("HP %f"), CurrentHealth.GetCurrentValue());
 	}
 
 	if (CurrentHealth.GetCurrentValue() > MaxHealth.GetCurrentValue())
 	{
 		CurrentHealth.SetCurrentValue(MaxHealth.GetCurrentValue());
-		UE_LOG(LogTemp, Warning, TEXT("HP %f"), CurrentHealth.GetCurrentValue());
-	}
-	
+	}	
 }
 
 void UStandardAttributeSet::RemoveHealth(float Amount)
@@ -88,20 +84,6 @@ void UStandardAttributeSet::ResetDefance(float Number)
 void UStandardAttributeSet::GetLifetimeReplicatedProps(TArray <FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-
-	/*DOREPLIFETIME_CONDITION_NOTIFY(UStandardAttributeSet, CurrentHealth, COND_None, REPNOTIFY_Always);
-	DOREPLIFETIME_CONDITION_NOTIFY(UStandardAttributeSet, MaxHealth, COND_None, REPNOTIFY_Always);
-	DOREPLIFETIME_CONDITION_NOTIFY(UStandardAttributeSet, CurrentHealthAI, COND_None, REPNOTIFY_Always);
-	DOREPLIFETIME_CONDITION_NOTIFY(UStandardAttributeSet, MaxHealthAI, COND_None, REPNOTIFY_Always);
-	DOREPLIFETIME_CONDITION_NOTIFY(UStandardAttributeSet, CurrentMana, COND_None, REPNOTIFY_Always);
-	DOREPLIFETIME_CONDITION_NOTIFY(UStandardAttributeSet, MaxMana, COND_None, REPNOTIFY_Always);
-	DOREPLIFETIME_CONDITION_NOTIFY(UStandardAttributeSet, CurrentStamina, COND_None, REPNOTIFY_Always);
-	DOREPLIFETIME_CONDITION_NOTIFY(UStandardAttributeSet, MaxStamina, COND_None, REPNOTIFY_Always);
-	DOREPLIFETIME_CONDITION_NOTIFY(UStandardAttributeSet, Crit_Chance, COND_None, REPNOTIFY_Always);
-	DOREPLIFETIME_CONDITION_NOTIFY(UStandardAttributeSet, Crit_Damage, COND_None, REPNOTIFY_Always);
-	DOREPLIFETIME_CONDITION_NOTIFY(UStandardAttributeSet, Damage, COND_None, REPNOTIFY_Always);
-	DOREPLIFETIME_CONDITION_NOTIFY(UStandardAttributeSet, Defence, COND_None, REPNOTIFY_Always);
-	DOREPLIFETIME_CONDITION_NOTIFY(UStandardAttributeSet, Attack_Speed, COND_None, REPNOTIFY_Always);*/
 }
 #pragma endregion
 

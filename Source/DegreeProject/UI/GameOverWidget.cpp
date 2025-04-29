@@ -49,7 +49,6 @@ void UGameOverWidget::OnRestartButtonClicked()
     PlayerController->bShowMouseCursor = false;
     PlayerController->SetInputMode(FInputModeGameOnly());
 
-
     UGameplayStatics::OpenLevel(this, FName(*GetWorld()->GetName()), false);
 }
 

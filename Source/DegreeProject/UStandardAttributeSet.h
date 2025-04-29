@@ -28,18 +28,12 @@ public:
 	void AddDefence(float Number);
 	void ResetDefance(float Number);
 
-	// Health attributes:
-
-	// Declares the CurrentHealth attribute, making it readonly in blueprints and replicated to clients.
 	UPROPERTY(BlueprintReadOnly, Category = "Health", ReplicatedUsing=OnRep_CurrentHealth)
 	FGameplayAttributeData CurrentHealth;
-	// Macro that creates helper functions to get, set, and initialize CurrentHealth.
 	ATTRIBUTE_ACCESSORS(UStandardAttributeSet, CurrentHealth);
 
-	// Declares the MaxHealth attribute, making it readonly in blueprints and replicated to clients.
 	UPROPERTY(BlueprintReadOnly, Category = "Health", ReplicatedUsing = OnRep_MaxHealth)
 	FGameplayAttributeData MaxHealth;
-	// Macro that creates helper functions to get, set, and initialize MaxHealth.
 	ATTRIBUTE_ACCESSORS(UStandardAttributeSet, MaxHealth);
 
 	UPROPERTY(BlueprintReadOnly, Category = "Attributes")
@@ -79,11 +73,8 @@ public:
 	ATTRIBUTE_ACCESSORS(UStandardAttributeSet, Attack_Speed);
 
 protected:
-	// Replication notifies
-	// Function called on clients when CurrentHealth changes to update the UI or perform logic.
 	UFUNCTION()
 	void OnRep_CurrentHealth(const FGameplayAttributeData& OldCurrentHealth);
-	// Function called on clients when MaxHealth hcanges to update the UI or perform logic.
 	UFUNCTION()
 	void OnRep_MaxHealth(const FGameplayAttributeData& OldMaxHealth);
 
@@ -106,11 +97,7 @@ protected:
 	UFUNCTION()
 	virtual void OnRep_Attack_Speed(const FGameplayAttributeData& OldAttackSpeed);
 
-	// Attribute change handling
-	// Function that runs before any attribute value changes, allowing clamping or validation.
 	virtual void PreAttributeChange(const FGameplayAttribute& Attribute, float& NewValue) override;
 
-	// Gameplay effect execution handling
-	// Function called after a gameplay effect modifies an attribute to handle post-modification logic.
 	virtual void PostGameplayEffectExecute(const FGameplayEffectModCallbackData& Data) override;
 };
