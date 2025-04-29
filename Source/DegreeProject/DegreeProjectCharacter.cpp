@@ -121,7 +121,6 @@ ADegreeProjectCharacter::ADegreeProjectCharacter()
 	bDidJump = false;
 }
 
-// Returns the Ability System Component for this character
 UAbilitySystemComponent* ADegreeProjectCharacter::GetAbilitySystemComponent() const
 {
 	return AbilitySystemComponent;
