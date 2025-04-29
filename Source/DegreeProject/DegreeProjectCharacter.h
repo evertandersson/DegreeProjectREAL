@@ -220,7 +220,7 @@ protected:
 	virtual void Jump() override;
 	virtual void Landed(const FHitResult& Hit) override;
 
-	void DestroyCharacter();
+	void PlayerKilled();
 	int Damage;
 
 	int Health;
