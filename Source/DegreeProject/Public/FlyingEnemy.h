@@ -43,6 +43,14 @@ public:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "AI")
 	bool IsAttacking;
 
+	void AttackPlayer();
+	void ResetAttack();
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animation")
+	UAnimMontage* AttackAnimMontage;
+
+	FTimerHandle AttackTime;
+
 	/*UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Health")
 	void HandleDeath();
 	

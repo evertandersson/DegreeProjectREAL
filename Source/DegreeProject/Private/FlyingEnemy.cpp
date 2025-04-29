@@ -32,8 +32,18 @@ void AFlyingEnemy::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 	if (TargetActor)
 	{
-		MoveToTarget();
-		FaceTarget(DeltaTime);
+		if (!IsDead)
+		{
+			MoveToTarget();
+			FaceTarget(DeltaTime);
+
+			float DistanceToPlayer = FVector::Dist(GetActorLocation(), TargetActor->GetActorLocation());
+
+			if (DistanceToPlayer < AcceptanceRadius)
+			{
+				AttackPlayer();
+			}
+		}
 	}
 
 	if (IsDead)
@@ -41,20 +51,13 @@ void AFlyingEnemy::Tick(float DeltaTime)
 		MovementSpeed = 0.0f;
 	}
 
-	float DistanceToPlayer = FVector::Dist(GetActorLocation(), TargetActor->GetActorLocation());
-
-	if (DistanceToPlayer < AcceptanceRadius)
-	{
-
-	}
+	
 }
 
 void AFlyingEnemy::FaceTarget(float DeltaTime)
 {
 	if (!TargetActor) return;
 
-	if (!IsDead)
-	{
 		FVector Direction = TargetActor->GetActorLocation() - GetActorLocation();
 		FRotator LookAtRotaton = FRotationMatrix::MakeFromX(Direction).Rotator();
 
@@ -62,8 +65,6 @@ void AFlyingEnemy::FaceTarget(float DeltaTime)
 
 		FRotator NewRotation = FMath::RInterpTo(GetActorRotation(), TargetRotation, DeltaTime, 5.f);
 		SetActorRotation(NewRotation);
-	}
-	
 }
 
 void AFlyingEnemy::MoveToTarget()
@@ -74,6 +75,18 @@ void AFlyingEnemy::MoveToTarget()
 	FVector NewLocation = GetActorLocation() + Direction * MovementSpeed * GetWorld()->GetDeltaSeconds();
 	SetActorLocation(NewLocation);
 	MovementSpeed = 400.0f;
+}
+
+void AFlyingEnemy::AttackPlayer()
+{
+	IsAttacking = true;
+	PlayAnimMontage(AttackAnimMontage);
+	GetWorldTimerManager().SetTimer(AttackTime, this, &AFlyingEnemy::ResetAttack, 2.0f, false);
+}
+
+void AFlyingEnemy::ResetAttack()
+{
+	IsAttacking = false;
 }
 
 
