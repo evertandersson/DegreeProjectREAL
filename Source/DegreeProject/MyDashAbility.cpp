@@ -36,7 +36,6 @@ void UMyDashAbility::ActivateAbility(const FGameplayAbilitySpecHandle Handle, co
 		}
 		else
 		{
-			// Optional: fail activation if not allowed to dash or not moving
 			EndAbility(Handle, ActorInfo, ActivationInfo, true, false);
 		}
 	}
