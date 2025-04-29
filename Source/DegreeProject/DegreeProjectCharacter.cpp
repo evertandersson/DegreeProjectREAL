@@ -67,7 +67,6 @@ ADegreeProjectCharacter::ADegreeProjectCharacter()
 	GetCharacterMovement()->bOrientRotationToMovement = true; // Character moves in the direction of input...	
 	GetCharacterMovement()->RotationRate = FRotator(0.0f, 500.0f, 0.0f); // ...at this rotation rate
 
-	// Note: For faster iteration times these variables, and many more, can be tweaked in the Character Blueprint
 	// instead of recompiling to adjust them
 	GetCharacterMovement()->JumpZVelocity = 700.f;
 	GetCharacterMovement()->AirControl = 0.35f;
@@ -122,13 +121,11 @@ ADegreeProjectCharacter::ADegreeProjectCharacter()
 	bDidJump = false;
 }
 
-
 // Returns the Ability System Component for this character
 UAbilitySystemComponent* ADegreeProjectCharacter::GetAbilitySystemComponent() const
 {
 	return AbilitySystemComponent;
 }
-
 
 void ADegreeProjectCharacter::BeginPlay()
 {
@@ -141,7 +138,6 @@ void ADegreeProjectCharacter::BeginPlay()
 	if (AbilitySystemComponent && AttributeSet)
 	{
 		AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(AttributeSet->GetCurrentHealthAttribute()).AddUObject(this, &ADegreeProjectCharacter::HandleHealthChanged);
-		//GetWorldTimerManager().SetTimer(RegenTimerHandle, this, &ADegreeProjectCharacter::RegenerateAttributes, RegenInterval, true);
 	}
 
 	if (AbilitySystemComponent)
@@ -199,7 +195,7 @@ void ADegreeProjectCharacter::SetGroundPos()
 		ObjectTypes,
 		false,
 		ActorsToIgnore,
-		EDrawDebugTrace::None, // Change to ForDuration or Persistent if debugging
+		EDrawDebugTrace::None,
 		HitResult,
 		true
 	);
@@ -210,14 +206,242 @@ void ADegreeProjectCharacter::SetGroundPos()
 	}
 }
 
-void ADegreeProjectCharacter::ToggleCanJump_Implementation(bool CanJump)
+#pragma region PLAYER INPUTS
+
+//////////////////////////////////////////////////////////////////////////
+// Input
+
+void ADegreeProjectCharacter::NotifyControllerChanged()
 {
-	bCanJump = CanJump;
+	Super::NotifyControllerChanged();
+
+	// Add Input Mapping Context
+	if (APlayerController* PlayerController = Cast<APlayerController>(Controller))
+	{
+		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
+		{
+			Subsystem->AddMappingContext(DefaultMappingContext, 0);
+		}
+	}
 }
 
-void ADegreeProjectCharacter::IsInStorm_Implementation(bool bEnable)
+void ADegreeProjectCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
+	// Set up action bindings
+	if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent)) {
+
+		// Jumping
+		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &ACharacter::Jump);
+		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &ACharacter::StopJumping);
+
+		// Moving
+		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &ADegreeProjectCharacter::Move);
+
+		// Looking
+		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &ADegreeProjectCharacter::Look);
+
+		// Rolling
+		EnhancedInputComponent->BindAction(RollAction, ETriggerEvent::Started, this, &ADegreeProjectCharacter::Roll);
+		EnhancedInputComponent->BindAction(RollAction, ETriggerEvent::Completed, this, &ADegreeProjectCharacter::StopRolling);
+
+		EnhancedInputComponent->BindAction(PauseAction, ETriggerEvent::Triggered, this, &ADegreeProjectCharacter::TogglePauseMenu);
+
+		EnhancedInputComponent->BindAction(SwitchWeapon, ETriggerEvent::Triggered, this, &ADegreeProjectCharacter::SwitchToNextWeapon);
+
+		EnhancedInputComponent->BindAction(PickUpWeapons, ETriggerEvent::Triggered, this, &ADegreeProjectCharacter::TryPickupWeapon);
+
+		//Dashing Ensure the abilitySystemComponent is valid
+		if (AbilitySystemComponent && PlayerInputComponent)
+		{
+			AbilitySystemComponent->BindAbilityActivationToInputComponent(PlayerInputComponent, FGameplayAbilityInputBinds(
+				"Confirm",
+				"Cancel",
+				"EGASAbilityInputID",
+				static_cast<int32>(EGASAbilityInputID::Confirm),
+				static_cast<int32>(EGASAbilityInputID::Cancel)));
+		}
+
+	}
+	else
+	{
+		UE_LOG(LogTemplateCharacter, Error, TEXT("'%s' Failed to find an Enhanced Input component!"), *GetNameSafe(this));
+	}
 }
+
+void ADegreeProjectCharacter::TryPickupWeapon()
+{
+	TArray<AActor*> OverlappingActors;
+	GetOverlappingActors(OverlappingActors, AWeaponPickUp::StaticClass());
+
+	UE_LOG(LogTemp, Warning, TEXT("Overlapping pickups found: %d"), OverlappingActors.Num());
+
+	for (AActor* Actor : OverlappingActors)
+	{
+		AWeaponPickUp* Pickup = Cast<AWeaponPickUp>(Actor);
+		if (Pickup)
+		{
+			float PickUpPlayRate = 3;
+			PlayAnimMontage(PickUpAnim, PickUpPlayRate);
+			UE_LOG(LogTemp, Warning, TEXT("Found weapon pickup, attempting to pick up."));
+			Pickup->PickupWeapon();
+			return;
+		}
+	}
+
+	UE_LOG(LogTemp, Warning, TEXT("No valid weapon pickups found."));
+}
+
+void ADegreeProjectCharacter::Move(const FInputActionValue& Value)
+{
+	// input is a Vector2D
+	FVector2D MovementVector = Value.Get<FVector2D>();
+
+	if (Controller != nullptr)
+	{
+		// find out which way is forward
+		const FRotator Rotation = Controller->GetControlRotation();
+		const FRotator YawRotation(0, Rotation.Yaw, 0);
+
+		// get forward vector
+		const FVector ForwardDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
+
+		// get right vector 
+		const FVector RightDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
+
+		// add movement 
+		AddMovementInput(ForwardDirection, MovementVector.Y);
+		AddMovementInput(RightDirection, MovementVector.X);
+	}
+}
+
+void ADegreeProjectCharacter::Look(const FInputActionValue& Value)
+{
+	// input is a Vector2D
+	FVector2D LookAxisVector = Value.Get<FVector2D>();
+
+	if (Controller != nullptr)
+	{
+		// add yaw and pitch input to controller
+		AddControllerYawInput(LookAxisVector.X);
+		AddControllerPitchInput(LookAxisVector.Y);
+	}
+}
+
+void ADegreeProjectCharacter::Roll(const FInputActionValue& Value)
+{
+	bPressedRoll = true;
+}
+
+void ADegreeProjectCharacter::StopRolling(const FInputActionValue& Value)
+{
+	bPressedRoll = false;
+}
+
+void ADegreeProjectCharacter::Jump()
+{
+	if (!bCanJump) return;
+
+	if (JumpSFX && JumpCurrentCount < JumpMaxCount)
+	{
+		AudioComponent->SetSound(JumpSFX);
+		AudioComponent->Play();
+	}
+	Super::Jump();
+}
+
+void ADegreeProjectCharacter::Landed(const FHitResult& Hit)
+{
+	Super::Landed(Hit);
+	bCanJump = true;
+}
+
+void ADegreeProjectCharacter::Dash()
+{
+	if (!bIsDashing && bCanDash && GetCharacterMovement()->GetLastInputVector() != FVector::ZeroVector) // change value if needed
+	{
+		FRotator TargetRotation = UKismetMathLibrary::MakeRotFromX(GetCharacterMovement()->GetLastInputVector());
+		SetActorRotation(TargetRotation);
+
+		bIsDashing = true;
+		bCanDash = false;
+		TArray<FName> DashSockets = { "DashVFX", "VFX_C", "RightFootVFX", "LeftFootVFX" };
+		if (NiagaraDashVFX)
+		{
+			for (FName SocketName : DashSockets)
+			{
+				UNiagaraComponent* DashEffect = UNiagaraFunctionLibrary::SpawnSystemAttached(
+					NiagaraDashVFX,
+					GetMesh(),
+					SocketName,
+					FVector::ZeroVector,
+					FRotator::ZeroRotator,
+					EAttachLocation::SnapToTarget, true
+				);
+
+				if (DashEffect)
+				{
+					DashEffect->SetFloatParameter("Lifetime", DashDuration);
+				}
+			}
+		}
+
+		DefaultFriction = GetCharacterMovement()->GroundFriction;
+		DefaultWalkSpeed = GetCharacterMovement()->MaxWalkSpeed;
+		DefualtBreakFriction = GetCharacterMovement()->GroundFriction;
+
+
+		GetCharacterMovement()->GroundFriction = DashFriction;
+		GetCharacterMovement()->BrakingFriction = DashBreakFriction;
+		GetCharacterMovement()->MaxWalkSpeed = DashSpeed;
+
+		LaunchCharacter(GetActorForwardVector() * DashSpeed, true, false);
+
+		GetWorldTimerManager().SetTimer(DashTimerHandle, this, &ADegreeProjectCharacter::StopDash, DashDuration, false);
+	}
+	FString SpeedText = FString::Printf(TEXT("Current Speed: %.2f"), GetCharacterMovement()->Velocity.Size());
+	if (GEngine)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 0.5f, FColor::Green, SpeedText);
+	}
+}
+
+void ADegreeProjectCharacter::StopDash()
+{
+	if (bIsDashing)
+	{
+		bIsDashing = false;
+
+		GetCharacterMovement()->GroundFriction = DefaultFriction;
+		GetCharacterMovement()->MaxWalkSpeed = DefaultWalkSpeed;
+
+		GetCharacterMovement()->Velocity = FVector(0, 0, GetCharacterMovement()->Velocity.Z);
+		GetCharacterMovement()->BrakingFriction = 0;
+
+		GetWorldTimerManager().SetTimer(CoolDownTimerHandle, this, &ADegreeProjectCharacter::ResetDashCoolDown, DashCoolDown, false);
+	}
+}
+
+void ADegreeProjectCharacter::ResetDashCoolDown()
+{
+	bCanDash = true;
+}
+void ADegreeProjectCharacter::SwitchToNextWeapon()
+{
+	if (WeaponInventory) // guard clause
+	{
+		if (EquipItemSFX)
+		{
+			AudioComponent->SetSound(EquipItemSFX);
+			AudioComponent->Play();
+		}
+		WeaponInventory->SwitchWeapon(1);
+
+	}
+}
+#pragma endregion
+
+#pragma region HANDLE IMPLEMENTATIONS
+// Functions to handle player input and other events that are callable from blueprints
 
 void ADegreeProjectCharacter::LaunchCharacterInDirection_Implementation(FVector Direction, bool bIsStorm)
 {
@@ -242,17 +466,26 @@ void ADegreeProjectCharacter::LaunchCharacterInDirection_Implementation(FVector 
 	}
 
 	bool bOverrideXY = !bIsStorm;
-	
+
 	if (!Direction.IsNearlyZero())
 	{
 		LaunchCharacter(Direction, bOverrideXY, false);
 	}
-	
+
 	if (bIsStorm)
 	{
 		float SpinPower = GetActorRotation().Yaw + (Direction.Z * 0.15f);
 		SetActorRotation(FRotator(GetActorRotation().Pitch, SpinPower, GetActorRotation().Roll));
 	}
+}
+
+void ADegreeProjectCharacter::ToggleCanJump_Implementation(bool CanJump)
+{
+	bCanJump = CanJump;
+}
+
+void ADegreeProjectCharacter::IsInStorm_Implementation(bool bEnable)
+{
 }
 
 void ADegreeProjectCharacter::SetRotationBeforeRoll_Implementation()
@@ -266,6 +499,24 @@ void ADegreeProjectCharacter::SetRotationBeforeRoll_Implementation()
 
 	SetActorRotation(TargetRotation);
 }
+
+UWeaponHolderComponent* ADegreeProjectCharacter::GetWeaponHolderComponent_Implementation()
+{
+	return WeaponHolderComponent;
+}
+
+FVector ADegreeProjectCharacter::GetGroundPos_Implementation()
+{
+	return GroundPos;
+}
+
+void ADegreeProjectCharacter::TakeDamage_Implementation(UAbilitySystemComponent* AbilitySystem)
+{
+}
+
+#pragma endregion
+
+#pragma region HANDLE GRAPPLEHOOK
 
 void ADegreeProjectCharacter::ConfirmGrappleHit_Implementation()
 {
@@ -317,16 +568,9 @@ void ADegreeProjectCharacter::StandStillForGrappleHook_Implementation(bool bEndA
 		GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_None);
 	}
 }
+#pragma endregion
 
-UWeaponHolderComponent* ADegreeProjectCharacter::GetWeaponHolderComponent_Implementation()
-{
-	return WeaponHolderComponent;
-}
-
-FVector ADegreeProjectCharacter::GetGroundPos_Implementation()
-{
-	return GroundPos;
-}
+#pragma region HANDLE ATTRIBUTE AND ABILITIES/EFFECTS
 
 void ADegreeProjectCharacter::PossessedBy(AController* NewController)
 {
@@ -373,10 +617,9 @@ UStandardAttributeSet* ADegreeProjectCharacter::GetAttributeSet()
 {
 	return AttributeSet;
 }
+#pragma endregion
 
-void ADegreeProjectCharacter::TakeDamage_Implementation(UAbilitySystemComponent* AbilitySystem)
-{
-}
+#pragma region HANDLE PLAYER DEATH
 
 void ADegreeProjectCharacter::HandleDeath_Implementation()
 {
@@ -398,17 +641,16 @@ void ADegreeProjectCharacter::HandleDeath_Implementation()
 
 	GetMesh()->DetachFromComponent(FDetachmentTransformRules::KeepWorldTransform);
 
-	GetWorld()->GetTimerManager().SetTimer(DeathTimerHandle, this, &ADegreeProjectCharacter::DestroyCharacter, 2.f, false);
+	GetWorld()->GetTimerManager().SetTimer(DeathTimerHandle, this, &ADegreeProjectCharacter::PlayerKilled, 2.f, false);
 }
 
-
-
-void ADegreeProjectCharacter::DestroyCharacter()
+void ADegreeProjectCharacter::PlayerKilled()
 {
 	ToggleGameOver();
-	//Destroy();
 }
+#pragma endregion
 
+#pragma region TOGGLE UI
 void ADegreeProjectCharacter::TogglePauseMenu()
 {
 	APlayerController* PlayerController = Cast<APlayerController>(GetController());
@@ -477,259 +719,10 @@ void ADegreeProjectCharacter::ToggleGameOver()
 		}
 	}
 }
+#pragma endregion
 
-
-// Handles changes to health and triggers events to update the UI
-void ADegreeProjectCharacter::HandleHealthChanged(const FOnAttributeChangeData& Data)
-{
-	float NewHealth = Data.NewValue;
-	float OldHealth = Data.OldValue;
-
-	// Calculate the difference in health to find out the change amount
-	float DeltaValue = NewHealth - OldHealth;
-
-	// Trigger a Blueprint event to update the health display or UI
-	OnHealthChanged(DeltaValue, FGameplayTagContainer());
-}
-
-// Specifies which properties of the character should be replicated over the network.
-void ADegreeProjectCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const 
-{
-	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-
-	DOREPLIFETIME(ADegreeProjectCharacter, AbilitySystemComponent);
-	DOREPLIFETIME(ADegreeProjectCharacter, AttributeSet);
-	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
-	// are set in the derived blueprint asset named ThirdPersonCharacter (to avoid direct content references in C++)
-}
-
-//////////////////////////////////////////////////////////////////////////
-// Input
-
-void ADegreeProjectCharacter::NotifyControllerChanged()
-{
-	Super::NotifyControllerChanged();
-
-	// Add Input Mapping Context
-	if (APlayerController* PlayerController = Cast<APlayerController>(Controller))
-	{
-		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
-		{
-			Subsystem->AddMappingContext(DefaultMappingContext, 0);
-		}
-	}
-}
-
-void ADegreeProjectCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
-{
-	// Set up action bindings
-	if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent)) {
-		
-		// Jumping
-		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &ACharacter::Jump);
-		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &ACharacter::StopJumping);
-
-		// Moving
-		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &ADegreeProjectCharacter::Move);
-
-		// Looking
-		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &ADegreeProjectCharacter::Look);
-
-		// Rolling
-		EnhancedInputComponent->BindAction(RollAction, ETriggerEvent::Started, this, &ADegreeProjectCharacter::Roll);
-		EnhancedInputComponent->BindAction(RollAction, ETriggerEvent::Completed, this, &ADegreeProjectCharacter::StopRolling);
-
-		EnhancedInputComponent->BindAction(PauseAction, ETriggerEvent::Triggered, this, &ADegreeProjectCharacter::TogglePauseMenu);
-
-		EnhancedInputComponent->BindAction(SwitchWeapon, ETriggerEvent::Triggered, this, &ADegreeProjectCharacter::SwitchToNextWeapon);
-
-		EnhancedInputComponent->BindAction(PickUpWeapons, ETriggerEvent::Triggered, this, &ADegreeProjectCharacter::TryPickupWeapon);
-
-		//Dashing Ensure the abilitySystemComponent is valid
-		if (AbilitySystemComponent && PlayerInputComponent)
-		{
-			AbilitySystemComponent->BindAbilityActivationToInputComponent(PlayerInputComponent, FGameplayAbilityInputBinds(
-				"Confirm",
-				"Cancel",
-				"EGASAbilityInputID",
-				static_cast<int32>(EGASAbilityInputID::Confirm),
-				static_cast<int32>(EGASAbilityInputID::Cancel)));
-		}
-
-	}
-	else
-	{
-		UE_LOG(LogTemplateCharacter, Error, TEXT("'%s' Failed to find an Enhanced Input component! This template is built to use the Enhanced Input system. If you intend to use the legacy system, then you will need to update this C++ file."), *GetNameSafe(this));
-	}
-}
-
-void ADegreeProjectCharacter::TryPickupWeapon()
-{
-	TArray<AActor*> OverlappingActors;
-	GetOverlappingActors(OverlappingActors, AWeaponPickUp::StaticClass());
-
-	UE_LOG(LogTemp, Warning, TEXT("Overlapping pickups found: %d"), OverlappingActors.Num());
-
-	for (AActor* Actor : OverlappingActors)
-	{
-		AWeaponPickUp* Pickup = Cast<AWeaponPickUp>(Actor);
-		if (Pickup)
-		{
-			float PickUpPlayRate = 3;
-			PlayAnimMontage(PickUpAnim, PickUpPlayRate);
-			UE_LOG(LogTemp, Warning, TEXT("Found weapon pickup, attempting to pick up."));
-			Pickup->PickupWeapon();
-			return;
-		}
-	}
-
-	UE_LOG(LogTemp, Warning, TEXT("No valid weapon pickups found."));
-}
-
-
-void ADegreeProjectCharacter::Move(const FInputActionValue& Value)
-{
-	// input is a Vector2D
-	FVector2D MovementVector = Value.Get<FVector2D>();
-
-	if (Controller != nullptr)
-	{
-		// find out which way is forward
-		const FRotator Rotation = Controller->GetControlRotation();
-		const FRotator YawRotation(0, Rotation.Yaw, 0);
-
-		// get forward vector
-		const FVector ForwardDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
-	
-		// get right vector 
-		const FVector RightDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
-
-		// add movement 
-		AddMovementInput(ForwardDirection, MovementVector.Y);
-		AddMovementInput(RightDirection, MovementVector.X);		
-	}
-}
-
-void ADegreeProjectCharacter::Look(const FInputActionValue& Value)
-{
-	// input is a Vector2D
-	FVector2D LookAxisVector = Value.Get<FVector2D>();
-
-	if (Controller != nullptr)
-	{
-		// add yaw and pitch input to controller
-		AddControllerYawInput(LookAxisVector.X);
-		AddControllerPitchInput(LookAxisVector.Y);
-	}
-}
-
-void ADegreeProjectCharacter::Roll(const FInputActionValue& Value)
-{
-	bPressedRoll = true;
-}
-
-void ADegreeProjectCharacter::StopRolling(const FInputActionValue& Value)
-{
-	bPressedRoll = false;
-}
-
-void ADegreeProjectCharacter::Jump()
-{
-	if (!bCanJump) return;
-
-	if (JumpSFX && JumpCurrentCount < JumpMaxCount)
-	{
-		AudioComponent->SetSound(JumpSFX);
-		AudioComponent->Play();
-	}
-
-	Super::Jump();
-}
-
-void ADegreeProjectCharacter::Landed(const FHitResult& Hit)
-{
-	Super::Landed(Hit);
-	bCanJump = true;
-}
-
-
-void ADegreeProjectCharacter::Dash()
-{
-	if (!bIsDashing && bCanDash && GetCharacterMovement()->GetLastInputVector() != FVector::ZeroVector) // change value if needed
-	{
-		FRotator TargetRotation = UKismetMathLibrary::MakeRotFromX(GetCharacterMovement()->GetLastInputVector());
-		SetActorRotation(TargetRotation);
-		
-		bIsDashing = true;
-		bCanDash = false;
-		TArray<FName> DashSockets = { "DashVFX", "VFX_C", "RightFootVFX", "LeftFootVFX" };
-		if (NiagaraDashVFX)
-		{
-			for (FName SocketName : DashSockets)
-			{
-				UNiagaraComponent* DashEffect = UNiagaraFunctionLibrary::SpawnSystemAttached(
-					NiagaraDashVFX,
-					GetMesh(), 
-					SocketName,
-					FVector::ZeroVector,
-					FRotator::ZeroRotator,
-					EAttachLocation::SnapToTarget, true
-				);
-
-				if (DashEffect)
-				{
-					DashEffect->SetFloatParameter("Lifetime", DashDuration);
-				}
-			}
-		}
-
-		DefaultFriction = GetCharacterMovement()->GroundFriction;
-		DefaultWalkSpeed = GetCharacterMovement()->MaxWalkSpeed;
-		DefualtBreakFriction = GetCharacterMovement()->GroundFriction;
-
-
-		GetCharacterMovement()->GroundFriction = DashFriction;
-		GetCharacterMovement()->BrakingFriction = DashBreakFriction;
-		GetCharacterMovement()->MaxWalkSpeed = DashSpeed;
-
-		LaunchCharacter(GetActorForwardVector() * DashSpeed, true, false);
-
-		GetWorldTimerManager().SetTimer(DashTimerHandle, this, &ADegreeProjectCharacter::StopDash, DashDuration, false);
-	}
-	FString SpeedText = FString::Printf(TEXT("Current Speed: %.2f"), GetCharacterMovement()->Velocity.Size());
-	if (GEngine)
-	{
-		GEngine->AddOnScreenDebugMessage(-1, 0.5f, FColor::Green, SpeedText);
-	}
-
-}
-
-void ADegreeProjectCharacter::StopDash()
-{
-	if (bIsDashing) // guardclause?
-	{
-		bIsDashing = false;
-
-		GetCharacterMovement()->GroundFriction = DefaultFriction;
-		GetCharacterMovement()->MaxWalkSpeed = DefaultWalkSpeed;
-		
-		GetCharacterMovement()->Velocity = FVector(0, 0, GetCharacterMovement()->Velocity.Z);
-		GetCharacterMovement()->BrakingFriction = 0;
-
-		//GetCharacterMovement()->Velocity = FVector::ZeroVector;
-
-		//GetCharacterMovement()->Velocity = FVector::ZeroVector;
-
-		GetWorldTimerManager().SetTimer(CoolDownTimerHandle, this, &ADegreeProjectCharacter::ResetDashCoolDown, DashCoolDown, false);
-
-	}
-
-}
-
-void ADegreeProjectCharacter::ResetDashCoolDown()
-{
-	bCanDash = true;
-}
+#pragma region UTILLITY REGENERATION
+// Regenerate stamina and mana over time
 
 void ADegreeProjectCharacter::RegenerateAttributes(float DeltaTime)
 {
@@ -762,20 +755,25 @@ void ADegreeProjectCharacter::RegenerateUtility()
 	float NewStamina = FMath::FInterpTo(AttributeSet->GetCurrentStamina(), AttributeSet->GetMaxStamina(), GetWorld()->GetDeltaSeconds(), 1.f);
 	AttributeSet->SetCurrentStamina(FMath::CeilToInt(NewStamina));
 
-	float NewMana = FMath::FInterpTo(AttributeSet->GetCurrentMana(),AttributeSet->GetMaxMana(), GetWorld()->GetDeltaSeconds(), 1.f);
+	float NewMana = FMath::FInterpTo(AttributeSet->GetCurrentMana(), AttributeSet->GetMaxMana(), GetWorld()->GetDeltaSeconds(), 1.f);
 	AttributeSet->SetCurrentMana(FMath::CeilToInt(NewMana));
 }
+#pragma endregion
 
-void ADegreeProjectCharacter::SwitchToNextWeapon()
+void ADegreeProjectCharacter::HandleHealthChanged(const FOnAttributeChangeData& Data)
 {
-	if (WeaponInventory) // guard clause
-	{
-		if (EquipItemSFX)
-		{
-			AudioComponent->SetSound(EquipItemSFX);
-			AudioComponent->Play();
-		}
-		WeaponInventory->SwitchWeapon(1);
+	float NewHealth = Data.NewValue;
+	float OldHealth = Data.OldValue;
+	float DeltaValue = NewHealth - OldHealth;
 
-	}
+	OnHealthChanged(DeltaValue, FGameplayTagContainer());
+}
+
+void ADegreeProjectCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const 
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(ADegreeProjectCharacter, AbilitySystemComponent);
+	DOREPLIFETIME(ADegreeProjectCharacter, AttributeSet);
+
 }
