@@ -29,16 +29,13 @@ public:
 	float MovementSpeed = 400.f;
 
 	UPROPERTY(EditAnywhere, Category = "AI")
-	float AcceptanceRadius = 100.f;
+	float AcceptanceRadius = 200.f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI")
 	AActor* TargetActor;
 
 	UFUNCTION(BlueprintCallable, Category = "AI")
 	void MoveToTarget();
-
-	UFUNCTION(BlueprintCallable, Category = "AI")
-	void MoveToNewLocation();
 
 	UPROPERTY(BlueprintReadWrite,EditAnywhere, Category = "AI")
 	bool IsDead;

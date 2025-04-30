@@ -23,6 +23,7 @@ void AFlyingEnemy::BeginPlay()
 	Super::BeginPlay();
 	TargetActor = UGameplayStatics::GetPlayerPawn(GetWorld(), 0);
 	IsDead = false;
+	
 }
 
 // Called every frame
@@ -33,14 +34,17 @@ void AFlyingEnemy::Tick(float DeltaTime)
 	{
 		if (!IsDead)
 		{
-			
-			
-			
-			
-				MoveToTarget();
-				FaceTarget(DeltaTime);
-
 			float DistanceToPlayer = FVector::Dist(GetActorLocation(), TargetActor->GetActorLocation());
+			
+			
+			if (DistanceToPlayer >= AcceptanceRadius)
+			{
+				MoveToTarget();
+				
+		    }
+				
+			FaceTarget(DeltaTime);
+			
 			if (DistanceToPlayer < AcceptanceRadius)
 			{
 				AttackPlayer();
@@ -80,7 +84,7 @@ void AFlyingEnemy::MoveToTarget()
 	}
 	
 	FHitResult Hit;
-	FVector Start = GetActorLocation();
+	FVector Start =  GetActorLocation();
 	FVector End = TargetActor->GetActorLocation();
 	FCollisionQueryParams Params;
 	Params.AddIgnoredActor(this);
@@ -102,14 +106,7 @@ void AFlyingEnemy::MoveToTarget()
 
 }
 
-void AFlyingEnemy::MoveToNewLocation()
-{
 
-	
-	
-
-
-}
 
 void AFlyingEnemy::AttackPlayer()
 {
