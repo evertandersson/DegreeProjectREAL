@@ -246,6 +246,7 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Audio")
 	UAudioComponent* AudioComponent;
 
+
 	virtual void NotifyControllerChanged() override;
 
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
@@ -259,6 +260,7 @@ private:
 	UUserWidget* WeaponInventoryWidget;
 
 	void TryPickupWeapon();
+
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Inventory", meta = (AllowPrivateAccess = "true"))
 	UWeaponInventoryComponent* WeaponInventory;
@@ -293,6 +295,9 @@ public:
 
 	UFUNCTION()
 	void SwitchToNextWeapon();
+
+	UFUNCTION()
+	void UpdateAttackAnims();
 
 	void TogglePauseMenu();
 	void ToggleGameOver();

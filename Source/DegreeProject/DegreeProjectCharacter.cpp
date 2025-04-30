@@ -30,6 +30,7 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 
+#include "Inventory/ComboAbilityBase.h"
 #include "Animation/AnimInstance.h"
 #include "Animation/AnimMontage.h"
 #include "GameFramework/Actor.h"
@@ -148,7 +149,6 @@ void ADegreeProjectCharacter::BeginPlay()
 				AbilitySystemComponent->GiveAbility(FGameplayAbilitySpec(Ability, 1, static_cast<int32>(EGASAbilityInputID::Confirm), this));
 				AbilitySystemComponent->GiveAbility(FGameplayAbilitySpec(Ability, 0, static_cast<int32>(EGASAbilityInputID::Cancel), this));
 			}
-			
 		}
 	}
 
@@ -283,6 +283,7 @@ void ADegreeProjectCharacter::TryPickupWeapon()
 			PlayAnimMontage(PickUpAnim, PickUpPlayRate);
 			UE_LOG(LogTemp, Warning, TEXT("Found weapon pickup, attempting to pick up."));
 			Pickup->PickupWeapon();
+			UpdateAttackAnims();
 			return;
 		}
 	}
@@ -426,7 +427,7 @@ void ADegreeProjectCharacter::ResetDashCoolDown()
 }
 void ADegreeProjectCharacter::SwitchToNextWeapon()
 {
-	if (WeaponInventory) // guard clause
+	if (WeaponInventory)
 	{
 		if (EquipItemSFX)
 		{
@@ -434,9 +435,31 @@ void ADegreeProjectCharacter::SwitchToNextWeapon()
 			AudioComponent->Play();
 		}
 		WeaponInventory->SwitchWeapon(1);
-
+		UpdateAttackAnims();
 	}
 }
+
+void ADegreeProjectCharacter::UpdateAttackAnims()
+{
+	if (!WeaponInventory) return;
+
+	AWeaponBase* EquippedWeapon = WeaponInventory->GetEquippedWeapon();
+	if (!EquippedWeapon) return;
+
+	CombatAnims = EquippedWeapon->CombatAnims;
+
+	if (UAbilitySystemComponent* ASC = GetAbilitySystemComponent())
+	{
+		for (FGameplayAbilitySpec& Spec : ASC->GetActivatableAbilities())
+		{
+			if (UComboAbilityBase* ComboAbility = Cast<UComboAbilityBase>(Spec.GetPrimaryInstance()))
+			{
+				ComboAbility->SetMontage(CombatAnims);
+			}
+		}
+	}
+}
+
 #pragma endregion
 
 #pragma region HANDLE IMPLEMENTATIONS
