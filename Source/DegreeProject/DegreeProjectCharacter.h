@@ -331,7 +331,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Player)
 	bool bIsDashing = false;
 
-	UPROPERTY(EditAnywhere, Category = Player)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Player)
 	bool bCanDash;
 
 private:
