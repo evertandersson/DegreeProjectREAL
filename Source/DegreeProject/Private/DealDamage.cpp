@@ -2,6 +2,7 @@
 
 
 #include "DealDamage.h"
+#include "UStandardAttributeSet.h"
 #include "GameFramework/Actor.h"
 #include "Kismet/GameplayStatics.h"
 
