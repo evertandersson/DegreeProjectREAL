@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Animation/AnimNotifies/AnimNotify.h"
+#include "UStandardAttributeSet.h"
 #include "DealDamage.generated.h"
 
 /**
@@ -18,4 +19,7 @@ public:
 
 	virtual void Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Ainmation) override;
 	
+	UPROPERTY()
+	UStandardAttributeSet* AttributeSets;
+
 };
