@@ -45,8 +45,9 @@ void AFlyingEnemy::Tick(float DeltaTime)
 				
 			FaceTarget(DeltaTime);
 			
-			if (DistanceToPlayer < AcceptanceRadius)
+			if (DistanceToPlayer <= AcceptanceRadius)
 			{
+				MovementSpeed = 0.0f;
 				AttackPlayer();
 			}
 		}
@@ -112,7 +113,8 @@ void AFlyingEnemy::AttackPlayer()
 {
 	IsAttacking = true;
 	PlayAnimMontage(AttackAnimMontage);
-	GetWorldTimerManager().SetTimer(AttackTime, this, &AFlyingEnemy::ResetAttack, 2.0f, false);
+	GetWorldTimerManager().SetTimer(AttackTime, this, &AFlyingEnemy::ResetAttack, 1.0f, false);
+
 }
 
 void AFlyingEnemy::ResetAttack()
