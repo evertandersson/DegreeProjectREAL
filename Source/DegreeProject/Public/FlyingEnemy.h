@@ -37,9 +37,6 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "AI")
 	void MoveToTarget();
 
-	UFUNCTION(BlueprintCallable, Category = "AI")
-	void MoveToNewLocation();
-
 	UPROPERTY(BlueprintReadWrite,EditAnywhere, Category = "AI")
 	bool IsDead;
 
