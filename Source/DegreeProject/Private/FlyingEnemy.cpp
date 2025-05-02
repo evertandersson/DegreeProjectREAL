@@ -35,19 +35,16 @@ void AFlyingEnemy::Tick(float DeltaTime)
 		if (!IsDead)
 		{
 			float DistanceToPlayer = FVector::Dist(GetActorLocation(), TargetActor->GetActorLocation());
-			
-			
-			if (DistanceToPlayer >= AcceptanceRadius)
+				
+			if (!IsAttacking)
 			{
 				MoveToTarget();
-				
-		    }
-				
+			}
+
 			FaceTarget(DeltaTime);
 			
-			if (DistanceToPlayer <= AcceptanceRadius)
+			if (DistanceToPlayer <= AttackRange)
 			{
-				MovementSpeed = 0.0f;
 				AttackPlayer();
 			}
 		}
@@ -112,6 +109,7 @@ void AFlyingEnemy::MoveToTarget()
 void AFlyingEnemy::AttackPlayer()
 {
 	IsAttacking = true;
+	MovementSpeed = 0.0f;
 	PlayAnimMontage(AttackAnimMontage);
 	GetWorldTimerManager().SetTimer(AttackTime, this, &AFlyingEnemy::ResetAttack, 1.0f, false);
 
