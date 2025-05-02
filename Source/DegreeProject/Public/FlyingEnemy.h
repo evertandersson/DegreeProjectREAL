@@ -28,8 +28,8 @@ public:
 	UPROPERTY(EditAnywhere, Category = "AI")
 	float MovementSpeed = 400.f;
 
-	UPROPERTY(EditAnywhere, Category = "AI")
-	float AcceptanceRadius = 100.f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI")
+	float AttackRange = 125.f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI")
 	AActor* TargetActor;
