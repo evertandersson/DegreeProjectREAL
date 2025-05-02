@@ -406,7 +406,7 @@ void ADegreeProjectCharacter::Dash()
 
 void ADegreeProjectCharacter::StopDash()
 {
-	if (bIsDashing)
+	if (bIsDashing && !bIsDead)
 	{
 		bIsDashing = false;
 
@@ -426,7 +426,7 @@ void ADegreeProjectCharacter::ResetDashCoolDown()
 }
 void ADegreeProjectCharacter::SwitchToNextWeapon()
 {
-	if (WeaponInventory) // guard clause
+	if (WeaponInventory && !bIsDead) // guard clause
 	{
 		if (EquipItemSFX)
 		{

@@ -314,6 +314,10 @@ public:
 	bool bCanJump;
 	UPROPERTY(BlueprintReadWrite, VisibleAnywhere)
 	bool bDidJump;
+	UPROPERTY(BlueprintReadWrite, VisibleAnywhere)
+	bool bCanAttack;
+	UPROPERTY(BlueprintReadWrite, VisibleAnywhere)
+	bool bIsDead = false;
 
 	/** When true, player wants to roll */
 	UPROPERTY(BlueprintReadOnly, Category = Character)
@@ -350,8 +354,7 @@ private:
 	// Specifies which properties should be replicated over the network
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
-	UPROPERTY(VisibleAnywhere)
-	bool bIsDead = false;
+
 
 private:
 	
