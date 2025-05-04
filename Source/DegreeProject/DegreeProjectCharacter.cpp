@@ -477,6 +477,11 @@ void ADegreeProjectCharacter::ToggleCanJump_Implementation(bool CanJump)
 	bCanJump = CanJump;
 }
 
+void ADegreeProjectCharacter::ToggleIsMidAir_Implementation(bool bIsMidAir)
+{
+	bIsJumpAttackMidAir = bIsMidAir;
+}
+
 void ADegreeProjectCharacter::IsInStorm_Implementation(bool bEnable)
 {
 }
