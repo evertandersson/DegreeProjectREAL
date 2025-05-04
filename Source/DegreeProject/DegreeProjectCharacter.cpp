@@ -551,10 +551,12 @@ void ADegreeProjectCharacter::StandStillForGrappleHook_Implementation(bool bEndA
 	if (bEndAbility)
 	{
 		GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking);
+		MantleComponent->bCanClimb = true;
 		return;
 	}
 
 	GrapplingComponent->bIsRotatingTowardsGrapplePoint = true;
+	MantleComponent->bCanClimb = false;
 
 	if (!GetCharacterMovement()->IsFalling())
 	{
