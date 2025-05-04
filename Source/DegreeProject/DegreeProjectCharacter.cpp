@@ -348,12 +348,6 @@ void ADegreeProjectCharacter::Jump()
 	Super::Jump();
 }
 
-void ADegreeProjectCharacter::Landed(const FHitResult& Hit)
-{
-	Super::Landed(Hit);
-	bCanJump = true;
-}
-
 void ADegreeProjectCharacter::Dash()
 {
 	if (!bIsDashing && bCanDash && GetCharacterMovement()->GetLastInputVector() != FVector::ZeroVector) // change value if needed
@@ -483,6 +477,11 @@ void ADegreeProjectCharacter::ToggleCanJump_Implementation(bool CanJump)
 	bCanJump = CanJump;
 }
 
+void ADegreeProjectCharacter::ToggleIsMidAir_Implementation(bool bIsMidAir)
+{
+	bIsJumpAttackMidAir = bIsMidAir;
+}
+
 void ADegreeProjectCharacter::IsInStorm_Implementation(bool bEnable)
 {
 }
@@ -557,10 +556,12 @@ void ADegreeProjectCharacter::StandStillForGrappleHook_Implementation(bool bEndA
 	if (bEndAbility)
 	{
 		GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking);
+		MantleComponent->bCanClimb = true;
 		return;
 	}
 
 	GrapplingComponent->bIsRotatingTowardsGrapplePoint = true;
+	MantleComponent->bCanClimb = false;
 
 	if (!GetCharacterMovement()->IsFalling())
 	{
