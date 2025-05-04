@@ -47,6 +47,77 @@ void AFlyingEnemy::Tick(float DeltaTime)
 			{
 				AttackPlayer();
 			}
+
+			FVector Start = GetActorLocation();
+			FVector TargetLocation = TargetActor->GetActorLocation();
+			FVector End = TargetLocation;
+			FVector DirectionToTarget = (TargetLocation - Start).GetSafeNormal();
+
+			FHitResult Hit;
+			FCollisionQueryParams Params;
+			Params.AddIgnoredActor(this);
+
+			bool bHit = GetWorld()->LineTraceSingleByChannel(Hit, Start, End, ECC_Visibility, Params);
+
+			switch (CurrentState)
+			{
+			case EFlyAIState::MovingToPlayer:
+				if (bHit && Hit.GetActor())
+				{
+					float ObstacleTopZ = Hit.ImpactPoint.Z + 300.f;
+					float PlayerZ = TargetLocation.Z;
+
+					if (ObstacleTopZ > Start.Z + 100.f) // obstacle is tall
+					{
+						TargetAscendZ = FMath::Max(PlayerZ + 200.f, ObstacleTopZ);
+						CurrentState = EFlyAIState::AscendingOverObstacle;
+						break;
+					}
+				}
+
+				MoveInDirection(DirectionToTarget, DeltaTime);
+				break;
+			case EFlyAIState::AscendingOverObstacle:
+
+				if(Start.Z<TargetAscendZ)
+				{
+					FVector Up = FVector::UpVector;
+					MoveInDirection(Up, DeltaTime);
+       			}
+
+				else
+				{
+					CurrentState = EFlyAIState::DivingAtPlayer;
+				}
+
+				break;
+
+
+			case EFlyAIState::DivingAtPlayer:
+
+				bool ObstacleStillThere = GetWorld()->LineTraceSingleByChannel(Hit, Start, TargetLocation, ECC_Visibility, Params);
+
+				if (ObstacleStillThere && Hit.GetActor())
+				{
+					float ObstacleTopZ = Hit.ImpactPoint.Z + 300.f;
+					float PlayerZ = TargetLocation.Z;
+
+					if (ObstacleTopZ > Start.Z + 100.f)
+					{
+						TargetAscendZ = FMath::Max(PlayerZ + 200.f, ObstacleTopZ);
+						CurrentState = EFlyAIState::AscendingOverObstacle;
+						break;
+					}
+				}
+
+				if ((TargetLocation - Start).Size() < 200.f)
+				{
+					CurrentState = EFlyAIState::MovingToPlayer;
+				}
+
+				MoveInDirection(DirectionToTarget, DeltaTime);
+				break;
+			}
 		}
 	}
 
@@ -81,26 +152,50 @@ void AFlyingEnemy::MoveToTarget()
 		MovementSpeed = 400.0f;
 	}
 	
-	FHitResult Hit;
-	FVector Start =  GetActorLocation();
-	FVector End = TargetActor->GetActorLocation();
-	FCollisionQueryParams Params;
-	Params.AddIgnoredActor(this);
+	
+	
 
-	bool hit = GetWorld()->LineTraceSingleByChannel(Hit, Start, End, ECC_Visibility, Params);
-
-	if (hit)
+	/*if (hit)
 	{
 		Wall = true;
-		FVector AvoidDirection = FVector::CrossProduct(Hit.Normal, FVector::UpVector).GetSafeNormal();
-		FVector NewLocation = GetActorLocation() + AvoidDirection * MovementSpeed * GetWorld()->GetDeltaSeconds();
-		SetActorLocation(NewLocation);
+		FVector Left = FVector::CrossProduct(FVector::UpVector, Forward).GetSafeNormal();
+		FVector Right = FVector::CrossProduct(Forward, FVector::UpVector).GetSafeNormal();
+
+		bool LeftClear = !GetWorld()->LineTraceTestByChannel(Start, Start + Left * 200.f, ECC_Visibility, Params);
+		bool RightClear = !GetWorld()->LineTraceTestByChannel(Start, Start + Right * 200.f, ECC_Visibility, Params);
+
+		FVector AvoidDirection = FVector::ZeroVector;
+
+		DrawDebugLine(GetWorld(), Start, End, FColor::Red, false, 1.0f, 0, 2.0f);
+
+		if (LeftClear)
+		{
+			AvoidDirection = Left;
+			DrawDebugLine(GetWorld(), Start, Start + Left * 200.f, FColor::Green, false, 1.0f, 0, 2.0f);
+		}
+
+		else if (RightClear)
+		{
+			AvoidDirection = Right;
+			DrawDebugLine(GetWorld(), Start, Start + Right * 200.f, FColor::Blue, false, 1.0f, 0, 2.0f);
+		}
+
+		else
+		{
+			AvoidDirection = -Forward;
+			DrawDebugLine(GetWorld(), Start, Start - Forward * 200.f, FColor::Purple, false, 1.0f, 0, 2.0f);
+		}
+
 	}
 
 	else
 	{
 		Wall = false;
-	}
+		FVector NewLocation = GetActorLocation() + Forward * MovementSpeed * GetWorld()->GetDeltaSeconds();
+		SetActorLocation(NewLocation);
+
+		DrawDebugLine(GetWorld(), Start, End, FColor::Red, false, 1.0f, 0, 2.0f);
+	*/
 
 }
 
@@ -118,6 +213,12 @@ void AFlyingEnemy::AttackPlayer()
 void AFlyingEnemy::ResetAttack()
 {
 	IsAttacking = false;
+}
+
+void AFlyingEnemy::MoveInDirection(const FVector& Direction, float DeltaTime)
+{
+	FVector NewLocation = GetActorLocation() + Direction * MovementSpeed * DeltaTime;
+	SetActorLocation(NewLocation);
 }
 
 
