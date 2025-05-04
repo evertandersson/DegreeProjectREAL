@@ -348,12 +348,6 @@ void ADegreeProjectCharacter::Jump()
 	Super::Jump();
 }
 
-void ADegreeProjectCharacter::Landed(const FHitResult& Hit)
-{
-	Super::Landed(Hit);
-	bCanJump = true;
-}
-
 void ADegreeProjectCharacter::Dash()
 {
 	if (!bIsDashing && bCanDash && GetCharacterMovement()->GetLastInputVector() != FVector::ZeroVector) // change value if needed

@@ -218,7 +218,6 @@ protected:
 
 	/** Handle Jump */
 	virtual void Jump() override;
-	virtual void Landed(const FHitResult& Hit) override;
 
 	void PlayerKilled();
 	int Damage;
