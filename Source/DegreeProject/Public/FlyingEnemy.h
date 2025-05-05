@@ -13,7 +13,8 @@ enum class EFlyAIState: uint8
 {
 	MovingToPlayer  UMETA(DisplayName = "Moving To Player"),
 	AscendingOverObstacle UMETA(DisplayName = "Ascending Over Obstacle"),
-	DivingAtPlayer  UMETA(DisplayName = "Diving At Player")
+	DivingAtPlayer  UMETA(DisplayName = "Diving At Player"),
+	AttackPlayer    UMETA(DisplayName = "Attack Player"),
 };
 
 UCLASS()
@@ -40,13 +41,10 @@ public:
 	float MovementSpeed = 400.f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI")
-	float AttackRange = 125.f;
+	float AttackRange = 100.f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI")
 	AActor* TargetActor;
-
-	UFUNCTION(BlueprintCallable, Category = "AI")
-	void MoveToTarget();
 
 	UPROPERTY(BlueprintReadWrite,EditAnywhere, Category = "AI")
 	bool IsDead;
@@ -63,6 +61,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animation")
 	UAnimMontage* AttackAnimMontage;
 
+	UPROPERTY(VisibleAnywhere)
+	USkeletalMeshComponent* MeshComp;
+
 	FTimerHandle AttackTime;
 
 	void MoveInDirection(const FVector& Direction, float DeltaTime);
@@ -70,9 +71,4 @@ public:
 private:
 
 	float TargetAscendZ = 0.f;
-
-	/*UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Health")
-	void HandleDeath();
-	
-	virtual void HandleDeath_Implementation() override;*/
 };
