@@ -15,7 +15,6 @@ AFlyingEnemy::AFlyingEnemy()
 
 	GetCharacterMovement()->DefaultLandMovementMode = MOVE_Flying;
 	GetCharacterMovement()->MovementMode = MOVE_Flying;
-
 }
 
 // Called when the game starts or when spawned
@@ -24,6 +23,7 @@ void AFlyingEnemy::BeginPlay()
 	Super::BeginPlay();
 	TargetActor = UGameplayStatics::GetPlayerPawn(GetWorld(), 0);
 	IsDead = false;
+	
 }
 
 // Called every frame
@@ -34,12 +34,16 @@ void AFlyingEnemy::Tick(float DeltaTime)
 	{
 		if (!IsDead)
 		{
-			MoveToTarget();
-			FaceTarget(DeltaTime);
-
 			float DistanceToPlayer = FVector::Dist(GetActorLocation(), TargetActor->GetActorLocation());
+				
+			if (!IsAttacking)
+			{
+				MoveToTarget();
+			}
 
-			if (DistanceToPlayer < AcceptanceRadius)
+			FaceTarget(DeltaTime);
+			
+			if (DistanceToPlayer <= AttackRange)
 			{
 				AttackPlayer();
 			}
@@ -50,8 +54,6 @@ void AFlyingEnemy::Tick(float DeltaTime)
 	{
 		MovementSpeed = 0.0f;
 	}
-
-	
 }
 
 void AFlyingEnemy::FaceTarget(float DeltaTime)
@@ -70,18 +72,47 @@ void AFlyingEnemy::FaceTarget(float DeltaTime)
 void AFlyingEnemy::MoveToTarget()
 {
 	if (!TargetActor) return;
+	
+	if (!Wall)
+	{
+		FVector Direction = (TargetActor->GetActorLocation() - GetActorLocation()).GetSafeNormal();
+		FVector Location = GetActorLocation() + Direction * MovementSpeed * GetWorld()->GetDeltaSeconds();
+		SetActorLocation(Location);
+		MovementSpeed = 400.0f;
+	}
+	
+	FHitResult Hit;
+	FVector Start =  GetActorLocation();
+	FVector End = TargetActor->GetActorLocation();
+	FCollisionQueryParams Params;
+	Params.AddIgnoredActor(this);
 
-	FVector Direction = (TargetActor->GetActorLocation() - GetActorLocation()).GetSafeNormal();
-	FVector NewLocation = GetActorLocation() + Direction * MovementSpeed * GetWorld()->GetDeltaSeconds();
-	SetActorLocation(NewLocation);
-	MovementSpeed = 400.0f;
+	bool hit = GetWorld()->LineTraceSingleByChannel(Hit, Start, End, ECC_Visibility, Params);
+
+	if (hit)
+	{
+		Wall = true;
+		FVector AvoidDirection = FVector::CrossProduct(Hit.Normal, FVector::UpVector).GetSafeNormal();
+		FVector NewLocation = GetActorLocation() + AvoidDirection * MovementSpeed * GetWorld()->GetDeltaSeconds();
+		SetActorLocation(NewLocation);
+	}
+
+	else
+	{
+		Wall = false;
+	}
+
 }
+
+
 
 void AFlyingEnemy::AttackPlayer()
 {
 	IsAttacking = true;
+	MovementSpeed = 0.0f;
 	PlayAnimMontage(AttackAnimMontage);
-	GetWorldTimerManager().SetTimer(AttackTime, this, &AFlyingEnemy::ResetAttack, 2.0f, false);
+	GetWorldTimerManager().SetTimer(AttackTime, this, &AFlyingEnemy::ResetAttack, 1.0f, false);
+
 }
 
 void AFlyingEnemy::ResetAttack()

@@ -14,7 +14,6 @@ ANPC::ANPC()
 
 	MaxHealth = 40.f;
 	Health = MaxHealth;
-
 }
 
 // Called when the game starts or when spawned
