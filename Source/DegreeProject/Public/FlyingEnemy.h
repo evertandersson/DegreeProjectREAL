@@ -7,6 +7,15 @@
 #include "NPC.h"
 #include "FlyingEnemy.generated.h"
 
+
+UENUM(BlueprintType)
+enum class EFlyAIState: uint8
+{
+	MovingToPlayer  UMETA(DisplayName = "Moving To Player"),
+	AscendingOverObstacle UMETA(DisplayName = "Ascending Over Obstacle"),
+	DivingAtPlayer  UMETA(DisplayName = "Diving At Player")
+};
+
 UCLASS()
 class DEGREEPROJECT_API AFlyingEnemy : public ANPC
 {
@@ -20,6 +29,8 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
+	EFlyAIState CurrentState = EFlyAIState::MovingToPlayer;
+
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -28,8 +39,8 @@ public:
 	UPROPERTY(EditAnywhere, Category = "AI")
 	float MovementSpeed = 400.f;
 
-	UPROPERTY(EditAnywhere, Category = "AI")
-	float AcceptanceRadius = 100.f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI")
+	float AttackRange = 125.f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI")
 	AActor* TargetActor;
@@ -41,6 +52,9 @@ public:
 	bool IsDead;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "AI")
+	bool Wall;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "AI")
 	bool IsAttacking;
 
 	void AttackPlayer();
@@ -50,6 +64,12 @@ public:
 	UAnimMontage* AttackAnimMontage;
 
 	FTimerHandle AttackTime;
+
+	void MoveInDirection(const FVector& Direction, float DeltaTime);
+
+private:
+
+	float TargetAscendZ = 0.f;
 
 	/*UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Health")
 	void HandleDeath();

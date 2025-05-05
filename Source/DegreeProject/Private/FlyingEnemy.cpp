@@ -15,7 +15,6 @@ AFlyingEnemy::AFlyingEnemy()
 
 	GetCharacterMovement()->DefaultLandMovementMode = MOVE_Flying;
 	GetCharacterMovement()->MovementMode = MOVE_Flying;
-
 }
 
 // Called when the game starts or when spawned
@@ -24,6 +23,7 @@ void AFlyingEnemy::BeginPlay()
 	Super::BeginPlay();
 	TargetActor = UGameplayStatics::GetPlayerPawn(GetWorld(), 0);
 	IsDead = false;
+	
 }
 
 // Called every frame
@@ -34,14 +34,89 @@ void AFlyingEnemy::Tick(float DeltaTime)
 	{
 		if (!IsDead)
 		{
-			MoveToTarget();
-			FaceTarget(DeltaTime);
-
 			float DistanceToPlayer = FVector::Dist(GetActorLocation(), TargetActor->GetActorLocation());
+				
+			if (!IsAttacking)
+			{
+				MoveToTarget();
+			}
 
-			if (DistanceToPlayer < AcceptanceRadius)
+			FaceTarget(DeltaTime);
+			
+			if (DistanceToPlayer <= AttackRange)
 			{
 				AttackPlayer();
+			}
+
+			FVector Start = GetActorLocation();
+			FVector TargetLocation = TargetActor->GetActorLocation();
+			FVector End = TargetLocation;
+			FVector DirectionToTarget = (TargetLocation - Start).GetSafeNormal();
+
+			FHitResult Hit;
+			FCollisionQueryParams Params;
+			Params.AddIgnoredActor(this);
+
+			bool bHit = GetWorld()->LineTraceSingleByChannel(Hit, Start, End, ECC_Visibility, Params);
+
+			switch (CurrentState)
+			{
+			case EFlyAIState::MovingToPlayer:
+				if (bHit && Hit.GetActor())
+				{
+					float ObstacleTopZ = Hit.ImpactPoint.Z + 300.f;
+					float PlayerZ = TargetLocation.Z;
+
+					if (ObstacleTopZ > Start.Z + 100.f) // obstacle is tall
+					{
+						TargetAscendZ = FMath::Max(PlayerZ + 200.f, ObstacleTopZ);
+						CurrentState = EFlyAIState::AscendingOverObstacle;
+						break;
+					}
+				}
+
+				MoveInDirection(DirectionToTarget, DeltaTime);
+				break;
+			case EFlyAIState::AscendingOverObstacle:
+
+				if(Start.Z<TargetAscendZ)
+				{
+					FVector Up = FVector::UpVector;
+					MoveInDirection(Up, DeltaTime);
+       			}
+
+				else
+				{
+					CurrentState = EFlyAIState::DivingAtPlayer;
+				}
+
+				break;
+
+
+			case EFlyAIState::DivingAtPlayer:
+
+				bool ObstacleStillThere = GetWorld()->LineTraceSingleByChannel(Hit, Start, TargetLocation, ECC_Visibility, Params);
+
+				if (ObstacleStillThere && Hit.GetActor())
+				{
+					float ObstacleTopZ = Hit.ImpactPoint.Z + 300.f;
+					float PlayerZ = TargetLocation.Z;
+
+					if (ObstacleTopZ > Start.Z + 100.f)
+					{
+						TargetAscendZ = FMath::Max(PlayerZ + 200.f, ObstacleTopZ);
+						CurrentState = EFlyAIState::AscendingOverObstacle;
+						break;
+					}
+				}
+
+				if ((TargetLocation - Start).Size() < 200.f)
+				{
+					CurrentState = EFlyAIState::MovingToPlayer;
+				}
+
+				MoveInDirection(DirectionToTarget, DeltaTime);
+				break;
 			}
 		}
 	}
@@ -50,8 +125,6 @@ void AFlyingEnemy::Tick(float DeltaTime)
 	{
 		MovementSpeed = 0.0f;
 	}
-
-	
 }
 
 void AFlyingEnemy::FaceTarget(float DeltaTime)
@@ -70,23 +143,82 @@ void AFlyingEnemy::FaceTarget(float DeltaTime)
 void AFlyingEnemy::MoveToTarget()
 {
 	if (!TargetActor) return;
+	
+	if (!Wall)
+	{
+		FVector Direction = (TargetActor->GetActorLocation() - GetActorLocation()).GetSafeNormal();
+		FVector Location = GetActorLocation() + Direction * MovementSpeed * GetWorld()->GetDeltaSeconds();
+		SetActorLocation(Location);
+		MovementSpeed = 400.0f;
+	}
+	
+	
+	
 
-	FVector Direction = (TargetActor->GetActorLocation() - GetActorLocation()).GetSafeNormal();
-	FVector NewLocation = GetActorLocation() + Direction * MovementSpeed * GetWorld()->GetDeltaSeconds();
-	SetActorLocation(NewLocation);
-	MovementSpeed = 400.0f;
+	/*if (hit)
+	{
+		Wall = true;
+		FVector Left = FVector::CrossProduct(FVector::UpVector, Forward).GetSafeNormal();
+		FVector Right = FVector::CrossProduct(Forward, FVector::UpVector).GetSafeNormal();
+
+		bool LeftClear = !GetWorld()->LineTraceTestByChannel(Start, Start + Left * 200.f, ECC_Visibility, Params);
+		bool RightClear = !GetWorld()->LineTraceTestByChannel(Start, Start + Right * 200.f, ECC_Visibility, Params);
+
+		FVector AvoidDirection = FVector::ZeroVector;
+
+		DrawDebugLine(GetWorld(), Start, End, FColor::Red, false, 1.0f, 0, 2.0f);
+
+		if (LeftClear)
+		{
+			AvoidDirection = Left;
+			DrawDebugLine(GetWorld(), Start, Start + Left * 200.f, FColor::Green, false, 1.0f, 0, 2.0f);
+		}
+
+		else if (RightClear)
+		{
+			AvoidDirection = Right;
+			DrawDebugLine(GetWorld(), Start, Start + Right * 200.f, FColor::Blue, false, 1.0f, 0, 2.0f);
+		}
+
+		else
+		{
+			AvoidDirection = -Forward;
+			DrawDebugLine(GetWorld(), Start, Start - Forward * 200.f, FColor::Purple, false, 1.0f, 0, 2.0f);
+		}
+
+	}
+
+	else
+	{
+		Wall = false;
+		FVector NewLocation = GetActorLocation() + Forward * MovementSpeed * GetWorld()->GetDeltaSeconds();
+		SetActorLocation(NewLocation);
+
+		DrawDebugLine(GetWorld(), Start, End, FColor::Red, false, 1.0f, 0, 2.0f);
+	*/
+
 }
+
+
 
 void AFlyingEnemy::AttackPlayer()
 {
 	IsAttacking = true;
+	MovementSpeed = 0.0f;
 	PlayAnimMontage(AttackAnimMontage);
-	GetWorldTimerManager().SetTimer(AttackTime, this, &AFlyingEnemy::ResetAttack, 2.0f, false);
+	GetWorldTimerManager().SetTimer(AttackTime, this, &AFlyingEnemy::ResetAttack, 1.0f, false);
+
 }
 
 void AFlyingEnemy::ResetAttack()
 {
 	IsAttacking = false;
+}
+
+void AFlyingEnemy::MoveInDirection(const FVector& Direction, float DeltaTime)
+{
+	FVector NewLocation = GetActorLocation() + Direction * MovementSpeed * DeltaTime;
+	SetActorLocation(NewLocation);
 }
 
 
