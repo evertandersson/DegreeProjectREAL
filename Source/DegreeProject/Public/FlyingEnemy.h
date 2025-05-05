@@ -7,6 +7,15 @@
 #include "NPC.h"
 #include "FlyingEnemy.generated.h"
 
+
+UENUM(BlueprintType)
+enum class EFlyAIState: uint8
+{
+	MovingToPlayer  UMETA(DisplayName = "Moving To Player"),
+	AscendingOverObstacle UMETA(DisplayName = "Ascending Over Obstacle"),
+	DivingAtPlayer  UMETA(DisplayName = "Diving At Player")
+};
+
 UCLASS()
 class DEGREEPROJECT_API AFlyingEnemy : public ANPC
 {
@@ -19,6 +28,8 @@ public:
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+
+	EFlyAIState CurrentState = EFlyAIState::MovingToPlayer;
 
 public:	
 	// Called every frame
@@ -53,6 +64,12 @@ public:
 	UAnimMontage* AttackAnimMontage;
 
 	FTimerHandle AttackTime;
+
+	void MoveInDirection(const FVector& Direction, float DeltaTime);
+
+private:
+
+	float TargetAscendZ = 0.f;
 
 	/*UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Health")
 	void HandleDeath();
