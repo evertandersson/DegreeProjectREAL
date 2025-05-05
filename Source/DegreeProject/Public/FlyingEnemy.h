@@ -50,9 +50,6 @@ public:
 	bool IsDead;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "AI")
-	bool Wall;
-
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "AI")
 	bool IsAttacking;
 
 	void AttackPlayer();
@@ -60,9 +57,6 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animation")
 	UAnimMontage* AttackAnimMontage;
-
-	UPROPERTY(VisibleAnywhere)
-	USkeletalMeshComponent* MeshComp;
 
 	FTimerHandle AttackTime;
 
