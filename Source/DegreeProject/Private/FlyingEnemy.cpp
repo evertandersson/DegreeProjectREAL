@@ -35,13 +35,9 @@ void AFlyingEnemy::Tick(float DeltaTime)
 		if (!IsDead)
 		{
 			float DistanceToPlayer = FVector::Dist(GetActorLocation(), TargetActor->GetActorLocation());
-				
 			
-
 			FaceTarget(DeltaTime);
 			
-			
-
 			FVector Start = GetActorLocation();
 			FVector TargetLocation = TargetActor->GetActorLocation();
 			FVector End = TargetLocation;
@@ -57,13 +53,12 @@ void AFlyingEnemy::Tick(float DeltaTime)
 			{
 			case EFlyAIState::MovingToPlayer:
 
-				MovementSpeed = 400.0f;
 				if (bHit && Hit.GetActor())
 				{
 					float ObstacleTopZ = Hit.ImpactPoint.Z + 300.f;
 					float PlayerZ = TargetLocation.Z;
 
-					if (ObstacleTopZ > Start.Z + 100.f) // obstacle is tall
+					if (ObstacleTopZ > Start.Z + 100.f) 
 					{
 						TargetAscendZ = FMath::Max(PlayerZ + 200.f, ObstacleTopZ);
 						CurrentState = EFlyAIState::AscendingOverObstacle;
@@ -111,11 +106,6 @@ void AFlyingEnemy::Tick(float DeltaTime)
 					}
 				}
 
-				/*if ((TargetLocation - Start).Size() < 200.f)
-				{
-					CurrentState = EFlyAIState::MovingToPlayer;
-				}*/
-
 				if ((TargetLocation - Start).Size() < 150.f)
 				{
 					CurrentState = EFlyAIState::AttackPlayer;
@@ -139,11 +129,6 @@ void AFlyingEnemy::Tick(float DeltaTime)
 				break;
 			}
 		}
-	}
-
-	if (IsDead)
-	{
-		MovementSpeed = 0.0f;
 	}
 }
 
