@@ -349,12 +349,6 @@ void ADegreeProjectCharacter::Jump()
 	Super::Jump();
 }
 
-void ADegreeProjectCharacter::Landed(const FHitResult& Hit)
-{
-	Super::Landed(Hit);
-	bCanJump = true;
-}
-
 void ADegreeProjectCharacter::Dash()
 {
 	if (!bIsDashing && bCanDash && GetCharacterMovement()->GetLastInputVector() != FVector::ZeroVector) // change value if needed
@@ -407,7 +401,7 @@ void ADegreeProjectCharacter::Dash()
 
 void ADegreeProjectCharacter::StopDash()
 {
-	if (bIsDashing)
+	if (bIsDashing && !bIsDead)
 	{
 		bIsDashing = false;
 
@@ -427,7 +421,11 @@ void ADegreeProjectCharacter::ResetDashCoolDown()
 }
 void ADegreeProjectCharacter::SwitchToNextWeapon()
 {
+<<<<<<< HEAD
 	if (WeaponInventory)
+=======
+	if (WeaponInventory && !bIsDead) // guard clause
+>>>>>>> main
 	{
 		if (EquipItemSFX)
 		{
@@ -506,6 +504,11 @@ void ADegreeProjectCharacter::ToggleCanJump_Implementation(bool CanJump)
 	bCanJump = CanJump;
 }
 
+void ADegreeProjectCharacter::ToggleIsMidAir_Implementation(bool bIsMidAir)
+{
+	bIsJumpAttackMidAir = bIsMidAir;
+}
+
 void ADegreeProjectCharacter::IsInStorm_Implementation(bool bEnable)
 {
 }
@@ -580,10 +583,12 @@ void ADegreeProjectCharacter::StandStillForGrappleHook_Implementation(bool bEndA
 	if (bEndAbility)
 	{
 		GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking);
+		MantleComponent->bCanClimb = true;
 		return;
 	}
 
 	GrapplingComponent->bIsRotatingTowardsGrapplePoint = true;
+	MantleComponent->bCanClimb = false;
 
 	if (!GetCharacterMovement()->IsFalling())
 	{
