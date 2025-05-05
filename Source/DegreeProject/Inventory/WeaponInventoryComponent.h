@@ -52,4 +52,7 @@ public:
 	void SwitchWeapon(int32 Direction);
 
 	AWeaponBase* GetEquippedWeapon() const { return EquippedWeapon; }
+
+	UFUNCTION(BlueprintCallable, Category = "Combat")
+	void TryActivateCombo(int32 ComboIndex, AActor* InstigatorActor);
 };

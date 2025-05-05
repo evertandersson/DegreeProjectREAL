@@ -45,5 +45,5 @@ public:
 	UTexture2D* GetWeaponIcon() const;
 
 	UFUNCTION(BlueprintCallable, Category = "Combat")
-	void ActivateCombo(int32 ComboIndex, AActor* Instigator);
+	void ActivateCombo(int32 ComboIndex, AActor* ComboInstigator);
 };

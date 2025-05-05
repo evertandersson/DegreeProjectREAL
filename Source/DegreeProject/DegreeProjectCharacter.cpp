@@ -249,6 +249,8 @@ void ADegreeProjectCharacter::SetupPlayerInputComponent(UInputComponent* PlayerI
 
 		EnhancedInputComponent->BindAction(PickUpWeapons, ETriggerEvent::Triggered, this, &ADegreeProjectCharacter::TryPickupWeapon);
 
+		EnhancedInputComponent->BindAction(AttackAction, ETriggerEvent::Triggered, this, &ADegreeProjectCharacter::TriggerCombo);
+
 		//Dashing Ensure the abilitySystemComponent is valid
 		if (AbilitySystemComponent && PlayerInputComponent)
 		{
@@ -349,6 +351,25 @@ void ADegreeProjectCharacter::Jump()
 	Super::Jump();
 }
 
+void ADegreeProjectCharacter::TriggerCombo()
+{
+	if (!WeaponInventory)return;
+
+	AWeaponBase* EquippedWeapon = WeaponInventory->GetEquippedWeapon();
+	if (!EquippedWeapon) return;
+
+	if (UAbilitySystemComponent* ASC = GetAbilitySystemComponent())
+	{
+		for (TSubclassOf<UGameplayAbility> AbilityClass : EquippedWeapon->ComboAbilities)
+		{
+			if (AbilityClass)
+			{
+				ASC->TryActivateAbilityByClass(AbilityClass);
+			}
+		}
+	}
+}
+
 void ADegreeProjectCharacter::Dash()
 {
 	if (!bIsDashing && bCanDash && GetCharacterMovement()->GetLastInputVector() != FVector::ZeroVector) // change value if needed
@@ -421,11 +442,8 @@ void ADegreeProjectCharacter::ResetDashCoolDown()
 }
 void ADegreeProjectCharacter::SwitchToNextWeapon()
 {
-<<<<<<< HEAD
 	if (WeaponInventory)
-=======
 	if (WeaponInventory && !bIsDead) // guard clause
->>>>>>> main
 	{
 		if (EquipItemSFX)
 		{

@@ -157,8 +157,6 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attributes")
 	int MaxStat = 99; //Change later if needed
 
-
-
 	//Dash mechanic
 	void Dash();
 	void StopDash();
@@ -262,6 +260,8 @@ private:
 
 	void TryPickupWeapon();
 
+	UFUNCTION(BlueprintCallable, Category = "Attack Combo")
+	void TriggerCombo();
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Inventory", meta = (AllowPrivateAccess = "true"))
 	UWeaponInventoryComponent* WeaponInventory;
