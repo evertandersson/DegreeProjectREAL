@@ -13,4 +13,8 @@ public:
 	// Function to update the weapon icon texture
 	UFUNCTION(BlueprintCallable, Category = "Weapon Slot")
 	void UpdateWeaponIcon(UTexture2D* NewWeaponTexture);
+
+	UFUNCTION(BlueprintCallable, Category = "Weapon Slot")
+	void UpdateHealingIcon(UTexture2D* NewHealingTexture);
+
 };

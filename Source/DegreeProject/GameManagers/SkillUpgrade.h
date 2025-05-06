@@ -33,4 +33,6 @@ struct FSkillUpgrade
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Upgrade")
 	UTexture2D* UpgradeImage;
+
+
 };
