@@ -4,6 +4,9 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "AbilitySystemComponent.h"
+#include "GameplayAbilitySpec.h"
+#include "ComboAbilityBase.h"
 #include "WeaponBase.generated.h"
 
 UCLASS()
@@ -23,6 +26,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Inventory")
 	UTexture2D* WeaponIcon;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Abilities")
+    TArray<TSubclassOf<UComboAbilityBase>> ComboAbilities;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animations")
 	TArray<UAnimMontage*> CombatAnims;
 
@@ -37,4 +43,7 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "UI")
 	UTexture2D* GetWeaponIcon() const;
+
+	UFUNCTION(BlueprintCallable, Category = "Combat")
+	void ActivateCombo(int32 ComboIndex, AActor* ComboInstigator);
 };

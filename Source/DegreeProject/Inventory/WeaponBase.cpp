@@ -1,7 +1,9 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-
 #include "WeaponBase.h"
+#include "AbilitySystemComponent.h"
+#include "AbilitySystemGlobals.h"
+#include "GameplayAbilitySpec.h"
 
 // Sets default values
 AWeaponBase::AWeaponBase()
@@ -23,5 +25,24 @@ void AWeaponBase::BeginPlay()
 UTexture2D* AWeaponBase::GetWeaponIcon() const
 {
 	return WeaponIcon;  // WeaponIcon would be a UTexture2D* variable in your weapon class
+}
+
+void AWeaponBase::ActivateCombo(int32 ComboIndex, AActor* ComboInstigator)
+{
+    if (!CombatAnims.IsValidIndex(ComboIndex) || !ComboAbilities.IsValidIndex(ComboIndex))
+    {
+        UE_LOG(LogTemp, Error, TEXT("Invalid combo index."));
+        return;
+    }
+
+  if (UAbilitySystemComponent* ASC = UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(ComboInstigator))
+  {
+      TSubclassOf<UComboAbilityBase> AbilityClass = ComboAbilities[ComboIndex];
+      if (ASC->TryActivateAbilityByClass(AbilityClass))
+      {
+          UE_LOG(LogTemp, Log, TEXT("Activated Combo %d from weapon."), ComboIndex);
+          ASC->TryActivateAbilityByClass(AbilityClass);
+      }
+  }
 }
 

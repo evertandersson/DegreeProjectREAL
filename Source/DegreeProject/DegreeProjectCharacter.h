@@ -157,8 +157,6 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attributes")
 	int MaxStat = 99; //Change later if needed
 
-
-
 	//Dash mechanic
 	void Dash();
 	void StopDash();
@@ -247,6 +245,7 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Audio")
 	UAudioComponent* AudioComponent;
 
+
 	virtual void NotifyControllerChanged() override;
 
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
@@ -260,6 +259,9 @@ private:
 	UUserWidget* WeaponInventoryWidget;
 
 	void TryPickupWeapon();
+
+	UFUNCTION(BlueprintCallable, Category = "Attack Combo")
+	void TriggerCombo();
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Inventory", meta = (AllowPrivateAccess = "true"))
 	UWeaponInventoryComponent* WeaponInventory;
@@ -294,6 +296,9 @@ public:
 
 	UFUNCTION()
 	void SwitchToNextWeapon();
+
+	UFUNCTION()
+	void UpdateAttackAnims();
 
 	void TogglePauseMenu();
 	void ToggleGameOver();

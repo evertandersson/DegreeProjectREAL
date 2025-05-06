@@ -145,3 +145,11 @@ void UWeaponInventoryComponent::SwitchWeapon(int32 Direction)
 	GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Green, DebugMessage);
 }
 
+void UWeaponInventoryComponent::TryActivateCombo(int32 ComboIndex, AActor* InstigatorActor)
+{
+	if (EquippedWeapon)
+	{
+		EquippedWeapon->ActivateCombo(ComboIndex, InstigatorActor);
+	}
+}
+
