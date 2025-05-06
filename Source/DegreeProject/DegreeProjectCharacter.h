@@ -127,6 +127,8 @@ public:
 	void ToggleCanJump_Implementation(bool CanJump);
 
 	void ToggleIsMidAir_Implementation(bool bIsMidAir);
+	
+	void ToggleCanClimb_Implementation(bool bCanClimb);
 
 	virtual void IsInStorm_Implementation(bool bEnable) override;
 

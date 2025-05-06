@@ -34,6 +34,9 @@ public:
 	void ToggleIsMidAir(bool bIsMidAir);
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
+	void ToggleCanClimb(bool bCanClimb);
+
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
 	void IsInStorm(bool bEnable);
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)

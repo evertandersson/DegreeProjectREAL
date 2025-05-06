@@ -527,6 +527,11 @@ void ADegreeProjectCharacter::ToggleIsMidAir_Implementation(bool bIsMidAir)
 	bIsJumpAttackMidAir = bIsMidAir;
 }
 
+void ADegreeProjectCharacter::ToggleCanClimb_Implementation(bool bCanClimb)
+{
+	MantleComponent->bCanClimb = bCanClimb;
+}
+
 void ADegreeProjectCharacter::IsInStorm_Implementation(bool bEnable)
 {
 }
