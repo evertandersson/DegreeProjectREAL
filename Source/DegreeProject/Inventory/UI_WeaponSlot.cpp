@@ -12,3 +12,15 @@ void UUI_WeaponSlot::UpdateWeaponIcon(UTexture2D* NewWeaponTexture)
 		}
 	}
 }
+
+void UUI_WeaponSlot::UpdateHealingIcon(UTexture2D* NewWeaponTexture)
+{
+	if (NewWeaponTexture)
+	{
+		UImage* HealingIcon = Cast<UImage>(GetWidgetFromName(TEXT("HealingIcon")));  // Assuming your Image is named "WeaponIcon"
+		if (HealingIcon)
+		{
+			HealingIcon->SetBrushFromTexture(NewWeaponTexture);
+		}
+	}
+}
