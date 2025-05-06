@@ -21,6 +21,17 @@ public:
 	UFUNCTION(BlueprintPure, Category = "Spawning")
 	FVector GetRandomPointInVolume();
 
+	UPROPERTY(EditAnywhere, Category = "Spawning")
+	TArray<TSubclassOf<AActor>> PickupClasses;
+
+private:
+	FTimerHandle SpawnTimerHandle;
+
+	UPROPERTY(EditAnywhere, Category = "Spawning")
+	float SpawnInterval = 5.0f;
+
+	void SpawnPickup();
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
