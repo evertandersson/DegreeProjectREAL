@@ -23,7 +23,7 @@ public:
 	TArray<FEnemyRoundData> AllRounds;
 
 	// Current round number
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 	int CurrentRound;
 
 	// Number of enemies killed in the current round
