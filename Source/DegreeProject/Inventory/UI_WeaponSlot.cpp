@@ -8,6 +8,7 @@ void UUI_WeaponSlot::UpdateWeaponIcon(UTexture2D* NewWeaponTexture)
 		UImage* WeaponImage = Cast<UImage>(GetWidgetFromName(TEXT("WeaponIcon")));  // Assuming your Image is named "WeaponIcon"
 		if (WeaponImage)
 		{
+			WeaponImage->SetVisibility(ESlateVisibility::Visible);
 			WeaponImage->SetBrushFromTexture(NewWeaponTexture);
 		}
 	}
@@ -20,6 +21,7 @@ void UUI_WeaponSlot::UpdateHealingIcon(UTexture2D* NewWeaponTexture)
 		UImage* HealingIcon = Cast<UImage>(GetWidgetFromName(TEXT("HealingIcon")));  // Assuming your Image is named "WeaponIcon"
 		if (HealingIcon)
 		{
+			HealingIcon->SetVisibility(ESlateVisibility::Visible);
 			HealingIcon->SetBrushFromTexture(NewWeaponTexture);
 		}
 	}
