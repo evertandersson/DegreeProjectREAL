@@ -15,8 +15,8 @@ public:
 	// Sets default values for this actor's properties
 	APickupSpawner();
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Spawning")
-	class UBoxComponent* SpawnArea;
+	UPROPERTY(EditAnywhere, Category = "Spawning")
+	FBox SpawnBounds = FBox(FVector(-1000, -1000, 0), FVector(10000, 10000, 2000));
 
 	UFUNCTION(BlueprintPure, Category = "Spawning")
 	FVector GetRandomPointInVolume();
@@ -35,6 +35,8 @@ private:
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+
+	bool FindGroundBelow(FVector StartLocation, FVector& OutGroundLocation);
 
 public:	
 	// Called every frame
