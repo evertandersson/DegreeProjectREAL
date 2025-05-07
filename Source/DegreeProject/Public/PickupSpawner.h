@@ -16,7 +16,7 @@ public:
 	APickupSpawner();
 
 	UPROPERTY(EditAnywhere, Category = "Spawning")
-	FBox SpawnBounds = FBox(FVector(-1000, -1000, 0), FVector(10000, 10000, 2000));
+	FBox SpawnBounds = FBox(FVector(-16000, -14000, 0), FVector(13000, 10000, 4000));
 
 	UFUNCTION(BlueprintPure, Category = "Spawning")
 	FVector GetRandomPointInVolume();
