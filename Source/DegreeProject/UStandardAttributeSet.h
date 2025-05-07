@@ -72,6 +72,8 @@ public:
 	FGameplayAttributeData Attack_Speed;
 	ATTRIBUTE_ACCESSORS(UStandardAttributeSet, Attack_Speed);
 
+	bool bIsCriticalHit;
+
 protected:
 	UFUNCTION()
 	void OnRep_CurrentHealth(const FGameplayAttributeData& OldCurrentHealth);

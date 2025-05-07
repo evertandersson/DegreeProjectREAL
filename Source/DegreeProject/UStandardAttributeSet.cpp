@@ -16,9 +16,9 @@ UStandardAttributeSet::UStandardAttributeSet() :
 	MaxMana(100),
 	CurrentStamina(100),
 	MaxStamina(100),
-	Crit_Chance(4),
+	Crit_Chance(40),
 	Crit_Damage(60),
-	Damage(40)
+	Damage(30)
 {
 
 	// Set default values for health attributes
