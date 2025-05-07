@@ -11,17 +11,15 @@ APickupSpawner::APickupSpawner()
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
-	SpawnArea = CreateDefaultSubobject<UBoxComponent>(TEXT("SpawnArea"));
-	RootComponent = SpawnArea;
-
 }
 
 FVector APickupSpawner::GetRandomPointInVolume()
 {
-	FVector Origin = SpawnArea->Bounds.Origin;
-	FVector Extent = SpawnArea->Bounds.BoxExtent;
-	return UKismetMathLibrary::RandomPointInBoundingBox(Origin, Extent);
+	return UKismetMathLibrary::RandomPointInBoundingBox(SpawnBounds.GetCenter(), SpawnBounds.GetExtent());
 }
+
+
+
 
 void APickupSpawner::SpawnPickup()
 {
@@ -32,10 +30,15 @@ void APickupSpawner::SpawnPickup()
 
 		if (SelectedPickupClass)
 		{
-			FVector SpawnLocation = GetRandomPointInVolume();
-			FRotator SpawnRotation = FRotator::ZeroRotator;
+			FVector RandomPoint = GetRandomPointInVolume();
+			FVector GroundLocation;
 
-			GetWorld()->SpawnActor<AActor>(SelectedPickupClass, SpawnLocation, SpawnRotation);
+			if (FindGroundBelow(RandomPoint, GroundLocation))
+			{
+				FVector AdjustedLocation = GroundLocation + FVector(0, 0, 50.0f);
+				FRotator SpawnRotation = FRotator::ZeroRotator;
+				GetWorld()->SpawnActor<AActor>(SelectedPickupClass, AdjustedLocation, SpawnRotation);
+			}
 		}
 	}
 }
@@ -45,6 +48,23 @@ void APickupSpawner::BeginPlay()
 {
 	Super::BeginPlay();
 	GetWorld()->GetTimerManager().SetTimer(SpawnTimerHandle, this, &APickupSpawner::SpawnPickup, SpawnInterval, true);
+}
+
+bool APickupSpawner::FindGroundBelow(FVector StartLocation, FVector& OutGroundLocation)
+{
+	FHitResult Hit;
+	FVector EndLocation = StartLocation - FVector(0,0,5000);
+
+	FCollisionQueryParams Params;
+	Params.AddIgnoredActor(this);
+
+	bool bHit = GetWorld()->LineTraceSingleByChannel(Hit, StartLocation, EndLocation, ECC_Visibility, Params);
+	if (bHit)
+	{
+		OutGroundLocation = Hit.Location;
+	}
+
+	return bHit;
 }
 
 // Called every frame
