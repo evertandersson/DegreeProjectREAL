@@ -16,7 +16,7 @@ UStandardAttributeSet::UStandardAttributeSet() :
 	MaxMana(100),
 	CurrentStamina(100),
 	MaxStamina(100),
-	Crit_Chance(40),
+	Crit_Chance(10),
 	Crit_Damage(60),
 	Damage(30)
 {
