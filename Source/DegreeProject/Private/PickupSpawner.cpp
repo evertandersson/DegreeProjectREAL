@@ -3,6 +3,7 @@
 
 #include "PickupSpawner.h"
 #include "Components/BoxComponent.h"
+#include "DrawDebugHelpers.h"
 #include "Kismet/KismetMathLibrary.h"
 
 // Sets default values
@@ -48,6 +49,15 @@ void APickupSpawner::BeginPlay()
 {
 	Super::BeginPlay();
 	GetWorld()->GetTimerManager().SetTimer(SpawnTimerHandle, this, &APickupSpawner::SpawnPickup, SpawnInterval, true);
+	/*DrawDebugBox(
+		GetWorld(),
+		SpawnBounds.GetCenter(),
+		SpawnBounds.GetExtent(),
+		FColor::Green,
+		true,  
+		-1.0f, 
+		0,
+		10.0f);  Uncomment to see the spawn area*/
 }
 
 bool APickupSpawner::FindGroundBelow(FVector StartLocation, FVector& OutGroundLocation)
