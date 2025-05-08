@@ -79,7 +79,6 @@ void UStandardAttributeSet::ResetDefance(float Number)
 #pragma endregion
 
 #pragma region Define Properties REMOVE BEFORE MAKING FULL BUILD
-// USELESS FUNCTION, DONT NEED NETWORKING PROPERTIES FOR SINGLE PLAYER GAME
 
 void UStandardAttributeSet::GetLifetimeReplicatedProps(TArray <FLifetimeProperty>& OutLifetimeProps) const
 {

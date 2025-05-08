@@ -57,8 +57,6 @@ class ADegreeProjectCharacter : public ACharacter, public IAbilitySystemInterfac
 {
 	GENERATED_BODY()
 
-	#pragma region COMPOENTS
-	
 	/** Camera boom positioning the camera behind the character */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	USpringArmComponent* CameraBoom;
@@ -66,9 +64,6 @@ class ADegreeProjectCharacter : public ACharacter, public IAbilitySystemInterfac
 	/** Follow camera */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	UCameraComponent* FollowCamera;
-	#pragma endregion
-
-	#pragma region PLAYER INPUT AND MAPPINGCONTEXT
 
 	/** MappingContext */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
@@ -104,7 +99,6 @@ class ADegreeProjectCharacter : public ACharacter, public IAbilitySystemInterfac
 
 	UPROPERTY(EditAnywhere, BlueprintReadonly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* PickUpWeapons;
-#pragma endregion
 
 public:
 	ADegreeProjectCharacter();
@@ -119,7 +113,7 @@ public:
 	UFUNCTION(BlueprintImplementableEvent, Category = "Health")
 	void OnHealthChanged(float DeltaValue, const FGameplayTagContainer& EventTags);
 
-	#pragma region INTERFACE FUNCTIONS
+#pragma region Interface Functions
 
 	// Implement the interface function correctly
 	virtual void TakeDamage_Implementation(UAbilitySystemComponent* AbilitySystem) override;
@@ -152,15 +146,11 @@ public:
 
 #pragma endregion
 
-	#pragma region TOGGLE AIRBOURNE AND GRAPPLE DELAY FUNCTIONS
 	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent)
 	void ToggleIsAirbourne();
 
 	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent)
 	void CanDisableGrappleDelay();
-#pragma endregion
-
-	#pragma region MANA AND STAMINA REGENERATION
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attributes")
 	int MaxMana = 100;
@@ -169,36 +159,21 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attributes")
 	int MaxStat = 99; //Change later if needed
 
-	UPROPERTY(EditAnywhere, Category = "Attributes")
-	float RegenDelay = 0.1f;
-	UPROPERTY(EditAnywhere, Category = "Attributes")
-	float StaminaRegenRate = 5.0f;
-	UPROPERTY(EditAnywhere, Category = "Attributes")
-	float ManaRegenRate = 5.0f;
-	UPROPERTY(EditAnywhere, Category = "Attributes")
-	float RegenInterval = 1.0f;
-
-#pragma endregion
-
-	#pragma region DASH FUNCTION
 	//Dash mechanic
 	void Dash();
 	void StopDash();
 	void ResetDashCoolDown();
-#pragma endregion
 
-	#pragma region GET/GIVE DEFAULT ABILITIES AND EFFECTS
 	virtual void PossessedBy(AController* NewController) override;
 	virtual void OnRep_PlayerState() override;
 	virtual void GiveDefualtAbilities();
+
 	UStandardAttributeSet* GetAttributeSet();
+
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Abilities")
 	TSubclassOf<class UGameplayEffect> DefaultEffect;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Abilities")
 	TArray<TSubclassOf<class UGameplayAbility>> DefaultAbilities;
-#pragma endregion
-
-	#pragma region COMBAT
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	FGameplayTagContainer CancelAttacks;
@@ -208,60 +183,26 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Combat")
 	UCapsuleComponent* SwordHitbox;
 
-	UFUNCTION(BlueprintCallable, Category = "Attack Combo")
-	void TriggerCombo();
-
-	UFUNCTION()
-	void UpdateAttackAnims();
-
-	UPROPERTY(BlueprintReadWrite, VisibleAnywhere)
-	bool bIsHoldingAttack;
-	UPROPERTY(BlueprintReadWrite, VisibleAnywhere)
-	bool bCanAttack;
-	UPROPERTY(BlueprintReadWrite, VisibleAnywhere)
-	bool bIsJumpAttackMidAir = false;
-
-	UFUNCTION()
-	void SwitchToNextWeapon();
-
-#pragma endregion
 
 protected:
-	#pragma region PROTECTED COMPONENTS
 	// Ability System Component that manages attributes and effects.
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Abilities", Replicated, meta = (AllowPrivateAccess = "true"))
 	UAbilitySystemComponent* AbilitySystemComponent;
+
 	// Attribute Set that stores and manages health and other attributes for replication.
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Attributes", Replicated, meta = (AllowPrivateAccess = "true"))
 	UStandardAttributeSet* AttributeSet;
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	UGrapplingComponent* GrapplingComponent;
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	UMantleComponent* MantleComponent;
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	UWeaponHolderComponent* WeaponHolderComponent;
 
-	UPROPERTY(VisibleAnywhere)
-	class UStaticMeshComponent* SwordMesh;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat|Anims")
-	TArray<UAnimMontage*> CombatAnims;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "PickUp|Anims")
-	class UAnimMontage* PickUpAnim;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Dash|VFX")
-	UNiagaraSystem* NiagaraDashVFX;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Jump|SFX")
-	USoundCue* JumpSFX;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Inventory|SFX")
-	USoundCue* EquipItemSFX;
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Audio")
-	UAudioComponent* AudioComponent;
 
-	virtual void NotifyControllerChanged() override;
-
-	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
-#pragma endregion
-
-	#pragma region PROTECTED FUNCTIONS
 	// Initializes the character's attributes when the game starts.
 	void InitializeAttributes();
 
@@ -281,19 +222,41 @@ protected:
 	virtual void Jump() override;
 
 	void PlayerKilled();
-#pragma endregion
-
-	#pragma region PROTECTED VARIABLES
 	int Damage;
+
 	int Health;
+
+	UPROPERTY(VisibleAnywhere)
+	class UStaticMeshComponent* SwordMesh;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat|Anims")
+	TArray<UAnimMontage*> CombatAnims;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "PickUp|Anims")
+	class UAnimMontage* PickUpAnim;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Dash|VFX")
+	UNiagaraSystem* NiagaraDashVFX;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Jump|SFX")
+	USoundCue* JumpSFX;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Jump|SFX")
+	USoundCue* DashSFX;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Inventory|SFX")
+	USoundCue* EquipItemSFX;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Audio")
+	UAudioComponent* AudioComponent;
+
+
+	virtual void NotifyControllerChanged() override;
+
+	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 	UPROPERTY(EditAnywhere);
 	bool bCanRegenStamina = true;
-#pragma endregion
-
 private:
-
-	#pragma region PRIVATE INVENTORY/PICKUP FUNCTIONS
 	UPROPERTY(EditDefaultsOnly, Category = "UI")
 	TSubclassOf<UUserWidget> WeaponInventoryWidgetClass;
 
@@ -301,27 +264,45 @@ private:
 
 	void TryPickupWeapon();
 
+	UFUNCTION(BlueprintCallable, Category = "Attack Combo")
+	void TriggerCombo();
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Inventory", meta = (AllowPrivateAccess = "true"))
 	UWeaponInventoryComponent* WeaponInventory;
 
-#pragma endregion
+	// Timer handle for stamina/mana regen
 
-	#pragma region PRIVATE ATTRIBUTE REGENERATION
 	
+	UPROPERTY(EditAnywhere, Category = "Attributes")
+	float RegenDelay = 0.1f;
+
+	// Regeneration amount per tick
+	UPROPERTY(EditAnywhere, Category = "Attributes")
+	float StaminaRegenRate = 5.0f;
+
+	UPROPERTY(EditAnywhere, Category = "Attributes")
+	float ManaRegenRate = 5.0f;
+
+	UPROPERTY(EditAnywhere, Category = "Attributes")
+	float RegenInterval = 1.0f; // Every second
+
+	// Function to restore stamina/mana
 	void RegenerateAttributes(float DeltaTime);
 	void StartUtilityRegen();
 	void RegenerateUtility();
-#pragma endregion
+
 
 public:
-	#pragma region CAMERA COMPONENTS
 	/** Returns CameraBoom subobject **/
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
 	/** Returns FollowCamera subobject **/
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
-#pragma endregion
 
-	#pragma region TOGGLE OVERLAY SCREENS
+	UFUNCTION()
+	void SwitchToNextWeapon();
+
+	UFUNCTION()
+	void UpdateAttackAnims();
 
 	void TogglePauseMenu();
 	void ToggleGameOver();
@@ -335,20 +316,20 @@ public:
 	UPauseMenuWidget* PauseMenuInstance;
 	UPROPERTY()
 	UGameOverWidget* GameOverInstance;
+	
+	UPROPERTY(BlueprintReadWrite, VisibleAnywhere)
+	bool bIsHoldingAttack;
 
-#pragma endregion
-
-	#pragma region BOOLEANS AND FLOATS FOR JUMP AND DASH
 	UPROPERTY(BlueprintReadWrite, VisibleAnywhere)
 	bool bCanJump;
 	UPROPERTY(BlueprintReadWrite, VisibleAnywhere)
 	bool bDidJump;
 	UPROPERTY(BlueprintReadWrite, VisibleAnywhere)
+	bool bCanAttack;
+	UPROPERTY(BlueprintReadWrite, VisibleAnywhere)
 	bool bIsDead = false;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Player)
-	bool bIsDashing = false;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Player)
-	bool bCanDash;
+	UPROPERTY(BlueprintReadWrite, VisibleAnywhere)
+	bool bIsJumpAttackMidAir = false;
 
 	/** When true, player wants to roll */
 	UPROPERTY(BlueprintReadOnly, Category = Character)
@@ -356,22 +337,25 @@ public:
 
 	UPROPERTY(EditAnywhere, Category = Player)
 	float DashSpeed = 1500.f;
+
 	UPROPERTY(EditAnywhere, Category = Player)
 	float DashCoolDown;
+
 	UPROPERTY(EditAnywhere, Category = Player)
 	float DashDuration;
-#pragma endregion
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Player)
+	bool bIsDashing = false;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Player)
+	bool bCanDash;
 
 private:
-	#pragma region SOME USELESS FUNCTIONS
+	FVector InitialLocation;  // Stores the location before attack starts
+	// Function to handle attribute changes
+
+	// Function to handle changes in health attributes
 	void HandleHealthChanged(const FOnAttributeChangeData& Data);
-	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
-#pragma endregion
-private:
-	#pragma region PRIVATE VARIABLES
-	float DefaultFriction;
-	float DefaultWalkSpeed;
-	float DefualtBreakFriction;
 
 	UPROPERTY(EditAnywhere, Category = Player)
 	float DashBreakFriction;
@@ -379,12 +363,22 @@ private:
 	UPROPERTY(EditAnywhere, Category = Player)
 	float DashFriction;
 
-	FVector InitialLocation;
+	// Specifies which properties should be replicated over the network
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+
+
+
+private:
+	
+
+	float DefaultFriction;
+	float DefaultWalkSpeed;
+	float DefualtBreakFriction;
 
 	FTimerHandle RegenTimerHandle;
 	FTimerHandle DeathTimerHandle;
 	FTimerHandle StaminaRegenTimerHandle;
 	FTimerHandle DashTimerHandle;
 	FTimerHandle CoolDownTimerHandle;
-#pragma endregion
 };
+

@@ -153,6 +153,7 @@ void ADegreeProjectCharacter::BeginPlay()
 	}
 
 	bCanDash = true;
+	bIsDashing = false;
 	bCanJump = true;
 
 	if (WeaponInventoryWidgetClass)
@@ -400,6 +401,12 @@ void ADegreeProjectCharacter::Dash()
 			}
 		}
 
+		if (DashSFX)
+		{
+			AudioComponent->SetSound(DashSFX);
+			AudioComponent->Play();
+		}
+
 		DefaultFriction = GetCharacterMovement()->GroundFriction;
 		DefaultWalkSpeed = GetCharacterMovement()->MaxWalkSpeed;
 		DefualtBreakFriction = GetCharacterMovement()->GroundFriction;
@@ -425,6 +432,7 @@ void ADegreeProjectCharacter::StopDash()
 	if (bIsDashing && !bIsDead)
 	{
 		bIsDashing = false;
+		bCanDash = false;
 
 		GetCharacterMovement()->GroundFriction = DefaultFriction;
 		GetCharacterMovement()->MaxWalkSpeed = DefaultWalkSpeed;
@@ -439,6 +447,7 @@ void ADegreeProjectCharacter::StopDash()
 void ADegreeProjectCharacter::ResetDashCoolDown()
 {
 	bCanDash = true;
+	bIsDashing = false;
 }
 void ADegreeProjectCharacter::SwitchToNextWeapon()
 {
