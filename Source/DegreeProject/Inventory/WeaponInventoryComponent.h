@@ -16,6 +16,9 @@ public:
 	// Sets default values for this actor's properties
 	UWeaponInventoryComponent();
 
+	UPROPERTY(BlueprintReadWrite)
+	UUserWidget* SlotWidget;
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -29,9 +32,6 @@ private:
 
 	UPROPERTY(VisibleAnywhere)
 	int32 EquippedWeaponIndex;
-
-	UPROPERTY()
-	UUserWidget* SlotWidget;
 
 	UPROPERTY(EditDefaultsOnly, Category = "UI")
 	TSubclassOf<UUserWidget> SlotWidgetClass;
