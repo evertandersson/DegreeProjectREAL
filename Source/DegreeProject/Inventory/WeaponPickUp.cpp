@@ -2,19 +2,25 @@
 
 #include "Inventory/WeaponPickup.h"
 #include "Components/SphereComponent.h"
+#include "Blueprint/UserWidget.h"
+#include "Components/WidgetComponent.h"
 #include "WeaponInventoryComponent.h"
 #include "DegreeProjectCharacter.h"
 
 // Sets default values
 AWeaponPickUp::AWeaponPickUp()
 {
- 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
+	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = false;
 
 	CollisionComponent = CreateDefaultSubobject<USphereComponent>(TEXT("CollisionComponent"));
 	CollisionComponent->InitSphereRadius(50.0f);
 	CollisionComponent->SetCollisionProfileName(TEXT("OverlapAllDynamic"));
 	RootComponent = CollisionComponent;
+
+    PickupWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("PickupWidget"));
+    PickupWidget->SetupAttachment(RootComponent);
+
 }
 
 // Called when the game starts or when spawned
@@ -30,6 +36,10 @@ void AWeaponPickUp::NotifyActorBeginOverlap(AActor* OtherActor)
 	if (Player)
 	{
 		OverlappingPlayer = Player;
+		if (PickupWidget)
+		{
+			PickupWidget->SetVisibility(true); 
+		}
 		UE_LOG(LogTemp, Warning, TEXT("Player can pick up weapon! Press E"));
 	}
 }
@@ -40,6 +50,10 @@ void AWeaponPickUp::NotifyActorEndOverlap(AActor* OtherActor)
 	if (Player && Player == OverlappingPlayer)
 	{
 		OverlappingPlayer = nullptr;
+		if (PickupWidget)
+		{
+			PickupWidget->SetVisibility(false);
+		}
 		UE_LOG(LogTemp, Warning, TEXT("Player left pickup range."));
 	}
 }

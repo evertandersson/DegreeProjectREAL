@@ -37,4 +37,6 @@ private:
 	TSubclassOf<AWeaponBase> WeaponClass;
 
 	ADegreeProjectCharacter* OverlappingPlayer;
+	UPROPERTY(EditAnywhere, Category = "Components")
+	class UWidgetComponent* PickupWidget;
 };
