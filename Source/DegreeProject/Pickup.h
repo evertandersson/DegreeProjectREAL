@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "TimerManager.h" 
+#include "NiagaraComponent.h"
 #include "UStandardAttributeSet.h"
 #include "Pickup.generated.h"
 
@@ -50,6 +51,9 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, Category = "Pickup")
 	float value = 1.0f;
+
+	UPROPERTY(Editanywhere)
+	UNiagaraComponent* vfx;
 
 	FTimerHandle TimerHandle;
 
