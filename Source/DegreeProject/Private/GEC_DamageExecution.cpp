@@ -78,10 +78,10 @@ void UGEC_DamageExecution::Execute_Implementation(const FGameplayEffectCustomExe
 		DamageDone *= (1 + (CritDamage / 100.0f));
 
 		// Ensure critical damage is greater than 50
-		if (DamageDone < 50.0f)
-		{
-			DamageDone = 50.f;
-		}
+		//if (DamageDone < 50.0f)
+		//{
+		//	DamageDone = 50.f;
+		//}
 
 		UE_LOG(LogTemp, Warning, TEXT("Critical Hit! CritChance: %.2f%%, CritDamage: %.2f%%, DamageDone: %.2f"), CritChance, CritDamage, DamageDone);
 	}
