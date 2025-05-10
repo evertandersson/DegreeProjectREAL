@@ -144,6 +144,8 @@ public:
 
 	UWeaponHolderComponent* GetWeaponHolderComponent_Implementation();
 
+	void ToggleCollision_Implementation(bool bEnable);
+
 #pragma endregion
 
 	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent)

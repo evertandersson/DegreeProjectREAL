@@ -562,6 +562,14 @@ UWeaponHolderComponent* ADegreeProjectCharacter::GetWeaponHolderComponent_Implem
 	return WeaponHolderComponent;
 }
 
+void ADegreeProjectCharacter::ToggleCollision_Implementation(bool bEnable)
+{
+	if (bEnable)
+		GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Pawn, ECR_Ignore);
+	else 
+		GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Pawn, ECR_Block);
+}
+
 FVector ADegreeProjectCharacter::GetGroundPos_Implementation()
 {
 	return GroundPos;

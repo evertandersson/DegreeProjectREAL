@@ -15,6 +15,7 @@ AEnemySpawner::AEnemySpawner()
     Radius = 2000.f;
 }
 
+
 void AEnemySpawner::BeginPlay()
 {
 	Super::BeginPlay();
@@ -22,6 +23,8 @@ void AEnemySpawner::BeginPlay()
     PoolSubsystem = GetWorld()->GetSubsystem<UPoolSubsystem>();
 
     GetGameManager();
+
+    CreateWaveWidget();
 
     OnNewRoundBegin();
 }
@@ -34,13 +37,9 @@ void AEnemySpawner::AddEnemyKilled(AActor* ActorToDespawn)
     // Increment the killed enemies counter
     EnemiesKilled++;
 
-    // Calculate total enemies for the current round (sum of all values in the EnemyCount map)
-    int32 TotalEnemiesThisRound = 0;
+    UpdateEnemiesRemainingText(TotalEnemiesThisRound - EnemiesKilled);
+
     const TMap<TSubclassOf<ANPC>, int32>& EnemyMap = AllRounds[CurrentRound].EnemyCount;
-    for (const TPair<TSubclassOf<ANPC>, int32>& Pair : EnemyMap)
-    {
-        TotalEnemiesThisRound += Pair.Value;
-    }
 
     // If we've killed all enemies for the round, start a new round
     if (EnemiesKilled >= TotalEnemiesThisRound)
@@ -53,6 +52,7 @@ void AEnemySpawner::OnNewRoundBegin()
 {
     CurrentRound++;
     EnemiesKilled = 0;
+    TotalEnemiesThisRound = 0;
 
     // Ensure CurrentRound is within bounds
     if (!AllRounds.IsValidIndex(CurrentRound))
@@ -69,6 +69,7 @@ void AEnemySpawner::OnNewRoundBegin()
     for (const TPair<TSubclassOf<ANPC>, int32>& Pair : EnemyMap)
     {
         EnemyDataArray.Add(Pair);
+        TotalEnemiesThisRound += Pair.Value;  
     }
 
     // Initialize spawn counter and start the spawning process
@@ -85,9 +86,9 @@ void AEnemySpawner::SpawnEnemy()
     if (SpawnCounter >= EnemyDataArray.Num())
     {
         GetWorld()->GetTimerManager().ClearTimer(SpawnTimerHandle);
+        UpdateEnemiesRemainingText(TotalEnemiesThisRound - EnemiesKilled);
         return;
     }
-
 
     // Get the next enemy class and spawn count from the array
     const TPair<TSubclassOf<ANPC>, int32>& Pair = EnemyDataArray[SpawnCounter];
@@ -102,15 +103,15 @@ void AEnemySpawner::SpawnEnemy()
     {
         // Define the center of the circle
         FVector CircleCenter = GetActorLocation();
-        float AngleStep = 360 / SpawnCount;
-        float Angle = AlreadySpawnedCount * AngleStep;
+        float AngleStep = 360.f / TotalEnemiesThisRound;
+        float Angle = GlobalSpawnIndex * AngleStep;
 
         // Convert angle to radians for calculations
         float RadAngle = FMath::DegreesToRadians(Angle);
         float X = CircleCenter.X + Radius * FMath::Cos(RadAngle);
         float Y = CircleCenter.Y + Radius * FMath::Sin(RadAngle);
         //float Z = CircleCenter.Z;
-        float Z = CircleCenter.Z + 350;                    
+        float Z = CircleCenter.Z + 2000;                    
 
         FHitResult Hit;
         FVector Start = FVector(X, Y, CircleCenter.Z + 1000.f);
@@ -169,7 +170,8 @@ void AEnemySpawner::SpawnEnemy()
         }
         // Increment the spawn count for this NPC type
         SpawnedEnemiesPerType.Add(NPCClass, AlreadySpawnedCount + 1);
-        
+     
+        GlobalSpawnIndex++;
     }
     else
     {
