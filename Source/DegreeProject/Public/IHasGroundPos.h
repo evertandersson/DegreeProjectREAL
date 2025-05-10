@@ -56,4 +56,7 @@ public:
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
 	UWeaponHolderComponent* GetWeaponHolderComponent();
+
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
+	void ToggleCollision(bool bEnable);
 };

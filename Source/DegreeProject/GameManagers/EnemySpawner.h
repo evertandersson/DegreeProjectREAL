@@ -53,6 +53,12 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	float Radius;
 
+	UFUNCTION(BlueprintImplementableEvent)
+	void CreateWaveWidget();
+
+	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
+	void UpdateEnemiesRemainingText(int EnemiesRemaining);
+
 
 protected:
 	virtual void BeginPlay() override;
@@ -61,7 +67,11 @@ private:
 	// Timer handle for spawning enemies
 	FTimerHandle SpawnTimerHandle;
 
-	
+	UPROPERTY()
+	int TotalEnemiesThisRound;
+
+	UPROPERTY()
+	int GlobalSpawnIndex = 0;
 
 	TArray<TPair<TSubclassOf<ANPC>, int32>> EnemyDataArray;
 
