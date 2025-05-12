@@ -73,6 +73,7 @@ void AFlyingEnemy::Tick(float DeltaTime)
 
 				MoveInDirection(DirectionToTarget, DeltaTime);
 				break;
+
 			case EFlyAIState::AscendingOverObstacle:
 
 				if(Start.Z<TargetAscendZ)
@@ -151,11 +152,8 @@ void AFlyingEnemy::FaceTarget(float DeltaTime)
 
 void AFlyingEnemy::AttackPlayer()
 {
-	IsAttacking = true;
-	MovementSpeed = 0.0f;
 	PlayAnimMontage(AttackAnimMontage);
 	GetWorldTimerManager().SetTimer(AttackTime, this, &AFlyingEnemy::ResetAttack, 1.0f, false);
-
 }
 
 void AFlyingEnemy::ResetAttack()
