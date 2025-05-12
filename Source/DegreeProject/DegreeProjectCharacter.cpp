@@ -346,8 +346,7 @@ void ADegreeProjectCharacter::Jump()
 
 	if (JumpSFX && JumpCurrentCount < JumpMaxCount)
 	{
-		AudioComponent->SetSound(JumpSFX);
-		AudioComponent->Play();
+		UGameplayStatics::PlaySound2D(GetWorld(), JumpSFX);
 	}
 	Super::Jump();
 }
