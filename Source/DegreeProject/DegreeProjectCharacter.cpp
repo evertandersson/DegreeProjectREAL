@@ -689,6 +689,8 @@ UStandardAttributeSet* ADegreeProjectCharacter::GetAttributeSet()
 
 void ADegreeProjectCharacter::HandleDeath_Implementation()
 {
+	if (bIsDead) return;
+
 	bIsDead = true;
 
 	if (UCharacterMovementComponent* MovementComponent = GetCharacterMovement())
@@ -743,7 +745,7 @@ void ADegreeProjectCharacter::TogglePauseMenu()
 
 		if (PauseMenuInstance)
 		{
-			PauseMenuInstance->AddToViewport();
+			PauseMenuInstance->AddToViewport(999);
 			PlayerController->SetPause(true);
 			PlayerController->SetShowMouseCursor(true);
 			PlayerController->SetInputMode(FInputModeUIOnly());
@@ -778,7 +780,7 @@ void ADegreeProjectCharacter::ToggleGameOver()
 
 		if (GameOverInstance)
 		{
-			GameOverInstance->AddToViewport();
+			GameOverInstance->AddToViewport(999);
 			PlayerController->SetPause(true);
 			PlayerController->SetShowMouseCursor(true);
 			PlayerController->SetInputMode(FInputModeUIOnly());
