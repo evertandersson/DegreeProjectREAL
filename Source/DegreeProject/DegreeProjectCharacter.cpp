@@ -166,6 +166,13 @@ void ADegreeProjectCharacter::BeginPlay()
 	}
 }
 
+void ADegreeProjectCharacter::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	Super::EndPlay(EndPlayReason);
+	
+	CleanUp();
+}
+
 void ADegreeProjectCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
@@ -417,7 +424,11 @@ void ADegreeProjectCharacter::Dash()
 
 		LaunchCharacter(GetActorForwardVector() * DashSpeed, true, false);
 
-		GetWorldTimerManager().SetTimer(DashTimerHandle, this, &ADegreeProjectCharacter::StopDash, DashDuration, false);
+		TWeakObjectPtr<ADegreeProjectCharacter> SafeThis(this);
+		GetWorldTimerManager().SetTimer(DashTimerHandle, [SafeThis]()
+			{
+				if (!SafeThis.IsValid()) return;
+			}, 0.5f, false);
 	}
 	FString SpeedText = FString::Printf(TEXT("Current Speed: %.2f"), GetCharacterMovement()->Velocity.Size());
 	if (GEngine)
@@ -844,4 +855,13 @@ void ADegreeProjectCharacter::GetLifetimeReplicatedProps(TArray<FLifetimePropert
 	DOREPLIFETIME(ADegreeProjectCharacter, AbilitySystemComponent);
 	DOREPLIFETIME(ADegreeProjectCharacter, AttributeSet);
 
+}
+
+void ADegreeProjectCharacter::CleanUp()
+{
+	GetWorldTimerManager().ClearTimer(RegenTimerHandle);
+	GetWorldTimerManager().ClearTimer(DeathTimerHandle);
+	GetWorldTimerManager().ClearTimer(StaminaRegenTimerHandle);
+	GetWorldTimerManager().ClearTimer(DashTimerHandle);
+	GetWorldTimerManager().ClearTimer(CoolDownTimerHandle);
 }

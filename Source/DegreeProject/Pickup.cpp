@@ -5,6 +5,7 @@
 #include "UStandardAttributeSet.h"
 #include "DegreeProjectCharacter.h"
 #include "Components/BoxComponent.h"
+#include "PickupSpawner.h"
 
 // Sets default values
 APickup::APickup()
@@ -58,7 +59,6 @@ void APickup::OnPlayerInteraction(UPrimitiveComponent* OverlappedComp, AActor* O
    
 	if(pickupTypes == PickupType::HEALTH)
 	{
-
 		ADegreeProjectCharacter* Player = Cast<ADegreeProjectCharacter>(OtherActor);
 		UStandardAttributeSet* AttributeSet = Player->GetAttributeSet();
 		if (!AttributeSet)
@@ -68,8 +68,13 @@ void APickup::OnPlayerInteraction(UPrimitiveComponent* OverlappedComp, AActor* O
 
 		if (AttributeSet->CurrentHealth.GetCurrentValue() < AttributeSet->MaxHealth.GetCurrentValue())
 		{
-
 			AttributeSet->AddHealth(20.f);
+			AActor* GetPickUpSpawner = UGameplayStatics::GetActorOfClass(GetWorld(), TSubclassOf<APickupSpawner>());
+			APickupSpawner* PickupSpawner = Cast<APickupSpawner>(GetPickUpSpawner);
+			if (PickupSpawner)
+			{
+				PickupSpawner->DecreaseSpawnedPickups();
+			}
 			Destroy();
 			UE_LOG(LogTemp, Warning, TEXT("HEAL"));
 		}
