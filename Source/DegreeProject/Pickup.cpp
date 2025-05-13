@@ -37,8 +37,6 @@ APickup::APickup()
 void APickup::BeginPlay()
 {
 	Super::BeginPlay();
-	
-
 }
 
 // Called every frame
@@ -51,7 +49,6 @@ void APickup::Tick(float DeltaTime)
 	FVector pickupPosition = PickUpRoot->GetRelativeLocation();
 	FVector Movement = FVector(pickupPosition.X, pickupPosition.Y, hight + pickupPosition.Z);
 	PickUpRoot->SetRelativeLocation(Movement);
-
 }
 
 void APickup::OnPlayerInteraction(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* otherComp,
@@ -100,10 +97,5 @@ void APickup::ResetDefense()
 	AttributeSets->ResetDefance(3);
 }
 
-void APickup::OnPickup(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* otherComp,
-	int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResults)
-{
-
-}
 
 

@@ -146,10 +146,6 @@ void AFlyingEnemy::FaceTarget(float DeltaTime)
 		SetActorRotation(NewRotation);
 }
 
-
-
-
-
 void AFlyingEnemy::AttackPlayer()
 {
 	PlayAnimMontage(AttackAnimMontage);
