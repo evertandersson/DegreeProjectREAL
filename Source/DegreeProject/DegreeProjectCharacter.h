@@ -104,6 +104,7 @@ public:
 	ADegreeProjectCharacter();
 
 	virtual void BeginPlay() override;
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 	virtual void Tick(float DeltaTime) override;
 
 	// Implement the interface method to return the Ability System
@@ -371,11 +372,12 @@ private:
 
 
 private:
-	
-
 	float DefaultFriction;
 	float DefaultWalkSpeed;
 	float DefualtBreakFriction;
+
+	UFUNCTION()
+	void CleanUp();
 
 	FTimerHandle RegenTimerHandle;
 	FTimerHandle DeathTimerHandle;
