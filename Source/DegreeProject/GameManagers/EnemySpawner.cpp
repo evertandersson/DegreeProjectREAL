@@ -31,11 +31,11 @@ void AEnemySpawner::BeginPlay()
 
 void AEnemySpawner::AddEnemyKilled(AActor* ActorToDespawn)
 {
-    // Despawn the actor
-    PoolSubsystem->ReturnToPool(ActorToDespawn);
-
     // Increment the killed enemies counter
     EnemiesKilled++;
+
+    // Despawn the actor
+    PoolSubsystem->ReturnToPool(ActorToDespawn);
 
     UpdateEnemiesRemainingText(TotalEnemiesThisRound - EnemiesKilled);
 
@@ -170,7 +170,6 @@ void AEnemySpawner::SpawnEnemy()
         {
             AActor* SpawnedActor = nullptr;
 
-            // Call the function with a reference to SpawnedActor
             PoolSubsystem->SpawnFromPool(NPCClass, SpawnLocation, SpawnRotation, SpawnedActor);
         }
         // Increment the spawn count for this NPC type
