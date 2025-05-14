@@ -70,24 +70,30 @@ void AEnemySpawner::OnNewRoundBegin()
     {
         EnemyDataArray.Add(Pair);
         TotalEnemiesThisRound += Pair.Value;  
+
+        UE_LOG(LogTemp, Warning, TEXT("Round %d: Added %s with count %d"),
+            CurrentRound,
+            *GetNameSafe(Pair.Key),
+            Pair.Value);
     }
 
     // Initialize spawn counter and start the spawning process
     SpawnCounter = 0;
     SpawnedEnemiesPerType.Empty(); // Reset this map to track spawned enemies per type
 
-    while (SpawnCounter < EnemyDataArray.Num())
-    {
-        SpawnEnemy();
-    }
+    // Clear any previous timer to prevent overlap
+    GetWorld()->GetTimerManager().ClearTimer(SpawnTimerHandle);
+    GetWorld()->GetTimerManager().SetTimer(SpawnTimerHandle, this, &AEnemySpawner::SpawnEnemy, SpawnInterval, true);
+
     UpdateEnemiesRemainingText(TotalEnemiesThisRound - EnemiesKilled);
 }
 
 void AEnemySpawner::SpawnEnemy()
 {
-    // Check if we've spawned all enemies, then stop the timer
     if (SpawnCounter >= EnemyDataArray.Num())
     {
+        UE_LOG(LogTemp, Warning, TEXT("All enemies spawned for round %d."), CurrentRound);
+        GetWorld()->GetTimerManager().ClearTimer(SpawnTimerHandle); // Stop the timer!
         return;
     }
 
@@ -169,8 +175,23 @@ void AEnemySpawner::SpawnEnemy()
         if (PoolSubsystem)
         {
             AActor* SpawnedActor = nullptr;
+            
+            UE_LOG(LogTemp, Warning, TEXT("Spawning %s at location %s [Index: %d/%d]"),
+                *GetNameSafe(NPCClass),
+                *SpawnLocation.ToString(),
+                AlreadySpawnedCount + 1,
+                SpawnCount);
 
             PoolSubsystem->SpawnFromPool(NPCClass, SpawnLocation, SpawnRotation, SpawnedActor);
+
+            if (SpawnedActor)
+            {
+                UE_LOG(LogTemp, Warning, TEXT("Successfully spawned: %s"), *SpawnedActor->GetName());
+            }
+            else
+            {
+                UE_LOG(LogTemp, Error, TEXT("Failed to spawn actor of class: %s"), *GetNameSafe(NPCClass));
+            }
         }
         // Increment the spawn count for this NPC type
         SpawnedEnemiesPerType.Add(NPCClass, AlreadySpawnedCount + 1);

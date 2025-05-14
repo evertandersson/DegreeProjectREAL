@@ -69,6 +69,8 @@ private:
 	// Timer handle for spawning enemies
 	FTimerHandle SpawnTimerHandle;
 
+	float SpawnInterval = 1.f;
+
 	UPROPERTY()
 	int GlobalSpawnIndex = 0;
 
