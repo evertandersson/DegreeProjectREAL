@@ -62,9 +62,6 @@ public:
 	void OnPlayerInteraction(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* otherComp,
 		int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResults);
 
-protected:
-	virtual void OnPickup(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* otherComp,
-		int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResults);
 
 private:
 

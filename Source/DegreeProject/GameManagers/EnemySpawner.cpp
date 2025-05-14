@@ -31,11 +31,11 @@ void AEnemySpawner::BeginPlay()
 
 void AEnemySpawner::AddEnemyKilled(AActor* ActorToDespawn)
 {
-    // Despawn the actor
-    PoolSubsystem->ReturnToPool(ActorToDespawn);
-
     // Increment the killed enemies counter
     EnemiesKilled++;
+
+    // Despawn the actor
+    PoolSubsystem->ReturnToPool(ActorToDespawn);
 
     UpdateEnemiesRemainingText(TotalEnemiesThisRound - EnemiesKilled);
 
@@ -76,8 +76,11 @@ void AEnemySpawner::OnNewRoundBegin()
     SpawnCounter = 0;
     SpawnedEnemiesPerType.Empty(); // Reset this map to track spawned enemies per type
 
-    // Start the timer to spawn enemies every 1 second
-    GetWorld()->GetTimerManager().SetTimer(SpawnTimerHandle, this, &AEnemySpawner::SpawnEnemy, 0.01f, true);
+    while (SpawnCounter < EnemyDataArray.Num())
+    {
+        SpawnEnemy();
+    }
+    UpdateEnemiesRemainingText(TotalEnemiesThisRound - EnemiesKilled);
 }
 
 void AEnemySpawner::SpawnEnemy()
@@ -85,14 +88,29 @@ void AEnemySpawner::SpawnEnemy()
     // Check if we've spawned all enemies, then stop the timer
     if (SpawnCounter >= EnemyDataArray.Num())
     {
-        GetWorld()->GetTimerManager().ClearTimer(SpawnTimerHandle);
-        UpdateEnemiesRemainingText(TotalEnemiesThisRound - EnemiesKilled);
+        return;
+    }
+
+    // Defensive check before accessing the array
+    if (!EnemyDataArray.IsValidIndex(SpawnCounter))
+    {
+        UE_LOG(LogTemp, Error, TEXT("Invalid SpawnCounter index %d! EnemyDataArray.Num() = %d"), SpawnCounter, EnemyDataArray.Num());
         return;
     }
 
     // Get the next enemy class and spawn count from the array
     const TPair<TSubclassOf<ANPC>, int32>& Pair = EnemyDataArray[SpawnCounter];
     TSubclassOf<ANPC> NPCClass = Pair.Key;
+
+    // Check for null or invalid class
+    if (!IsValid(NPCClass))
+    {
+        UE_LOG(LogTemp, Error, TEXT("Invalid NPCClass in EnemyDataArray at index %d!"), SpawnCounter);
+        // Skip to the next type instead of just returning (optional depending on design)
+        SpawnCounter++;
+        return;
+    }
+
     SpawnCount = Pair.Value;
 
     // Check if we have already spawned all the enemies for this type
@@ -152,21 +170,7 @@ void AEnemySpawner::SpawnEnemy()
         {
             AActor* SpawnedActor = nullptr;
 
-            // Call the function with a reference to SpawnedActor
             PoolSubsystem->SpawnFromPool(NPCClass, SpawnLocation, SpawnRotation, SpawnedActor);
-
-            if (SpawnedActor)
-            {
-                // Optionally cast it to ANPC
-                ANPC* SpawnedNPC = Cast<ANPC>(SpawnedActor);
-                if (SpawnedNPC)
-                {
-                    // You can now use SpawnedNPC for additional setup if needed
-                }
-
-                // Increment the spawn count for this NPC type
-               // SpawnedEnemiesPerType.Add(NPCClass, AlreadySpawnedCount + 1);
-            }
         }
         // Increment the spawn count for this NPC type
         SpawnedEnemiesPerType.Add(NPCClass, AlreadySpawnedCount + 1);

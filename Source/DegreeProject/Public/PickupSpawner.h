@@ -24,6 +24,9 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Spawning")
 	TArray<TSubclassOf<AActor>> PickupClasses;
 
+	UFUNCTION()
+	void DecreaseSpawnedPickups();
+
 private:
 	FTimerHandle SpawnTimerHandle;
 
@@ -31,6 +34,12 @@ private:
 	float SpawnInterval = 5.0f;
 
 	void SpawnPickup();
+
+	UPROPERTY(EditAnywhere, Category = "Spawning")
+	int MaxLimit = 10;
+
+	UPROPERTY()
+	int PickupsSpawned = 0;
 
 protected:
 	// Called when the game starts or when spawned

@@ -5,6 +5,7 @@
 #include "UStandardAttributeSet.h"
 #include "DegreeProjectCharacter.h"
 #include "Components/BoxComponent.h"
+#include "PickupSpawner.h"
 
 // Sets default values
 APickup::APickup()
@@ -37,8 +38,6 @@ APickup::APickup()
 void APickup::BeginPlay()
 {
 	Super::BeginPlay();
-	
-
 }
 
 // Called every frame
@@ -51,7 +50,6 @@ void APickup::Tick(float DeltaTime)
 	FVector pickupPosition = PickUpRoot->GetRelativeLocation();
 	FVector Movement = FVector(pickupPosition.X, pickupPosition.Y, hight + pickupPosition.Z);
 	PickUpRoot->SetRelativeLocation(Movement);
-
 }
 
 void APickup::OnPlayerInteraction(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* otherComp,
@@ -61,7 +59,6 @@ void APickup::OnPlayerInteraction(UPrimitiveComponent* OverlappedComp, AActor* O
    
 	if(pickupTypes == PickupType::HEALTH)
 	{
-
 		ADegreeProjectCharacter* Player = Cast<ADegreeProjectCharacter>(OtherActor);
 		UStandardAttributeSet* AttributeSet = Player->GetAttributeSet();
 		if (!AttributeSet)
@@ -71,8 +68,13 @@ void APickup::OnPlayerInteraction(UPrimitiveComponent* OverlappedComp, AActor* O
 
 		if (AttributeSet->CurrentHealth.GetCurrentValue() < AttributeSet->MaxHealth.GetCurrentValue())
 		{
-
 			AttributeSet->AddHealth(20.f);
+			AActor* GetPickUpSpawner = UGameplayStatics::GetActorOfClass(GetWorld(), TSubclassOf<APickupSpawner>());
+			APickupSpawner* PickupSpawner = Cast<APickupSpawner>(GetPickUpSpawner);
+			if (PickupSpawner)
+			{
+				PickupSpawner->DecreaseSpawnedPickups();
+			}
 			Destroy();
 			UE_LOG(LogTemp, Warning, TEXT("HEAL"));
 		}
@@ -100,10 +102,5 @@ void APickup::ResetDefense()
 	AttributeSets->ResetDefance(3);
 }
 
-void APickup::OnPickup(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* otherComp,
-	int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResults)
-{
-
-}
 
 

@@ -19,11 +19,18 @@ FVector APickupSpawner::GetRandomPointInVolume()
 	return UKismetMathLibrary::RandomPointInBoundingBox(SpawnBounds.GetCenter(), SpawnBounds.GetExtent());
 }
 
-
-
+void APickupSpawner::DecreaseSpawnedPickups()
+{
+	PickupsSpawned--;
+}
 
 void APickupSpawner::SpawnPickup()
 {
+	if (PickupsSpawned >= MaxLimit)
+	{
+		return;
+	}
+
 	if (PickupClasses.Num() > 0)
 	{
 		int32 Index = FMath::RandRange(0, PickupClasses.Num() - 1);
@@ -39,6 +46,7 @@ void APickupSpawner::SpawnPickup()
 				FVector AdjustedLocation = GroundLocation + FVector(0, 0, 50.0f);
 				FRotator SpawnRotation = FRotator::ZeroRotator;
 				GetWorld()->SpawnActor<AActor>(SelectedPickupClass, AdjustedLocation, SpawnRotation);
+				PickupsSpawned++;
 			}
 		}
 	}
