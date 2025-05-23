@@ -65,6 +65,7 @@ void AEnemySpawner::OnNewRoundBegin()
     const TMap<TSubclassOf<ANPC>, int32>& EnemyMap = AllRounds[CurrentRound].EnemyCount;
 
     PlannedEnemiesThisRound = 0;
+    EnemyDataArray.Empty();
     for (const TPair<TSubclassOf<ANPC>, int32>& Pair : EnemyMap)
     {
         EnemyDataArray.Add(Pair);
@@ -75,23 +76,18 @@ void AEnemySpawner::OnNewRoundBegin()
             Pair.Value);
     }
 
-    // Convert the TMap to an array of pairs for easier access by index
-    EnemyDataArray.Empty();
-    for (const TPair<TSubclassOf<ANPC>, int32>& Pair : EnemyMap)
-    {
-        EnemyDataArray.Add(Pair);
-
-        UE_LOG(LogTemp, Warning, TEXT("Round %d: Added %s with count %d"),
-            CurrentRound,
-            *GetNameSafe(Pair.Key),
-            Pair.Value);
-    }
-
     // Initialize spawn counter and start the spawning process
     SpawnCounter = 0;
-    SpawnedEnemiesPerType.Empty(); // Reset this map to track spawned enemies per type
+    SpawnedEnemiesPerType.Empty();
 
-    // Clear any previous timer to prevent overlap
+    // If this is the last round, set the timer for the spider
+    if (CurrentRound == AllRounds.Num() - 1)
+    {
+        GetWorld()->GetTimerManager().SetTimer(CutsceneTimerHandle, this, &AEnemySpawner::SpawnEnemy, CutsceneTimer, false);
+        return;
+    }
+
+    // Otherwise, spawn as normal
     GetWorld()->GetTimerManager().ClearTimer(SpawnTimerHandle);
     GetWorld()->GetTimerManager().SetTimer(SpawnTimerHandle, this, &AEnemySpawner::SpawnEnemy, SpawnInterval, true);
 }
@@ -105,6 +101,8 @@ void AEnemySpawner::SpawnEnemy()
         UpdateEnemiesRemainingText(FMath::Max(0, TotalEnemiesThisRound - EnemiesKilled));
         return;
     }
+
+    UpdateEnemiesRemainingText(FMath::Max(0, TotalEnemiesThisRound - EnemiesKilled));
 
     // Defensive check before accessing the array
     if (!EnemyDataArray.IsValidIndex(SpawnCounter))

@@ -71,7 +71,13 @@ private:
 	// Timer handle for spawning enemies
 	FTimerHandle SpawnTimerHandle;
 
-	float SpawnInterval = 0.01f;
+	// Timer handle for spawning enemies
+	FTimerHandle CutsceneTimerHandle;
+
+	float SpawnInterval = 1.f;
+
+	UPROPERTY(EditAnywhere)
+	float CutsceneTimer = 20.f;
 
 	UPROPERTY()
 	int GlobalSpawnIndex = 0;
