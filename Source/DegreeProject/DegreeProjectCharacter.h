@@ -117,7 +117,7 @@ public:
 #pragma region Interface Functions
 
 	// Implement the interface function correctly
-	virtual void TakeDamage_Implementation(UAbilitySystemComponent* AbilitySystem) override;
+	virtual void TakeDamage_Implementation(UAbilitySystemComponent* AbilitySystem, bool bIsJumpAttack) override;
 
 	void HandleDeath_Implementation();
 

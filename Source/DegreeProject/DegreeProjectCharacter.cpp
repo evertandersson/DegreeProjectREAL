@@ -585,7 +585,7 @@ FVector ADegreeProjectCharacter::GetGroundPos_Implementation()
 	return GroundPos;
 }
 
-void ADegreeProjectCharacter::TakeDamage_Implementation(UAbilitySystemComponent* AbilitySystem)
+void ADegreeProjectCharacter::TakeDamage_Implementation(UAbilitySystemComponent* AbilitySystem, bool bIsJumpAttack)
 {
 }
 

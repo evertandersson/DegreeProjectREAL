@@ -57,7 +57,7 @@ void UWeaponHolderComponent::OnSwordHit(UPrimitiveComponent* OverlappedComponent
 		if (IAbilitySystemInterface* ASCInterface = Cast<IAbilitySystemInterface>(PlayerCharacter))
 		{
 			UAbilitySystemComponent* ASC = ASCInterface->GetAbilitySystemComponent();
-			IDamagable::Execute_TakeDamage(OtherActor, ASC);
+			IDamagable::Execute_TakeDamage(OtherActor, ASC, false);
 		}
 		EnemiesHit.Add(OtherActor);
 	}
@@ -89,7 +89,7 @@ void UWeaponHolderComponent::OnExplosionOverlap(UPrimitiveComponent* OverlappedC
 		if (IAbilitySystemInterface* ASCInterface = Cast<IAbilitySystemInterface>(PlayerCharacter))
 		{
 			UAbilitySystemComponent* ASC = ASCInterface->GetAbilitySystemComponent();
-			IDamagable::Execute_TakeDamage(OtherActor, ASC);
+			IDamagable::Execute_TakeDamage(OtherActor, ASC, true);
 		}
 		EnemiesHit.Add(OtherActor);
 	}

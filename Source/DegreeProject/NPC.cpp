@@ -37,7 +37,7 @@ void ANPC::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 
 }
 
-void ANPC::TakeDamage_Implementation(UAbilitySystemComponent* AbilitySystem)
+void ANPC::TakeDamage_Implementation(UAbilitySystemComponent* AbilitySystem, bool bIsJumpAttack)
 {
 
 }

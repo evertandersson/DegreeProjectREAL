@@ -21,7 +21,7 @@ class DEGREEPROJECT_API IDamagable
 public:
 	// Declare function with BlueprintNativeEvent to allow C++ and Blueprint overrides
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Health")
-	void TakeDamage(UAbilitySystemComponent* AbilitySystem);
+	void TakeDamage(UAbilitySystemComponent* AbilitySystem, bool bIsJumpAttack);
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Health")
 	void HandleDeath();

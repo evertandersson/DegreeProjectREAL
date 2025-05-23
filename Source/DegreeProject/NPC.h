@@ -24,7 +24,7 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
-	virtual void TakeDamage_Implementation(UAbilitySystemComponent* AbilitySystem) override;
+	virtual void TakeDamage_Implementation(UAbilitySystemComponent* AbilitySystem, bool bIsJumpAttack) override;
 
 	UFUNCTION(BlueprintImplementableEvent)
 	void HandleDeath_Implementation();
