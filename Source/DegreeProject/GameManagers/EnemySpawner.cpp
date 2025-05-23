@@ -37,7 +37,7 @@ void AEnemySpawner::AddEnemyKilled(AActor* ActorToDespawn)
     // Despawn the actor
     PoolSubsystem->ReturnToPool(ActorToDespawn);
 
-    UpdateEnemiesRemainingText(TotalEnemiesThisRound - EnemiesKilled);
+    UpdateEnemiesRemainingText(FMath::Max(0, TotalEnemiesThisRound - EnemiesKilled));
 
     const TMap<TSubclassOf<ANPC>, int32>& EnemyMap = AllRounds[CurrentRound].EnemyCount;
 
@@ -64,12 +64,22 @@ void AEnemySpawner::OnNewRoundBegin()
     // Get the enemy count map for the current round
     const TMap<TSubclassOf<ANPC>, int32>& EnemyMap = AllRounds[CurrentRound].EnemyCount;
 
+    PlannedEnemiesThisRound = 0;
+    for (const TPair<TSubclassOf<ANPC>, int32>& Pair : EnemyMap)
+    {
+        EnemyDataArray.Add(Pair);
+        PlannedEnemiesThisRound += Pair.Value;
+        UE_LOG(LogTemp, Warning, TEXT("Round %d: Added %s with count %d"),
+            CurrentRound,
+            *GetNameSafe(Pair.Key),
+            Pair.Value);
+    }
+
     // Convert the TMap to an array of pairs for easier access by index
     EnemyDataArray.Empty();
     for (const TPair<TSubclassOf<ANPC>, int32>& Pair : EnemyMap)
     {
         EnemyDataArray.Add(Pair);
-        TotalEnemiesThisRound += Pair.Value;  
 
         UE_LOG(LogTemp, Warning, TEXT("Round %d: Added %s with count %d"),
             CurrentRound,
@@ -84,8 +94,6 @@ void AEnemySpawner::OnNewRoundBegin()
     // Clear any previous timer to prevent overlap
     GetWorld()->GetTimerManager().ClearTimer(SpawnTimerHandle);
     GetWorld()->GetTimerManager().SetTimer(SpawnTimerHandle, this, &AEnemySpawner::SpawnEnemy, SpawnInterval, true);
-
-    UpdateEnemiesRemainingText(TotalEnemiesThisRound - EnemiesKilled);
 }
 
 void AEnemySpawner::SpawnEnemy()
@@ -94,6 +102,7 @@ void AEnemySpawner::SpawnEnemy()
     {
         UE_LOG(LogTemp, Warning, TEXT("All enemies spawned for round %d."), CurrentRound);
         GetWorld()->GetTimerManager().ClearTimer(SpawnTimerHandle); // Stop the timer!
+        UpdateEnemiesRemainingText(FMath::Max(0, TotalEnemiesThisRound - EnemiesKilled));
         return;
     }
 
@@ -127,7 +136,7 @@ void AEnemySpawner::SpawnEnemy()
     {
         // Define the center of the circle
         FVector CircleCenter = GetActorLocation();
-        float AngleStep = 360.f / TotalEnemiesThisRound;
+        float AngleStep = PlannedEnemiesThisRound > 0 ? 360.f / PlannedEnemiesThisRound : 0.f;
         float Angle = GlobalSpawnIndex * AngleStep;
 
         // Convert angle to radians for calculations
@@ -182,21 +191,35 @@ void AEnemySpawner::SpawnEnemy()
                 AlreadySpawnedCount + 1,
                 SpawnCount);
 
-            PoolSubsystem->SpawnFromPool(NPCClass, SpawnLocation, SpawnRotation, SpawnedActor);
+            // Attempt to spawn from pool with retries
+            int32 RetryAttempts = 0;
+            const int32 MaxRetries = 3;
+            while (!SpawnedActor && RetryAttempts < MaxRetries)
+            {
+                PoolSubsystem->SpawnFromPool(NPCClass, SpawnLocation, SpawnRotation, SpawnedActor);
+                RetryAttempts++;
+
+                if (!SpawnedActor)
+                {
+                    UE_LOG(LogTemp, Warning, TEXT("Retrying spawn for %s (Attempt %d/%d)"),
+                        *GetNameSafe(NPCClass), RetryAttempts, MaxRetries);
+                }
+            }
 
             if (SpawnedActor)
             {
                 UE_LOG(LogTemp, Warning, TEXT("Successfully spawned: %s"), *SpawnedActor->GetName());
+
+                // Only increment if spawn succeeded
+                SpawnedEnemiesPerType.Add(NPCClass, AlreadySpawnedCount + 1);
+                GlobalSpawnIndex++;
+                TotalEnemiesThisRound++;
             }
             else
             {
                 UE_LOG(LogTemp, Error, TEXT("Failed to spawn actor of class: %s"), *GetNameSafe(NPCClass));
             }
         }
-        // Increment the spawn count for this NPC type
-        SpawnedEnemiesPerType.Add(NPCClass, AlreadySpawnedCount + 1);
-     
-        GlobalSpawnIndex++;
     }
     else
     {

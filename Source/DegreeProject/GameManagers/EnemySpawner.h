@@ -59,6 +59,8 @@ public:
 	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
 	void UpdateEnemiesRemainingText(int EnemiesRemaining);
 
+	int PlannedEnemiesThisRound;
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	int TotalEnemiesThisRound;
 
@@ -69,7 +71,7 @@ private:
 	// Timer handle for spawning enemies
 	FTimerHandle SpawnTimerHandle;
 
-	float SpawnInterval = 1.f;
+	float SpawnInterval = 0.01f;
 
 	UPROPERTY()
 	int GlobalSpawnIndex = 0;
