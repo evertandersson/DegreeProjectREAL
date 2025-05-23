@@ -2,6 +2,9 @@
 
 
 #include "NPC.h"
+#include "Components/CapsuleComponent.h"
+#include "Kismet/GameplayStatics.h"
+#include "Kismet/KismetMathLibrary.h"
 
 // Sets default values
 ANPC::ANPC()
@@ -42,4 +45,31 @@ void ANPC::TakeDamage_Implementation(UAbilitySystemComponent* AbilitySystem, boo
 
 }
 
+void ANPC::JumpToDestination_Implementation(FVector Destination)
+{
+	GetCapsuleComponent()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Ignore);
+	
+	FVector OutLaunchVelocity;
+	UGameplayStatics::SuggestProjectileVelocity_CustomArc(GetWorld(),
+		OutLaunchVelocity,
+		GetActorLocation(),
+		FVector(Destination.X, Destination.Y, Destination.Z + 250.f));
 
+	LaunchCharacter(OutLaunchVelocity, true, true);
+
+	FVector RotToPlayer = Destination - GetActorLocation();
+	RotToPlayer.Normalize();
+
+	SetActorRotation(UKismetMathLibrary::MakeRotFromX(RotToPlayer));
+
+	GetWorld()->GetTimerManager().SetTimer(ResetCollisionTimerHandle, this, &ANPC::ResetCollision, ResetTimer, false);
+}
+
+void ANPC::DealDamageToPlayer_Implementation()
+{
+}
+
+void ANPC::ResetCollision()
+{
+	GetCapsuleComponent()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Block);
+}

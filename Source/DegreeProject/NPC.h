@@ -7,10 +7,11 @@
 #include "GameFramework/Character.h"
 #include "Damagable.h"
 #include "UStandardAttributeSet.h"
+#include "Enemy.h"
 #include "NPC.generated.h"
 
 UCLASS()
-class DEGREEPROJECT_API ANPC : public ACharacter, public IDamagable
+class DEGREEPROJECT_API ANPC : public ACharacter, public IDamagable, public IEnemy
 {
 	GENERATED_BODY()
 
@@ -35,6 +36,10 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 	float MaxHealth;
 
+	void JumpToDestination_Implementation(FVector Destination);
+
+	void DealDamageToPlayer_Implementation();
+
 protected:
 
 	// Called when the game starts or when spawned
@@ -43,4 +48,12 @@ protected:
 	// Attribute Set that stores and manages health and other attributes for replication.
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Attributes", meta = (AllowPrivateAccess = "true"))
 	UStandardAttributeSet* AttributeSet;
+
+private:
+	UFUNCTION()
+	void ResetCollision();
+
+	FTimerHandle ResetCollisionTimerHandle;
+
+	float ResetTimer;
 };
